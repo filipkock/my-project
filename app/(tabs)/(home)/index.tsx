@@ -43,7 +43,7 @@ export default function Screen() {
           />
           <Button className="w-full flex flex-row gap-2" onPress={handleSave}>
             <Plus size={22} color="white" />
-            <Text>Add</Text>
+            <Text>Add now!</Text>
           </Button>
         </Card>
 
