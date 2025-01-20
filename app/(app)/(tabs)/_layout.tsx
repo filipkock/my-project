@@ -5,6 +5,7 @@ const TabsLayout = () => {
     <Tabs>
       <Tabs.Screen name="(home)"></Tabs.Screen>
       <Tabs.Screen name="about"></Tabs.Screen>
+      <Tabs.Screen name="settings"></Tabs.Screen>
     </Tabs>
   );
 };
