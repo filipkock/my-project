@@ -102,3 +102,11 @@ export const formatTime = (date: Date): string => {
   return moment(date).format("HH:mm"); // 24-hour format (use "hh:mm A" for 12-hour)
 };
 
+/**
+ * Converts a time string (e.g., "14:30") to a Date object.
+ * @param {string} timeString - The time string to convert.
+ * @returns {Date} - A Date object representing the time.
+ */
+export const timeStringToDate = (timeString: string): Date => {
+  return moment(timeString, "HH:mm").toDate();
+};
