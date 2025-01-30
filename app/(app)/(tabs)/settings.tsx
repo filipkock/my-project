@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Alert } from "react-native";
+import { View, Alert, SafeAreaView } from "react-native";
 import { Text } from "~/components/ui/text";
 import { useAuth } from "~/src/context/auth";
 import { Button } from "~/components/ui/button";
@@ -19,12 +19,14 @@ const Settings = () => {
   };
 
   return (
-    <View className="flex-1 p-5">
-      <Text className="text-xl mb-5">Settings</Text>
-      <Button variant={"default"} className="w-full" onPress={handleLogout}>
-        <Text>Logout</Text>
-      </Button>
-    </View>
+    <SafeAreaView className="flex-1 bg-secondary/30 p-8">
+      <View className="flex-1 w-full p-10">
+        <Text className="text-xl mb-5">Settings</Text>
+        <Button variant={"default"} className="w-full" onPress={handleLogout}>
+          <Text>Logout</Text>
+        </Button>
+      </View>
+    </SafeAreaView>
   );
 };
 

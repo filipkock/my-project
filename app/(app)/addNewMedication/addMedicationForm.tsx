@@ -151,11 +151,10 @@ const AddMedicationForm = () => {
 
       // persist to firestore
       const userinfo = await getFromStorage("userDetails");
-      const docId = Date.now().toString();
 
       await addDoc(collection(db, "medication"), {
         ...finalData,
-        underEmail: userinfo?.email,
+        userEmail: userinfo?.email,
         createdAt: serverTimestamp(),
       });
 

@@ -1,6 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Save data to local storage
+/**
+ * Save data to local storage
+ */
 export const setLocalStorage = async (key: string, value: any) => {
   try {
     await AsyncStorage.setItem(key, JSON.stringify(value));
@@ -9,7 +11,21 @@ export const setLocalStorage = async (key: string, value: any) => {
   }
 };
 
-// Get data from local storage
+/**
+ * Retrieves user details from storage.
+ *
+ * @function getFromStorage
+ * @param {string} key - The key of the item to retrieve from storage.
+ * @returns {Promise<object>} A promise that resolves to an object containing user details.
+ * -------------
+ * Key `userDetails` object contains:
+ * - `uid`: Unique identifier for the user.
+ * - `email`: Email address of the user.
+ * - `displayName`: Display name of the user (if set).
+ * - see firebase docs for more.
+ * ------
+ *
+ */
 export const getFromStorage = async (key: string) => {
   try {
     const value = await AsyncStorage.getItem(key);
