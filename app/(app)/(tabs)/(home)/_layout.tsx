@@ -15,12 +15,6 @@ const HomeLayout = () => {
           headerShown: false,
         }}
       ></Stack.Screen>
-      <Stack.Screen
-        name="medicationList"
-        options={{
-          headerShown: false,
-        }}
-      ></Stack.Screen>
     </Stack>
   );
 };
