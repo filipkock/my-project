@@ -1,7 +1,13 @@
 import { View } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { getFromStorage } from "~/services/storage";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  Timestamp,
+  where,
+} from "firebase/firestore";
 import { db } from "~/config/firebase";
 import MedicationCard from "./medicationCard";
 import { Agenda } from "react-native-calendars";
@@ -17,9 +23,9 @@ export default function medicationList() {
 
   const GetMedicationList = async (selectedDate: string) => {
     const user = await getFromStorage("userDetails");
-    const formattedDate = moment(selectedDate, "YYYY-MM-DD").format(
-      "MM/DD/YYYY"
-    );
+    // convert to javascript date and then to firebase timestamp
+    const formattedDate = Timestamp.fromDate(moment(selectedDate).toDate());
+
     try {
       // 1. Fetch documents for the user
       const medicationQuery = query(
@@ -36,11 +42,8 @@ export default function medicationList() {
       querySnapshot.forEach((doc) => {
         const data = doc.data();
 
-        data.reminderDates.forEach((dateString: string) => {
-          // Convert "MM/DD/YYYY" to "YYYY-MM-DD"
-          const formattedDate = moment(dateString, "MM/DD/YYYY").format(
-            "YYYY-MM-DD"
-          );
+        data.reminderDates.forEach((date: Timestamp) => {
+          const formattedDate = moment(date.toDate()).format("YYYY-MM-DD");
 
           if (!agendaItems[formattedDate]) {
             agendaItems[formattedDate] = [];
