@@ -1,4 +1,5 @@
 import moment from "moment";
+import { Timestamp } from "firebase/firestore";
 
 // A helper function to generate dates
 // using moment.js for date arithmetic
@@ -12,7 +13,7 @@ import moment from "moment";
  * @param {Date} endDate
  * @param {string} intakeInterval
  * @param {{ customIntervalValue?: number; specificDaysOfWeek?: number[] }} options
- * @returns {string[]} - List of all reminder dates.
+ * @returns {Timestamp[]} - List of all reminder dates.
  */
 export function generateReminderDates(
   startDate: Date,
@@ -25,8 +26,8 @@ export function generateReminderDates(
     customIntervalValue?: number;
     specificDaysOfWeek?: number[];
   }
-): string[] {
-  const dates: string[] = [];
+): Timestamp[] {
+  const dates: Timestamp[] = [];
 
   const start = moment(startDate).startOf("day");
   const end = moment(endDate).endOf("day"); // ensure we include the end day if it matches
@@ -47,44 +48,44 @@ export function generateReminderDates(
   while (current.isSameOrBefore(end, "day")) {
     switch (localInterval) {
       case "Every day": {
-        dates.push(moment(current).format("MM/DD/YYYY"));
+        dates.push(Timestamp.fromDate(current.toDate()));
         current.add(1, "day");
         break;
       }
       case "Every other day": {
-        dates.push(moment(current).format("MM/DD/YYYY"));
+        dates.push(Timestamp.fromDate(current.toDate()));
         current.add(2, "days");
         break;
       }
       case "Specific days weekly": {
         // if user picked day-of-week (0=Sun, 1=Mon, etc.)
         if (specificDaysOfWeek?.includes(current.day())) {
-          dates.push(moment(current).format("MM/DD/YYYY"));
+          dates.push(Timestamp.fromDate(current.toDate()));
         }
         current.add(1, "day");
         break;
       }
       case "every X days": {
-        dates.push(moment(current).format("MM/DD/YYYY"));
+        dates.push(Timestamp.fromDate(current.toDate()));
         const increment = localCustomValue && localCustomValue > 0 ? localCustomValue : 1;
         current.add(increment, "days");
         break;
       }
       case "every X months": {
-        dates.push(moment(current).format("MM/DD/YYYY"));
+        dates.push(Timestamp.fromDate(current.toDate()));
         const increment = localCustomValue && localCustomValue > 0 ? localCustomValue : 1;
         current.add(increment, "months");
         break;
       }
       case "on a recurring cycle": {
-        dates.push(moment(current).format("MM/DD/YYYY"));
+        dates.push(Timestamp.fromDate(current.toDate()));
         // Minimal example to avoid infinite loop
         current.add(1, "day");
         break;
       }
       default:
         // Fallback: treat like "Every day"
-        dates.push(moment(current).format("MM/DD/YYYY"));
+        dates.push(Timestamp.fromDate(current.toDate()));
         current.add(1, "day");
         break;
     }
