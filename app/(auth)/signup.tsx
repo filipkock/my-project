@@ -9,6 +9,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
+import { setLocalStorage } from "~/services/storage";
 
 export default function signup() {
   const [name, setName] = useState("");
@@ -32,6 +33,8 @@ export default function signup() {
           await updateProfile(user, {
             displayName: trimmedname,
           });
+          setLocalStorage("userDetails", user);
+
           router.replace("/(app)/(tabs)/(home)");
         })
         .catch((error) => {

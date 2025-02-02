@@ -48,6 +48,7 @@ export default function MedicationList() {
 
       const newMarkedDates: { [date: string]: any } = {};
       const userinfo = await getFromStorage("userDetails");
+      if (!userinfo) return;
 
       const remindersQuery = query(
         collection(db, "reminders"),
@@ -83,6 +84,7 @@ export default function MedicationList() {
       );
 
       const userinfo = await getFromStorage("userDetails");
+      if (!userinfo) return;
 
       // 🔹 Step 1: Fetch reminders for today
       const remindersQuery = query(
