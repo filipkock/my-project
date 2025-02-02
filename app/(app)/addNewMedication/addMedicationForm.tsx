@@ -139,18 +139,6 @@ const AddMedicationForm = () => {
       // 1. Create Medication Document
       const userinfo = await getFromStorage("userDetails");
 
-      const medicationRef = await addDoc(collection(db, "medication"), {
-        medicationName,
-        medicationType,
-        whenToTake,
-        intakeInterval,
-        startDate: Timestamp.fromDate(new Date(startDate)),
-        endDate: Timestamp.fromDate(new Date(endDate)),
-        userEmail: userinfo?.email,
-        createdAt: serverTimestamp(),
-        uid: userinfo.uid,
-      });
-
       // 2. Generate Reminder Dates
       const customInterval =
         parseInt(formData.customIntervalValue || "1", 10) || 1;
@@ -163,6 +151,21 @@ const AddMedicationForm = () => {
           specificDaysOfWeek: formData.specificDaysOfWeek,
         }
       );
+
+      const medicationRef = await addDoc(collection(db, "medication"), {
+        medicationName,
+        medicationType,
+        whenToTake,
+        intakeInterval,
+        customInterval,
+        specificDaysOfWeek: formData.specificDaysOfWeek || [],
+        startDate: Timestamp.fromDate(new Date(startDate)),
+        endDate: Timestamp.fromDate(new Date(endDate)),
+        userEmail: userinfo?.email,
+        createdAt: serverTimestamp(),
+        uid: userinfo.uid,
+        time: formData.reminderTime,
+      });
 
       // 3. Save Each Reminder in a seperate collection
       const remindersCollectionRef = collection(db, "reminders");
@@ -183,7 +186,7 @@ const AddMedicationForm = () => {
       Alert.alert("Success!", "Medication reminder was created", [
         {
           text: "Ok",
-          onPress: () => router.push("/(app)/(tabs)/(home)"),
+          onPress: () => router.push("/(app)/(tabs)/(medications)"),
         },
       ]);
     } catch (e) {
