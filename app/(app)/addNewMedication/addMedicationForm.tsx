@@ -30,7 +30,12 @@ import { router } from "expo-router";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import {} from "react-native";
 import { getFromStorage } from "~/services/storage";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  serverTimestamp,
+  Timestamp,
+} from "firebase/firestore";
 import { db } from "~/config/firebase";
 import {
   generateReminderDates,
@@ -114,6 +119,7 @@ const AddMedicationForm = () => {
       startDate,
       endDate,
     } = formData;
+
     const requiredFieldsFilled =
       medicationName &&
       medicationType &&
@@ -130,7 +136,22 @@ const AddMedicationForm = () => {
     setLoading(true);
 
     try {
-      // generate an array of all reminder dates
+      // 1. Create Medication Document
+      const userinfo = await getFromStorage("userDetails");
+
+      const medicationRef = await addDoc(collection(db, "medication"), {
+        medicationName,
+        medicationType,
+        whenToTake,
+        intakeInterval,
+        startDate: Timestamp.fromDate(new Date(startDate)),
+        endDate: Timestamp.fromDate(new Date(endDate)),
+        userEmail: userinfo?.email,
+        createdAt: serverTimestamp(),
+        uid: userinfo.uid,
+      });
+
+      // 2. Generate Reminder Dates
       const customInterval =
         parseInt(formData.customIntervalValue || "1", 10) || 1;
       const reminders = generateReminderDates(
@@ -143,21 +164,22 @@ const AddMedicationForm = () => {
         }
       );
 
-      // store final array in formData
-      const finalData = {
-        ...formData,
-        reminderDates: reminders,
-      };
-
-      // persist to firestore
-      const userinfo = await getFromStorage("userDetails");
-
-      await addDoc(collection(db, "medication"), {
-        ...finalData,
-        userEmail: userinfo?.email,
-        createdAt: serverTimestamp(),
+      // 3. Save Each Reminder in a seperate collection
+      const remindersCollectionRef = collection(db, "reminders");
+      const reminderWrites = reminders.map((reminderDate) => {
+        return addDoc(remindersCollectionRef, {
+          date: reminderDate,
+          time: formData.reminderTime,
+          whenToTake: formData.whenToTake,
+          status: "pending",
+          medId: medicationRef.id,
+          uid: userinfo.uid,
+        });
       });
 
+      await Promise.all(reminderWrites);
+
+      // 4. Show Success Message & Navigate Back
       Alert.alert("Success!", "Medication reminder was created", [
         {
           text: "Ok",
