@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { router } from "expo-router";
 import { Text } from "~/components/ui/text";
-import { getFromStorage } from "~/services/storage";
+import { getFromStorage } from "~/src/services/storage";
 import { collection, query, Timestamp } from "firebase/firestore";
 import { db } from "~/config/firebase";
 import { useState } from "react";

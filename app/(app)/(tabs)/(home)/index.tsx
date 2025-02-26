@@ -1,6 +1,6 @@
 import React from "react";
 import { SafeAreaView, View } from "react-native";
-import MedicationList from "../../../../components/custom/medicationList";
+import MedicationList from "~/components/custom/medicationList";
 
 export default function Screen() {
   return (

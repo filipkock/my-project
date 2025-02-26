@@ -3,7 +3,7 @@ import { SafeAreaView, Alert } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../config/firebase";
 import { router, Link } from "expo-router";
-import { setLocalStorage } from "~/services/storage";
+import { setLocalStorage } from "~/src/services/storage";
 
 // Components
 import { Button } from "~/components/ui/button";

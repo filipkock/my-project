@@ -26,7 +26,8 @@ export default {
         foregroundImage: "./assets/images/adaptive-icon.png",
         backgroundColor: "#ffffff"
       },
-      package: "com.filiplee.starterbase"
+      package: "com.filiplee.starterbase",
+      googleServicesFile: "./google-services.json",
     },
     web: {
       bundler: "metro",

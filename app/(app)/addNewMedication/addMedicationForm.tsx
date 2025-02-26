@@ -14,7 +14,7 @@ import {
   WhenToTakeList,
   intervalToTakeList,
   dayLabels,
-} from "~/constants/addMedicationOptions";
+} from "~/src/constants/addMedicationOptions";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Select,
@@ -29,7 +29,7 @@ import { Button } from "~/components/ui/button";
 import { router } from "expo-router";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import {} from "react-native";
-import { getFromStorage } from "~/services/storage";
+import { getFromStorage } from "~/src/services/storage";
 import {
   addDoc,
   collection,
@@ -41,7 +41,7 @@ import {
   generateReminderDates,
   formatTime,
   timeStringToDate,
-} from "~/services/reminderSchedule";
+} from "~/src/services/reminderSchedule";
 
 const AddMedicationForm = () => {
   const insets = useSafeAreaInsets();
