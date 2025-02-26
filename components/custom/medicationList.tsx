@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, Alert } from "react-native";
 import { Agenda } from "react-native-calendars";
-import { getFromStorage } from "~/services/storage";
+import { getFromStorage } from "~/src/services/storage";
 import {
   collection,
   query,

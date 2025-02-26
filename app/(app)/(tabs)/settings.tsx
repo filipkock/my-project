@@ -3,7 +3,9 @@ import { View, Alert, SafeAreaView } from "react-native";
 import { Text } from "~/components/ui/text";
 import { useAuth } from "~/src/context/auth";
 import { Button } from "~/components/ui/button";
-import { clearStorage } from "~/services/storage";
+import { clearStorage } from "~/src/services/storage";
+import { useNotification } from "~/src/context/notificationsContext";
+import { ThemeToggle } from "~/components/ThemeToggle";
 
 const Settings = () => {
   const { signOut } = useAuth(); // Access the signOut function from AuthProvider
@@ -18,6 +20,12 @@ const Settings = () => {
     }
   };
 
+  // Expo notificaion testing
+  const { notification, expoPushToken, error } = useNotification();
+  if (error) {
+    return <Text>Error: {error.message}</Text>;
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-secondary/30 p-8">
       <View className="flex-1 w-full p-10">
@@ -25,6 +33,19 @@ const Settings = () => {
         <Button variant={"default"} className="w-full" onPress={handleLogout}>
           <Text>Logout</Text>
         </Button>
+        <View className="w-full flex-row py-10">
+          <ThemeToggle />
+        </View>
+
+        {/* notificaion testing section */}
+        <Text>Updates Demo 5</Text>
+        <Text>Expo token:</Text>
+        <Text>{expoPushToken}</Text>
+        <Text>Latest notification:</Text>
+        <Text>{notification?.request.content.title}</Text>
+        <Text>
+          {JSON.stringify(notification?.request.content.data, null, 2)}
+        </Text>
       </View>
     </SafeAreaView>
   );

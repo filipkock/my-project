@@ -9,7 +9,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
-import { setLocalStorage } from "~/services/storage";
+import { setLocalStorage } from "~/src/services/storage";
 
 export default function signup() {
   const [name, setName] = useState("");

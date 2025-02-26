@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Text } from "~/components/ui/text";
 import { db } from "~/config/firebase";
 import { Plus } from "~/lib/icons/plus";
-import { getFromStorage } from "~/services/storage";
+import { getFromStorage } from "~/src/services/storage";
 
 interface Medication {
   id: string;

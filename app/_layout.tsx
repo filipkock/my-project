@@ -14,7 +14,10 @@ import { useColorScheme } from "~/lib/useColorScheme";
 import { PortalHost } from "@rn-primitives/portal";
 import { setAndroidNavigationBar } from "~/lib/android-navigation-bar";
 import { AuthProvider } from "../src/context/auth";
+import { NotificationProvider } from "~/src/context/notificationsContext";
+import * as Notifications from "expo-notifications";
 
+// ==== react native reusables theme setup ====
 const LIGHT_THEME: Theme = {
   ...DefaultTheme,
   colors: NAV_THEME.light,
@@ -66,12 +69,23 @@ export default function RootLayout() {
     return null;
   }
 
+  // ==== Notification setup inside app ====
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });
+
   return (
     <AuthProvider>
-      <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-        <Slot></Slot>
-        <PortalHost />
-      </ThemeProvider>
+      <NotificationProvider>
+        <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
+          <Slot></Slot>
+          <PortalHost />
+        </ThemeProvider>
+      </NotificationProvider>
     </AuthProvider>
   );
 }
