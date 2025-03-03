@@ -7,6 +7,8 @@ import { clearStorage } from "~/src/services/storage";
 import { useNotification } from "~/src/context/notificationsContext";
 import { ThemeToggle } from "~/components/ThemeToggle";
 
+import * as Notifications from "expo-notifications";
+
 const Settings = () => {
   const { signOut } = useAuth(); // Access the signOut function from AuthProvider
 
@@ -24,6 +26,12 @@ const Settings = () => {
   const { notification, expoPushToken, error } = useNotification();
   if (error) {
     return <Text>Error: {error.message}</Text>;
+  }
+
+  // Remove all notifications
+  async function clearAllNotifications() {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+    console.log("All scheduled notifications cleared!");
   }
 
   return (
@@ -47,6 +55,14 @@ const Settings = () => {
           {JSON.stringify(notification?.request.content.data, null, 2)}
         </Text>
       </View>
+
+      <Button
+        variant={"default"}
+        className="w-full"
+        onPress={clearAllNotifications}
+      >
+        <Text>Remove notifications</Text>
+      </Button>
     </SafeAreaView>
   );
 };

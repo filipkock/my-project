@@ -2,6 +2,8 @@ import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
+import { auth } from "~/config/firebase";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 
 function handleRegistrationError(errorMessage: string) {
   alert(errorMessage);
@@ -44,7 +46,19 @@ export async function registerForPushNotificationsAsync() {
           projectId,
         })
       ).data;
-      console.log(pushTokenString);
+
+      // Store the pushTokenString to firebase to use it in cloud functions to e.g. send reminders
+      console.log("pushToken: " + pushTokenString);
+      const userId = auth.currentUser?.uid;
+      console.log("userID: " + userId);
+      if (userId) {
+        await setDoc(
+          doc(getFirestore(), "users", userId),
+          { expoPushToken: pushTokenString },
+          { merge: true }
+        );
+      }
+
       return pushTokenString;
     } catch (e: unknown) {
       handleRegistrationError(`${e}`);
