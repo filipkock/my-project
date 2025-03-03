@@ -42,6 +42,9 @@ import {
   formatTime,
   timeStringToDate,
 } from "~/src/services/reminderSchedule";
+import { useState } from "react";
+import { Modal, Pressable } from "react-native";
+import { scheduleMedicationReminder } from "~/src/utils/scheduleMedicationReminder"; // Assuming you have this function
 
 const AddMedicationForm = () => {
   const insets = useSafeAreaInsets();
@@ -54,6 +57,11 @@ const AddMedicationForm = () => {
 
   const [triggerWidth, setTriggerWidth] = React.useState<number>(0);
   const [loading, setLoading] = React.useState<Boolean>(false);
+
+  // To hide or show the date and time selectors on andriod
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   // FORM STORING LOGIC
   // ------------------------------------------------
@@ -167,16 +175,28 @@ const AddMedicationForm = () => {
         time: formData.reminderTime,
       });
 
-      // 3. Save Each Reminder in a seperate collection
+      // 4️⃣ Save Each Reminder in Firestore & Schedule Notification
       const remindersCollectionRef = collection(db, "reminders");
-      const reminderWrites = reminders.map((reminderDate) => {
-        return addDoc(remindersCollectionRef, {
+
+      const reminderWrites = reminders.map(async (reminderDate) => {
+        const reminderDocRef = await addDoc(remindersCollectionRef, {
           date: reminderDate,
           time: formData.reminderTime,
           whenToTake: formData.whenToTake,
           status: "pending",
           medId: medicationRef.id,
           uid: userinfo.uid,
+          notificationId: null,
+        });
+
+        await scheduleMedicationReminder({
+          id: reminderDocRef.id, // Firestore document ID
+          uid: userinfo.uid,
+          date: reminderDate,
+          time: formData.reminderTime,
+          whenToTake: formData.whenToTake,
+          medId: medicationRef.id,
+          notificationId: null,
         });
       });
 
@@ -328,7 +348,11 @@ const AddMedicationForm = () => {
                         }}
                         onPress={() => toggleDaySelection(idx)}
                       >
-                        <Text style={{ color: selected ? "green" : "black" }}>
+                        <Text
+                          style={{
+                            color: selected ? "green" : "black",
+                          }}
+                        >
                           {label}
                         </Text>
                       </TouchableOpacity>
@@ -355,41 +379,81 @@ const AddMedicationForm = () => {
               </View>
             )}
 
-            {/* Start and end date */}
-            <Text>Start and end date</Text>
-            <View className="w-full flex-row justify-between">
-              <RNDateTimePicker
-                minimumDate={new Date()}
-                onChange={(event, selectedDate) => {
-                  onHandleInputChange("startDate", selectedDate);
-                }}
-                value={formData?.startDate ?? new Date()}
-              ></RNDateTimePicker>
-              <RNDateTimePicker
-                minimumDate={formData?.startDate ?? new Date()}
-                onChange={(event, selectedDate) => {
-                  onHandleInputChange("endDate", selectedDate);
-                }}
-                value={formData?.endDate ?? new Date()}
-              ></RNDateTimePicker>
-            </View>
+            {/* Start Date Picker */}
+            <Text>Start Date</Text>
+            <Pressable onPress={() => setShowStartDatePicker(true)}>
+              <Text>
+                {formData?.startDate?.toDateString() || "Select start date"}
+              </Text>
+            </Pressable>
+            {showStartDatePicker && (
+              <Modal transparent={true} animationType="slide">
+                <View className="flex-1 justify-center items-center bg-black/50">
+                  <RNDateTimePicker
+                    value={formData?.startDate ?? new Date()}
+                    mode="date"
+                    display="calendar"
+                    onChange={(event, selectedDate) => {
+                      setShowStartDatePicker(false);
+                      if (selectedDate)
+                        onHandleInputChange("startDate", selectedDate);
+                    }}
+                  />
+                </View>
+              </Modal>
+            )}
 
-            {/* Set Reminder time */}
-            <Text>Reminder time</Text>
-            <RNDateTimePicker
-              mode="time"
-              onChange={(event, selectedDate) => {
-                if (selectedDate) {
-                  const timeOnly = formatTime(selectedDate);
-                  onHandleInputChange("reminderTime", timeOnly);
-                }
-              }}
-              value={
-                formData?.reminderTime
-                  ? timeStringToDate(formData.reminderTime) // Convert time string to Date for picker
-                  : new Date()
-              }
-            />
+            {/* End Date Picker */}
+            <Text>End Date</Text>
+            <Pressable onPress={() => setShowEndDatePicker(true)}>
+              <Text>
+                {formData?.endDate?.toDateString() || "Select end date"}
+              </Text>
+            </Pressable>
+            {showEndDatePicker && (
+              <Modal transparent={true} animationType="slide">
+                <View className="flex-1 justify-center items-center bg-black/50">
+                  <RNDateTimePicker
+                    value={formData?.endDate ?? new Date()}
+                    mode="date"
+                    display="calendar"
+                    onChange={(event, selectedDate) => {
+                      setShowEndDatePicker(false);
+                      if (selectedDate)
+                        onHandleInputChange("endDate", selectedDate);
+                    }}
+                  />
+                </View>
+              </Modal>
+            )}
+
+            {/* Reminder Time Picker */}
+            <Text>Reminder Time</Text>
+            <Pressable onPress={() => setShowTimePicker(true)}>
+              <Text>{formData?.reminderTime || "Select time"}</Text>
+            </Pressable>
+            {showTimePicker && (
+              <Modal transparent={true} animationType="slide">
+                <View className="flex-1 justify-center items-center bg-black/50">
+                  <RNDateTimePicker
+                    value={
+                      formData?.reminderTime
+                        ? timeStringToDate(formData.reminderTime)
+                        : new Date()
+                    }
+                    mode="time"
+                    display="clock"
+                    onChange={(event, selectedDate) => {
+                      setShowTimePicker(false);
+                      if (selectedDate) {
+                        const timeOnly = formatTime(selectedDate);
+                        onHandleInputChange("reminderTime", timeOnly);
+                      }
+                    }}
+                  />
+                </View>
+              </Modal>
+            )}
 
             <Button
               className="max-w-sm"
