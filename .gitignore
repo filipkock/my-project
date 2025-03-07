@@ -29,6 +29,8 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
+.env.*
 .env*.local
 
 # typescript
@@ -42,4 +44,4 @@ expo-env.d.ts
 
 google-services.json
 /ios
-/andriod
+/andriod.env
