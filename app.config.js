@@ -19,7 +19,8 @@ export default {
       "**/*"
     ],
     ios: {
-      supportsTablet: true
+      supportsTablet: true,
+      bundleIdentifier: "com.filiplee.starterbase",
     },
     android: {
       adaptiveIcon: {
