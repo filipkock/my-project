@@ -1,8 +1,18 @@
 import { Tabs } from "expo-router";
+import { useTheme } from "@react-navigation/native";
 
 const TabsLayout = () => {
+  const { colors } = useTheme();
+
   return (
-    <Tabs>
+    <Tabs
+      screenOptions={{
+        tabBarStyle: {
+          backgroundColor: colors.background,
+          borderTopWidth: 0,
+        },
+      }}
+    >
       <Tabs.Screen
         name="(home)"
         options={{

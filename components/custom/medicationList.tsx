@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Alert } from "react-native";
+import { View, Text, Alert, SafeAreaView, FlatList } from "react-native";
 import { Agenda } from "react-native-calendars";
 import { getFromStorage } from "~/src/services/storage";
 import {
@@ -15,6 +15,7 @@ import {
 import moment from "moment";
 import { db } from "~/config/firebase";
 import MedicationCard from "~/components/custom/medicationCard";
+import { useTheme } from "@react-navigation/native";
 
 export default function MedicationList() {
   const [items, setItems] = useState<{ [date: string]: any[] }>({});
@@ -23,6 +24,7 @@ export default function MedicationList() {
     moment().format("YYYY-MM-DD")
   );
   const [fetchedMonths, setFetchedMonths] = useState(new Set<string>());
+  const { colors } = useTheme();
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -187,29 +189,48 @@ export default function MedicationList() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <Agenda
-        items={items}
-        markedDates={markedDates}
-        selected={selectedDate}
-        showOnlySelectedDayItems
-        showClosingKnob
-        onDayPress={handleDayPress}
-        onMonthChange={handleMonthChange}
-        renderItem={(item: any) => (
-          <MedicationCard
-            medication={item}
-            onTakeMedication={(reminderDocID) =>
-              handleTakeMedication(reminderDocID)
-            }
-          />
-        )}
-        renderEmptyDate={() => (
-          <View style={{ margin: 10 }}>
-            <Text>No medication reminders today.</Text>
-          </View>
-        )}
-      />
-    </View>
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
+        <Agenda
+          theme={{
+            calendarBackground: colors.background,
+            agendaKnobColor: colors.primary,
+            reservationsBackgroundColor: colors.background,
+            dayTextColor: colors.primary,
+            monthTextColor: colors.primary,
+          }}
+          items={items}
+          markedDates={markedDates}
+          selected={selectedDate}
+          showOnlySelectedDayItems
+          showClosingKnob
+          onDayPress={handleDayPress}
+          onMonthChange={handleMonthChange}
+          renderItem={(item: any) => (
+            <View>
+              {item?.showTimeHeader && (
+                <Text style={{ fontWeight: "bold", marginBottom: 4 }}>
+                  {item.reminderTime}
+                </Text>
+              )}
+              <MedicationCard
+                medication={item}
+                onTakeMedication={(reminderDocID) =>
+                  handleTakeMedication(reminderDocID)
+                }
+              />
+            </View>
+          )}
+          renderDay={(day: any, item: any) => {
+            return;
+          }}
+          renderEmptyDate={() => (
+            <View style={{ margin: 10 }}>
+              <Text>No medication reminders today.</Text>
+            </View>
+          )}
+        />
+      </View>
+    </SafeAreaView>
   );
 }

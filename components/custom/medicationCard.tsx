@@ -32,7 +32,7 @@ const medicationCard = ({
   };
   return (
     <View className="m-6">
-      <Card className="w-full rounded-2xl max-w-sm">
+      <Card className="w-full rounded-2xl">
         <CardHeader>
           <CardTitle>{medication.medicationName}</CardTitle>
         </CardHeader>

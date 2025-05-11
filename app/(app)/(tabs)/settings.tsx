@@ -24,9 +24,6 @@ const Settings = () => {
 
   // Expo notificaion testing
   const { notification, expoPushToken, error } = useNotification();
-  if (error) {
-    return <Text>Error: {error.message}</Text>;
-  }
 
   // Remove all notifications
   async function clearAllNotifications() {
@@ -35,7 +32,7 @@ const Settings = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-secondary/30 p-8">
+    <SafeAreaView className="flex-1 p-8 ">
       <View className="flex-1 w-full p-10">
         <Text className="text-xl mb-5">Settings</Text>
         <Button variant={"default"} className="w-full" onPress={handleLogout}>
@@ -44,25 +41,30 @@ const Settings = () => {
         <View className="w-full flex-row py-10">
           <ThemeToggle />
         </View>
-
-        {/* notificaion testing section */}
-        <Text>Updates Demo 5</Text>
-        <Text>Expo token:</Text>
-        <Text>{expoPushToken}</Text>
-        <Text>Latest notification:</Text>
-        <Text>{notification?.request.content.title}</Text>
-        <Text>
-          {JSON.stringify(notification?.request.content.data, null, 2)}
-        </Text>
       </View>
+      {/* Notification testing section */}
+      {error ? (
+        <Text className="text-red-500">Error: {error?.message}</Text>
+      ) : (
+        <View className="space-y-2">
+          <Text>Updates Demo 5</Text>
+          <Text>Expo token:</Text>
+          <Text>{expoPushToken}</Text>
+          <Text>Latest notification:</Text>
+          <Text>{notification?.request?.content?.title}</Text>
+          <Text>
+            {JSON.stringify(notification?.request?.content?.data, null, 2)}
+          </Text>
 
-      <Button
-        variant={"default"}
-        className="w-full"
-        onPress={clearAllNotifications}
-      >
-        <Text>Remove notifications</Text>
-      </Button>
+          <Button
+            variant="default"
+            className="w-full"
+            onPress={clearAllNotifications}
+          >
+            <Text>Remove notifications</Text>
+          </Button>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
