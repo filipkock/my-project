@@ -27,7 +27,7 @@ import {
 } from "~/components/ui/select";
 import { Button } from "~/components/ui/button";
 import { router } from "expo-router";
-import RNDateTimePicker from "@react-native-community/datetimepicker";
+import DatePicker from "react-native-date-picker";
 import {} from "react-native";
 import { getFromStorage } from "~/src/services/storage";
 import {
@@ -386,22 +386,18 @@ const AddMedicationForm = () => {
                 {formData?.startDate?.toDateString() || "Select start date"}
               </Text>
             </Pressable>
-            {showStartDatePicker && (
-              <Modal transparent={true} animationType="slide">
-                <View className="flex-1 justify-center items-center bg-black/50">
-                  <RNDateTimePicker
-                    value={formData?.startDate ?? new Date()}
-                    mode="date"
-                    display="calendar"
-                    onChange={(event, selectedDate) => {
-                      setShowStartDatePicker(false);
-                      if (selectedDate)
-                        onHandleInputChange("startDate", selectedDate);
-                    }}
-                  />
-                </View>
-              </Modal>
-            )}
+
+            <DatePicker
+              modal
+              open={showStartDatePicker}
+              date={formData?.startDate ?? new Date()}
+              mode="date"
+              onConfirm={(selectedDate) => {
+                setShowStartDatePicker(false);
+                onHandleInputChange("startDate", selectedDate);
+              }}
+              onCancel={() => setShowStartDatePicker(false)}
+            />
 
             {/* End Date Picker */}
             <Text>End Date</Text>
@@ -410,50 +406,41 @@ const AddMedicationForm = () => {
                 {formData?.endDate?.toDateString() || "Select end date"}
               </Text>
             </Pressable>
-            {showEndDatePicker && (
-              <Modal transparent={true} animationType="slide">
-                <View className="flex-1 justify-center items-center bg-black/50">
-                  <RNDateTimePicker
-                    value={formData?.endDate ?? new Date()}
-                    mode="date"
-                    display="calendar"
-                    onChange={(event, selectedDate) => {
-                      setShowEndDatePicker(false);
-                      if (selectedDate)
-                        onHandleInputChange("endDate", selectedDate);
-                    }}
-                  />
-                </View>
-              </Modal>
-            )}
+
+            <DatePicker
+              modal
+              open={showEndDatePicker}
+              date={formData?.endDate ?? new Date()}
+              mode="date"
+              onConfirm={(selectedDate) => {
+                setShowEndDatePicker(false);
+                onHandleInputChange("endDate", selectedDate);
+              }}
+              onCancel={() => setShowEndDatePicker(false)}
+            />
 
             {/* Reminder Time Picker */}
             <Text>Reminder Time</Text>
             <Pressable onPress={() => setShowTimePicker(true)}>
               <Text>{formData?.reminderTime || "Select time"}</Text>
             </Pressable>
-            {showTimePicker && (
-              <Modal transparent={true} animationType="slide">
-                <View className="flex-1 justify-center items-center bg-black/50">
-                  <RNDateTimePicker
-                    value={
-                      formData?.reminderTime
-                        ? timeStringToDate(formData.reminderTime)
-                        : new Date()
-                    }
-                    mode="time"
-                    display="clock"
-                    onChange={(event, selectedDate) => {
-                      setShowTimePicker(false);
-                      if (selectedDate) {
-                        const timeOnly = formatTime(selectedDate);
-                        onHandleInputChange("reminderTime", timeOnly);
-                      }
-                    }}
-                  />
-                </View>
-              </Modal>
-            )}
+
+            <DatePicker
+              modal
+              open={showTimePicker}
+              date={
+                formData?.reminderTime
+                  ? timeStringToDate(formData.reminderTime)
+                  : new Date()
+              }
+              mode="time"
+              onConfirm={(selectedDate) => {
+                setShowTimePicker(false);
+                const timeOnly = formatTime(selectedDate);
+                onHandleInputChange("reminderTime", timeOnly);
+              }}
+              onCancel={() => setShowTimePicker(false)}
+            />
 
             <Button
               className="max-w-sm"
