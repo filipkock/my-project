@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Alert, SafeAreaView, FlatList } from "react-native";
+import { View, Alert, SafeAreaView, FlatList } from "react-native";
 import { Agenda } from "react-native-calendars";
 import { getFromStorage } from "~/src/services/storage";
 import {
@@ -16,6 +16,7 @@ import moment from "moment";
 import { db } from "~/config/firebase";
 import MedicationCard from "~/components/custom/medicationCard";
 import { useTheme } from "@react-navigation/native";
+import { Text } from "~/components/ui/text";
 
 export default function MedicationList() {
   const [items, setItems] = useState<{ [date: string]: any[] }>({});
@@ -134,11 +135,11 @@ export default function MedicationList() {
       });
 
       // 🔹 Step 4: Merge reminders with corresponding medication details
-      const newItems: { [date: string]: any[] } = { [dayString]: [] };
+      const rawItems: any[] = [];
 
       remindersData.forEach((reminder) => {
         const medication = medicationsMap[reminder.medId] || {};
-        newItems[dayString].push({
+        rawItems.push({
           medDocID: reminder.medId,
           medicationName: medication.medicationName || "Unknown",
           medicationType: medication.medicationType || "Unknown",
@@ -149,8 +150,26 @@ export default function MedicationList() {
         });
       });
 
-      // 🔹 Step 5: Update state
-      setItems(newItems);
+      // 🔹 Step 5: Group by reminderTime and add showTimeHeader
+      const groupedByTime: { [key: string]: any[] } = rawItems.reduce(
+        (acc, item) => {
+          acc[item.reminderTime] = acc[item.reminderTime] || [];
+          acc[item.reminderTime].push(item);
+          return acc;
+        },
+        {}
+      );
+
+      const flattened: any[] = Object.entries(groupedByTime).flatMap(
+        ([time, group]) =>
+          group.map((item, index) => ({
+            ...item,
+            showTimeHeader: index === 0,
+          }))
+      );
+
+      // 🔹 Step 6: Update state
+      setItems({ [dayString]: flattened });
     } catch (error) {
       console.error("Error fetching medication for day:", error);
     }
@@ -198,6 +217,7 @@ export default function MedicationList() {
             reservationsBackgroundColor: colors.background,
             dayTextColor: colors.primary,
             monthTextColor: colors.primary,
+            dotColor: colors.primary,
           }}
           items={items}
           markedDates={markedDates}
@@ -207,9 +227,9 @@ export default function MedicationList() {
           onDayPress={handleDayPress}
           onMonthChange={handleMonthChange}
           renderItem={(item: any) => (
-            <View>
-              {item?.showTimeHeader && (
-                <Text style={{ fontWeight: "bold", marginBottom: 4 }}>
+            <View className="m-10">
+              {item.showTimeHeader && (
+                <Text className="text-4xl font-bold mb-4">
                   {item.reminderTime}
                 </Text>
               )}

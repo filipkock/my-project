@@ -7,6 +7,7 @@ import { getFromStorage } from "~/src/services/storage";
 import { collection, query, Timestamp } from "firebase/firestore";
 import { db } from "~/config/firebase";
 import { useState } from "react";
+import { Circle } from "~/lib/icons/Circle";
 
 interface Medication {
   medicationName: string;
@@ -31,30 +32,26 @@ const medicationCard = ({
     onTakeMedication(medication.reminderDocID);
   };
   return (
-    <View className="m-6">
-      <Card className="w-full rounded-2xl">
-        <CardHeader>
-          <CardTitle>{medication.medicationName}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Text className="text-base mb-5">
-            Type: {medication.medicationType}
+    <View className="w-full">
+      <Card className="w-full flex flex-row items-center p-6 gap-4">
+        {status === "pending" && (
+          <Circle
+            size={32}
+            className="text-primary"
+            onPress={() => handleTakeMedication()}
+          />
+        )}
+        {status === "taken" && (
+          <Text className="font-bold">Status: Medication has been taken</Text>
+        )}
+        <CardContent className="p-0">
+          <Text className="text-2xl font-bold mb-2">
+            {medication.medicationName}
           </Text>
-          <Text className="text-base mb-5">Take: {medication.whenToTake}</Text>
-          <Text className="text-base mb-5">
-            Time: {medication.reminderTime}
-          </Text>
-          {status === "pending" && (
-            <Button
-              className="flex-1 flex-row gap-2"
-              onPress={() => handleTakeMedication()}
-            >
-              <Text>Take medication</Text>
-            </Button>
-          )}
-          {status === "taken" && (
-            <Text className="font-bold">Status: Medication has been taken</Text>
-          )}
+          <View className="flex-row gap-4">
+            <Text>Type: {medication.medicationType}</Text>
+            <Text>Take: {medication.whenToTake}</Text>
+          </View>
         </CardContent>
       </Card>
     </View>
