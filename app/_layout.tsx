@@ -16,6 +16,11 @@ import { setAndroidNavigationBar } from "~/lib/android-navigation-bar";
 import { AuthProvider } from "../src/context/auth";
 import { NotificationProvider } from "~/src/context/notificationsContext";
 import * as Notifications from "expo-notifications";
+import {
+  useFonts,
+  Poppins_400Regular,
+  Poppins_700Bold,
+} from "@expo-google-fonts/poppins";
 
 // ==== react native reusables theme setup ====
 const LIGHT_THEME: Theme = {
@@ -36,6 +41,10 @@ export {
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    Poppins: Poppins_400Regular,
+    PoppinsBold: Poppins_700Bold,
+  });
   const { colorScheme, setColorScheme, isDarkColorScheme } = useColorScheme();
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
 
@@ -60,12 +69,16 @@ export default function RootLayout() {
       }
       setAndroidNavigationBar(colorTheme);
       setIsColorSchemeLoaded(true);
-    })().finally(() => {
-      SplashScreen.hideAsync();
-    });
+    })();
   }, []);
 
-  if (!isColorSchemeLoaded) {
+  React.useEffect(() => {
+    if (fontsLoaded && isColorSchemeLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, isColorSchemeLoaded]);
+
+  if (!isColorSchemeLoaded || !fontsLoaded) {
     return null;
   }
 

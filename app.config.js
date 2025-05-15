@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import "dotenv/config";
 
 export default {
   expo: {
@@ -13,11 +13,9 @@ export default {
     splash: {
       image: "./assets/images/splash.png",
       resizeMode: "contain",
-      backgroundColor: "#ffffff"
+      backgroundColor: "#ffffff",
     },
-    assetBundlePatterns: [
-      "**/*"
-    ],
+    assetBundlePatterns: ["**/*"],
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.filiplee.starterbase",
@@ -25,7 +23,7 @@ export default {
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
-        backgroundColor: "#ffffff"
+        backgroundColor: "#ffffff",
       },
       package: "com.filiplee.starterbase",
       googleServicesFile: "./google-services.json",
@@ -33,27 +31,25 @@ export default {
     web: {
       bundler: "metro",
       output: "static",
-      favicon: "./assets/images/favicon.png"
+      favicon: "./assets/images/favicon.png",
     },
-    plugins: [
-      "expo-router"
-    ],
+    plugins: ["expo-router", "expo-font"],
     experiments: {
-      typedRoutes: true
+      typedRoutes: true,
     },
     extra: {
       router: {
-        origin: false
+        origin: false,
       },
       eas: {
-        projectId: "a4dd93bc-601f-4b93-82f7-04d3eb7197b0"
+        projectId: "a4dd93bc-601f-4b93-82f7-04d3eb7197b0",
       },
       apiKey: process.env.API_KEY,
       authDomain: process.env.AUTH_DOMAIN,
       projectId: process.env.PROJECT_ID,
       storageBucket: process.env.STORAGE_BUCKET,
       messagingSenderId: process.env.MESSAGING_SENDER_ID,
-      appId: process.env.APP_ID,      
-    }
-  }
-}
+      appId: process.env.APP_ID,
+    },
+  },
+};
