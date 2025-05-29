@@ -44,15 +44,18 @@ const medicationCard = ({
         {status === "taken" && (
           <Text className="font-bold">Status: Medication has been taken</Text>
         )}
-        <CardContent className="p-0">
-          <Text className="text-2xl font-bold mb-2">
-            {medication.medicationName}
-          </Text>
-          <View className="flex-row gap-4">
-            <Text>Type: {medication.medicationType}</Text>
-            <Text>Take: {medication.whenToTake}</Text>
-          </View>
-        </CardContent>
+        {status !== "taken" && (
+          <CardContent className="p-0">
+            <Text className="font-bold text-lg mb-2">
+              {medication.medicationName}
+            </Text>
+            <View className="flex-row gap-3 items-center">
+              <Text className="text-gray-500">{medication.medicationType}</Text>
+              <View className="w-1 h-1 rounded-full bg-gray-500" />
+              <Text className="text-gray-500">{medication.whenToTake}</Text>
+            </View>
+          </CardContent>
+        )}
       </Card>
     </View>
   );

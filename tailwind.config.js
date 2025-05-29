@@ -7,9 +7,9 @@ module.exports = {
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
+      /* ONE base family — everything else is done with font-weight utilities */
       fontFamily: {
-        poppins: ["Poppins"], // for regular
-        poppinsBold: ["PoppinsBold"], // for bold (optional)
+        poppins: ["Poppins"], // use with className="font-poppins"
       },
       colors: {
         border: "hsl(var(--border))",

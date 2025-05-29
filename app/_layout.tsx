@@ -17,9 +17,13 @@ import { AuthProvider } from "../src/context/auth";
 import { NotificationProvider } from "~/src/context/notificationsContext";
 import * as Notifications from "expo-notifications";
 import {
-  useFonts,
+  Poppins_300Light,
   Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
   Poppins_700Bold,
+  Poppins_800ExtraBold,
+  useFonts,
 } from "@expo-google-fonts/poppins";
 
 // ==== react native reusables theme setup ====
@@ -42,8 +46,16 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Poppins: Poppins_400Regular,
+    /* PostScript names — needed by Agenda */
+    PoppinsLight: Poppins_300Light,
+    PoppinsRegular: Poppins_400Regular,
+    PoppinsMedium: Poppins_500Medium,
+    PoppinsSemiBold: Poppins_600SemiBold,
     PoppinsBold: Poppins_700Bold,
+    PoppinsExtraBold: Poppins_800ExtraBold,
+
+    /* Generic family used by Tailwind / NativeWind */
+    Poppins: Poppins_400Regular, // base weight
   });
   const { colorScheme, setColorScheme, isDarkColorScheme } = useColorScheme();
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);

@@ -218,6 +218,12 @@ export default function MedicationList() {
             dayTextColor: colors.primary,
             monthTextColor: colors.primary,
             dotColor: colors.primary,
+            /* real PostScript names */
+            textDayFontFamily: "Poppins-Regular",
+            textDayHeaderFontFamily: "Poppins-Bold",
+            textMonthFontFamily: "Poppins-Bold",
+            agendaDayFontFamily: "Poppins-Regular",
+            agendaDayHeaderFontFamily: "Poppins-Bold",
           }}
           items={items}
           markedDates={markedDates}
@@ -227,9 +233,9 @@ export default function MedicationList() {
           onDayPress={handleDayPress}
           onMonthChange={handleMonthChange}
           renderItem={(item: any) => (
-            <View className="m-10">
+            <View className="mx-10 my-5">
               {item.showTimeHeader && (
-                <Text className="text-4xl font-bold mb-4">
+                <Text className="text-4xl font-semibold mb-4">
                   {item.reminderTime}
                 </Text>
               )}
