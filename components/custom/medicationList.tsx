@@ -225,7 +225,7 @@ export default function MedicationList() {
     });
   };
   // -------------------------------------------------------------------
-  // Tiny helpers
+  // Tiny helpers for handleTakeMedication
   // -------------------------------------------------------------------
   /** Convert Firestore Timestamp → JS Date */
   const tsToDate = (ts: Timestamp | { seconds: number }): Date =>
