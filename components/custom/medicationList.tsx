@@ -3,7 +3,6 @@ import {
   View,
   Alert,
   SafeAreaView,
-  FlatList,
   Platform,
   ActionSheetIOS,
 } from "react-native";
@@ -25,6 +24,18 @@ import MedicationCard from "~/components/custom/medicationCard";
 import { useTheme } from "@react-navigation/native";
 import { Text } from "~/components/ui/text";
 import DateTimePicker from "@react-native-community/datetimepicker";
+
+interface Medication {
+  medDocID: string;
+  medicationName: string;
+  medicationType: string;
+  reminderTime: string;
+  whenToTake: string;
+  status: string;
+  reminderDocID: string;
+  date: Timestamp;
+  scheduledTime?: Date | { seconds: number }; // optional cache
+}
 
 export default function MedicationList() {
   const [items, setItems] = useState<{ [date: string]: any[] }>({});
@@ -148,7 +159,7 @@ export default function MedicationList() {
       });
 
       // 🔹 Step 4: Merge reminders with corresponding medication details
-      const rawItems: any[] = [];
+      const rawItems: Medication[] = [];
 
       remindersData.forEach((reminder) => {
         const medication = medicationsMap[reminder.medId] || {};
@@ -160,17 +171,18 @@ export default function MedicationList() {
           whenToTake: reminder.whenToTake,
           status: reminder.status,
           reminderDocID: reminder.reminderDocID,
+          date: reminder.date,
         });
       });
 
       // 🔹 Step 5: Group by reminderTime and add showTimeHeader
-      const groupedByTime: { [key: string]: any[] } = rawItems.reduce(
-        (acc, item) => {
+      const groupedByTime = rawItems.reduce(
+        (acc: { [key: string]: any[] }, item) => {
           acc[item.reminderTime] = acc[item.reminderTime] || [];
           acc[item.reminderTime].push(item);
           return acc;
         },
-        {}
+        {} as { [key: string]: any[] }
       );
 
       const flattened: any[] = Object.entries(groupedByTime).flatMap(
@@ -223,140 +235,127 @@ export default function MedicationList() {
       setTimePickerVisible(true);
     });
   };
+  // -------------------------------------------------------------------
+  // Tiny helpers
+  // -------------------------------------------------------------------
+  /** Convert Firestore Timestamp → JS Date */
+  const tsToDate = (ts: Timestamp | { seconds: number }): Date =>
+    "toDate" in ts ? ts.toDate() : new Date(ts.seconds * 1000);
 
-  // Main handler for marking medication as taken
-  const handleTakeMedication = async (medication: any) => {
-    const now = new Date();
-
-    // --- Derive scheduledTime from reminderTime if missing ---
-    let scheduledDate: Date | null = null;
-    if (medication.scheduledTime) {
-      // Already present, normalize as before
-      const scheduledTime = medication.scheduledTime;
-      if (typeof scheduledTime === "object" && "seconds" in scheduledTime) {
-        scheduledDate = new Date(scheduledTime.seconds * 1000);
-      } else if (
-        typeof scheduledTime === "string" ||
-        typeof scheduledTime === "number"
-      ) {
-        scheduledDate = new Date(scheduledTime);
-      }
-    } else if (
-      medication.reminderTime &&
-      typeof medication.reminderTime === "string"
-    ) {
-      // Derive scheduledTime from reminderTime string (e.g., "15:28")
-      const [hours, minutes] = medication.reminderTime.split(":").map(Number);
-      if (
-        typeof hours === "number" &&
-        typeof minutes === "number" &&
-        !isNaN(hours) &&
-        !isNaN(minutes)
-      ) {
-        scheduledDate = new Date();
-        scheduledDate.setHours(hours, minutes, 0, 0);
-        medication.scheduledTime = scheduledDate;
-      } else {
-        console.warn(
-          "Invalid reminderTime format for medication:",
-          medication.reminderTime
-        );
-        Alert.alert(
-          "Error",
-          "This medication reminder has an invalid time format."
-        );
-        return;
-      }
+  /** Build (and memo-cache) the real scheduled date-time */
+  const getScheduledDate = (med: Medication): Date | null => {
+    // if we already computed once, reuse it
+    if (med.scheduledTime) {
+      return med.scheduledTime instanceof Date
+        ? med.scheduledTime
+        : new Date(med.scheduledTime.seconds * 1000);
     }
 
-    if (!scheduledDate || isNaN(scheduledDate.getTime())) {
-      console.warn("No valid scheduledTime for medication:", medication);
+    const base = tsToDate(med.date); // → local date representing that calendar day
+    const [h, m] = med.reminderTime.split(":").map(Number);
+
+    if (isNaN(h) || isNaN(m)) return null; // bad format (should never happen now)
+
+    base.setHours(h, m, 0, 0);
+    med.scheduledTime = base; // cache for later use
+    return base;
+  };
+
+  // -------------------------------------------------------------------
+  // Main handler for handleTakeMedication
+  // -------------------------------------------------------------------
+  const handleTakeMedication = async (med: Medication) => {
+    const now = new Date();
+    const scheduled = getScheduledDate(med);
+
+    if (!scheduled) {
       Alert.alert(
         "Error",
-        "This medication reminder is missing its scheduled time."
+        "This medication reminder has an invalid time format."
       );
       return;
     }
 
-    // Calculate time difference in minutes
-    const diff =
-      Math.abs(now.getTime() - scheduledDate.getTime()) / (1000 * 60);
+    const diffMinutes = Math.abs(now.getTime() - scheduled.getTime()) / 60000;
+    const isSameDay = scheduled.toDateString() === now.toDateString();
+    const withinOneHr = diffMinutes <= 60;
 
-    const saveAndNotify = async (takenTime: Date, onTime: boolean) => {
-      await markMedicationAsTaken(medication.reminderDocID, takenTime, onTime);
-      // Update UI reactively: update local state for instant feedback
+    // -----------------------------------------------------------------
+    // Helper that actually saves + updates local UI
+    // -----------------------------------------------------------------
+    const saveAndNotify = async (taken: Date, onTime: boolean) => {
+      await markMedicationAsTaken(med.reminderDocID, taken, onTime);
+
       setItems((prev) => {
         const updated = { ...prev };
-        Object.keys(updated).forEach((dateKey) => {
+        for (const dateKey in updated) {
           updated[dateKey] = updated[dateKey].map((item) =>
-            item.reminderDocID === medication.reminderDocID
-              ? {
-                  ...item,
-                  status: "taken",
-                  takenTime,
-                  onTime,
-                }
+            item.reminderDocID === med.reminderDocID
+              ? { ...item, status: "taken", takenTime: taken, onTime }
               : item
           );
-        });
+        }
         return updated;
       });
+
       if (onTime) showReward();
-      // Optionally: add a short animation or feedback here
-      // e.g. Alert.alert("Success", "Medication marked as taken!");
-      // fetchMedicationListForDay(selectedDate); // Not needed for instant UI, but can be kept for sync
     };
 
-    if (diff <= 60) {
-      // Taken within 1 hour window: mark as taken immediately, "on time"
-      console.debug(
-        "Medication taken on time without action sheet",
-        medication
-      );
+    // -----------------------------------------------------------------
+    // 1️⃣  Auto-mark ONLY if same calendar day  *and*  ≤ 60 min window
+    // -----------------------------------------------------------------
+    if (isSameDay && withinOneHr) {
       await saveAndNotify(now, true);
-    } else {
-      // Taken >1 hour early or late: show Action Sheet for user to choose
-      const options = ["Cancel", "On Time", "Now", "Set Time"];
-      const cancelButtonIndex = 0;
-      const handleAction = async (buttonIndex: number) => {
-        if (buttonIndex === 1) {
-          await saveAndNotify(scheduledDate!, true);
-        } else if (buttonIndex === 2) {
-          await saveAndNotify(now, false);
-        } else if (buttonIndex === 3) {
-          const picked = await openTimePicker(now);
-          if (picked) {
-            const baseDate = scheduledDate!;
-            const composed = new Date(
-              baseDate.getFullYear(),
-              baseDate.getMonth(),
-              baseDate.getDate(),
-              picked.getHours(),
-              picked.getMinutes(),
-              0,
-              0
-            );
-            const pickedDiff =
-              Math.abs(composed.getTime() - baseDate.getTime()) / (1000 * 60);
-            await saveAndNotify(composed, pickedDiff <= 60);
-          }
-        }
-      };
+      return;
+    }
 
-      if (Platform.OS === "ios") {
-        ActionSheetIOS.showActionSheetWithOptions(
-          { options, cancelButtonIndex },
-          handleAction
-        );
-      } else {
-        // Android: Use Alert as a simple ActionSheet alternative
-        Alert.alert("Mark as Taken", "Choose when you took your medication:", [
-          { text: "Cancel", style: "cancel" },
-          { text: "On Time", onPress: () => handleAction(1) },
-          { text: "Now", onPress: () => handleAction(2) },
-          { text: "Set Time", onPress: () => handleAction(3) },
-        ]);
+    // -----------------------------------------------------------------
+    // 2️⃣  Otherwise ask the user
+    // -----------------------------------------------------------------
+    const options = ["Cancel", "On Time", "Now", "Set Time"];
+    const cancelButtonIndex = 0;
+
+    const handleAction = async (index: number) => {
+      if (index === 1) {
+        // “On Time” → use scheduled date-time
+        await saveAndNotify(scheduled, true);
+      } else if (index === 2) {
+        // “Now” → late/early
+        await saveAndNotify(now, false);
+      } else if (index === 3) {
+        // “Set Time” → custom picker
+        const picked = await openTimePicker(now);
+        if (picked) {
+          const pickedDate = new Date(
+            scheduled.getFullYear(),
+            scheduled.getMonth(),
+            scheduled.getDate(),
+            picked.getHours(),
+            picked.getMinutes(),
+            0,
+            0
+          );
+
+          const onTime =
+            Math.abs(pickedDate.getTime() - scheduled.getTime()) / 60000 <= 60;
+
+          await saveAndNotify(pickedDate, onTime);
+        }
       }
+    };
+
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        { options, cancelButtonIndex },
+        handleAction
+      );
+    } else {
+      Alert.alert("Mark as Taken", "Choose when you took your medication:", [
+        { text: "Cancel", style: "cancel" },
+        { text: "On Time", onPress: () => handleAction(1) },
+        { text: "Now", onPress: () => handleAction(2) },
+        { text: "Set Time", onPress: () => handleAction(3) },
+      ]);
     }
   };
 

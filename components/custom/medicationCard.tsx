@@ -10,12 +10,15 @@ import { useState } from "react";
 import { Circle } from "~/lib/icons/Circle";
 
 interface Medication {
+  medDocID: string;
   medicationName: string;
   medicationType: string;
   reminderTime: string;
   whenToTake: string;
   status: string;
   reminderDocID: string;
+  date: Timestamp;
+  scheduledTime?: Date | { seconds: number }; // optional cache
 }
 
 const medicationCard = ({
@@ -23,13 +26,14 @@ const medicationCard = ({
   onTakeMedication,
 }: {
   medication: Medication;
-  onTakeMedication: (reminderDocID: string) => void;
+  onTakeMedication: (reminderDocID: Medication) => void;
 }) => {
   const [status, setStatus] = useState(medication.status);
 
   const handleTakeMedication = () => {
+    console.log("Taking medication:", medication);
     setStatus("taken");
-    onTakeMedication(medication.reminderDocID);
+    onTakeMedication(medication);
   };
   return (
     <View className="w-full">
