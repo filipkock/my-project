@@ -52,6 +52,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-native": "0.76.9",
+    "react-native-actionsheet": "^2.4.2",
     "react-native-calendars": "^1.1308.1",
     "react-native-date-picker": "^5.0.12",
     "react-native-reanimated": "~3.16.1",
@@ -69,6 +70,7 @@
     "@babel/core": "^7.26.0",
     "@types/node-fetch": "^2.6.12",
     "@types/react": "~18.3.12",
+    "@types/react-native-actionsheet": "^2.4.7",
     "typescript": "^5.8.2"
   },
   "private": true
