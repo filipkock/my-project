@@ -24,18 +24,7 @@ import MedicationCard from "~/components/custom/medicationCard";
 import { useTheme } from "@react-navigation/native";
 import { Text } from "~/components/ui/text";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
-interface Medication {
-  medDocID: string;
-  medicationName: string;
-  medicationType: string;
-  reminderTime: string;
-  whenToTake: string;
-  status: string;
-  reminderDocID: string;
-  date: Timestamp;
-  scheduledTime?: Date | { seconds: number }; // optional cache
-}
+import type { Medication } from "~/types/medication";
 
 export default function MedicationList() {
   const [items, setItems] = useState<{ [date: string]: any[] }>({});

@@ -1,25 +1,9 @@
 import { View } from "react-native";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { router } from "expo-router";
 import { Text } from "~/components/ui/text";
-import { getFromStorage } from "~/src/services/storage";
-import { collection, query, Timestamp } from "firebase/firestore";
-import { db } from "~/config/firebase";
 import { useState } from "react";
 import { Circle } from "~/lib/icons/Circle";
-
-interface Medication {
-  medDocID: string;
-  medicationName: string;
-  medicationType: string;
-  reminderTime: string;
-  whenToTake: string;
-  status: string;
-  reminderDocID: string;
-  date: Timestamp;
-  scheduledTime?: Date | { seconds: number }; // optional cache
-}
+import type { Medication } from "~/types/medication";
 
 const medicationCard = ({
   medication,
