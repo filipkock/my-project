@@ -18,10 +18,14 @@ const medicationCard = ({
   let takenTimeStr = "";
   if (medication.status === "taken" && medication.takenTime) {
     const taken =
-      typeof medication.takenTime === "object" && typeof medication.takenTime.toDate === "function"
+      typeof medication.takenTime === "object" &&
+      typeof medication.takenTime.toDate === "function"
         ? medication.takenTime.toDate()
         : new Date(medication.takenTime);
-    takenTimeStr = `${taken.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}, ${taken.toLocaleDateString()}`;
+    takenTimeStr = `${taken.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}, ${taken.toLocaleDateString()}`;
   }
 
   return (
@@ -38,7 +42,7 @@ const medicationCard = ({
           <Text className="font-bold">
             Status: Medication has been taken {takenTimeStr}
             {typeof medication.onTime === "boolean" && (
-              <> ({medication.onTime ? "on time" : "not on time"})</>
+              <Text>({medication.onTime ? "on time" : "not on time"})</Text>
             )}
           </Text>
         )}

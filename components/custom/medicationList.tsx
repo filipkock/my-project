@@ -5,6 +5,8 @@ import {
   SafeAreaView,
   Platform,
   ActionSheetIOS,
+  Modal,
+  Pressable,
 } from "react-native";
 import { Agenda } from "react-native-calendars";
 import { getFromStorage } from "~/src/services/storage";
@@ -23,7 +25,7 @@ import { db } from "~/config/firebase";
 import MedicationCard from "~/components/custom/medicationCard";
 import { useTheme } from "@react-navigation/native";
 import { Text } from "~/components/ui/text";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePickerModal from "~/components/custom/DateTimePickerModal";
 import type { Medication } from "~/types/medication";
 
 export default function MedicationList() {
@@ -37,6 +39,13 @@ export default function MedicationList() {
   const [timePickerInitial, setTimePickerInitial] = useState<Date>(new Date());
   const [timePickerCallback, setTimePickerCallback] = useState<
     null | ((date: Date) => void)
+  >(null);
+  const [dateTimePickerVisible, setDateTimePickerVisible] = useState(false);
+  const [dateTimePickerValue, setDateTimePickerValue] = useState<Date>(
+    new Date()
+  );
+  const [dateTimePickerCallback, setDateTimePickerCallback] = useState<
+    null | ((date: Date | null) => void)
   >(null);
   const { colors } = useTheme();
 
@@ -219,14 +228,15 @@ export default function MedicationList() {
     // ...show reward UI...
   };
 
-  // Helper: Open native time picker and return selected Date (time only)
-  const openTimePicker = (initialDate: Date): Promise<Date | null> => {
+  // Helper: Open a modal date+time picker for both Android and iOS
+  const openDateTimePicker = (initialDate: Date): Promise<Date | null> => {
     return new Promise((resolve) => {
-      setTimePickerInitial(initialDate);
-      setTimePickerCallback(() => (date: Date) => resolve(date));
-      setTimePickerVisible(true);
+      setDateTimePickerValue(initialDate);
+      setDateTimePickerCallback(() => (date: Date | null) => resolve(date));
+      setDateTimePickerVisible(true);
     });
   };
+
   // -------------------------------------------------------------------
   // Tiny helpers for handleTakeMedication
   // -------------------------------------------------------------------
@@ -309,29 +319,18 @@ export default function MedicationList() {
 
     const handleAction = async (index: number) => {
       if (index === 1) {
-        // “On Time” → use scheduled date-time
         await saveAndNotify(scheduled, true);
       } else if (index === 2) {
-        // “Now” → late/early
         await saveAndNotify(now, false);
       } else if (index === 3) {
-        // “Set Time” → custom picker
-        const picked = await openTimePicker(now);
+        // Use the new date+time picker modal
+        // Pass the scheduled date as the initial value, so the picker starts on the correct day
+        const picked = await openDateTimePicker(scheduled);
         if (picked) {
-          const pickedDate = new Date(
-            scheduled.getFullYear(),
-            scheduled.getMonth(),
-            scheduled.getDate(),
-            picked.getHours(),
-            picked.getMinutes(),
-            0,
-            0
-          );
-
+          // Use the picked date and time as-is (includes both date and time)
           const onTime =
-            Math.abs(pickedDate.getTime() - scheduled.getTime()) / 60000 <= 60;
-
-          await saveAndNotify(pickedDate, onTime);
+            Math.abs(picked.getTime() - scheduled.getTime()) / 60000 <= 60;
+          await saveAndNotify(picked, onTime);
         }
       }
     };
@@ -371,20 +370,15 @@ export default function MedicationList() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
-        {/* Time Picker Modal (iOS/Android) */}
-        {timePickerVisible && (
-          <DateTimePicker
-            value={timePickerInitial}
-            mode="time"
-            is24Hour={true}
-            display={Platform.OS === "ios" ? "spinner" : "default"}
-            onChange={(event, date) => {
-              setTimePickerVisible(false);
-              if (date && timePickerCallback) timePickerCallback(date);
-            }}
-            // Only show time picker, not date
-          />
-        )}
+        <DateTimePickerModal
+          visible={dateTimePickerVisible}
+          value={dateTimePickerValue}
+          onChange={(date) => {
+            setDateTimePickerVisible(false);
+            if (dateTimePickerCallback) dateTimePickerCallback(date);
+          }}
+          onRequestClose={() => setDateTimePickerVisible(false)}
+        />
         <Agenda
           theme={{
             calendarBackground: colors.background,
