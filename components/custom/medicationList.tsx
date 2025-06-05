@@ -161,6 +161,9 @@ export default function MedicationList() {
           status: reminder.status,
           reminderDocID: reminder.reminderDocID,
           date: reminder.date,
+          takenTime: reminder.takenTime,
+          ...(reminder.takenTime && { takenTime: reminder.takenTime }),
+          ...(reminder.onTime && { onTime: reminder.onTime }),
         });
       });
 
@@ -280,7 +283,7 @@ export default function MedicationList() {
         for (const dateKey in updated) {
           updated[dateKey] = updated[dateKey].map((item) =>
             item.reminderDocID === med.reminderDocID
-              ? { ...item, status: "taken", takenTime: taken, onTime }
+              ? { ...item, status: "taken", takenTime: taken, onTime: onTime }
               : item
           );
         }
@@ -415,18 +418,6 @@ export default function MedicationList() {
                 medication={item}
                 onTakeMedication={() => handleTakeMedication(item)}
               />
-              {/* Show taken status if available */}
-              {item.takenTime && (
-                <Text className="mt-2">
-                  Taken at{" "}
-                  {moment(
-                    item.takenTime.toDate
-                      ? item.takenTime.toDate()
-                      : item.takenTime
-                  ).format("HH:mm")}{" "}
-                  ({item.onTime ? "on time" : "not on time"})
-                </Text>
-              )}
             </View>
           )}
           renderDay={(day: any, item: any) => {

@@ -12,4 +12,6 @@ export interface Medication {
   reminderDocID: string;
   date: Timestamp;
   scheduledTime?: Date | { seconds: number };
+  takenTime?: any;
+  onTime?: boolean;
 }

@@ -1,7 +1,6 @@
 import { View } from "react-native";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import { Text } from "~/components/ui/text";
-import { useState } from "react";
 import { Circle } from "~/lib/icons/Circle";
 import type { Medication } from "~/types/medication";
 
@@ -12,27 +11,38 @@ const medicationCard = ({
   medication: Medication;
   onTakeMedication: (reminderDocID: Medication) => void;
 }) => {
-  const [status, setStatus] = useState(medication.status);
-
   const handleTakeMedication = () => {
-    console.log("Taking medication:", medication);
-    setStatus("taken");
     onTakeMedication(medication);
   };
+
+  let takenTimeStr = "";
+  if (medication.status === "taken" && medication.takenTime) {
+    const taken =
+      typeof medication.takenTime === "object" && typeof medication.takenTime.toDate === "function"
+        ? medication.takenTime.toDate()
+        : new Date(medication.takenTime);
+    takenTimeStr = `${taken.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}, ${taken.toLocaleDateString()}`;
+  }
+
   return (
     <View className="w-full">
       <Card className="w-full flex flex-row items-center p-6 gap-4">
-        {status === "pending" && (
+        {medication.status === "pending" && (
           <Circle
             size={32}
             className="text-primary"
-            onPress={() => handleTakeMedication()}
+            onPress={handleTakeMedication}
           />
         )}
-        {status === "taken" && (
-          <Text className="font-bold">Status: Medication has been taken</Text>
+        {medication.status === "taken" && (
+          <Text className="font-bold">
+            Status: Medication has been taken {takenTimeStr}
+            {typeof medication.onTime === "boolean" && (
+              <> ({medication.onTime ? "on time" : "not on time"})</>
+            )}
+          </Text>
         )}
-        {status !== "taken" && (
+        {medication.status !== "taken" && (
           <CardContent className="p-0">
             <Text className="font-bold text-lg mb-2">
               {medication.medicationName}
