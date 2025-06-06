@@ -26,23 +26,49 @@ export default function MedicationDetails() {
 
   const fetchLastTakenReminder = async () => {
     try {
+      // Calculate the current reminder's scheduled datetime
+      const scheduledTime = medData.date.toDate();
+      const [hours, minutes] = medData.reminderTime.split(":").map(Number);
+      scheduledTime.setHours(hours, minutes, 0, 0);
+
+      // Query all taken reminders for this medication
       const remindersRef = collection(db, "reminders");
       const q = query(
         remindersRef,
         where("medId", "==", medData.medDocID),
         where("status", "==", "taken"),
-        orderBy("takenTime", "desc"),
-        limit(1)
+        orderBy("takenTime", "desc")
       );
 
       const querySnapshot = await getDocs(q);
       
       if (!querySnapshot.empty) {
-        const lastReminder = querySnapshot.docs[0].data();
-        const takenTime = lastReminder.takenTime.toDate();
-        const formattedTime = moment(takenTime).format("HH:mm");
-        const formattedDate = moment(takenTime).format("MMMM D");
-        setLastTakenInfo(`Last taken at ${formattedTime} on ${formattedDate}`);
+        // Find the most recent reminder that was taken before the current scheduled time
+        let closestReminder = null;
+        let minTimeDiff = Infinity;
+
+        querySnapshot.forEach((doc) => {
+          const reminder = doc.data();
+          const takenTime = reminder.takenTime.toDate();
+          
+          // Only consider reminders taken before the current scheduled time
+          if (takenTime < scheduledTime) {
+            const timeDiff = scheduledTime.getTime() - takenTime.getTime();
+            if (timeDiff < minTimeDiff) {
+              minTimeDiff = timeDiff;
+              closestReminder = reminder;
+            }
+          }
+        });
+
+        if (closestReminder) {
+          const takenTime = closestReminder.takenTime.toDate();
+          const formattedTime = moment(takenTime).format("HH:mm");
+          const formattedDate = moment(takenTime).format("MMMM D");
+          setLastTakenInfo(`Previously taken at ${formattedTime} on ${formattedDate}`);
+        } else {
+          setLastTakenInfo(null);
+        }
       } else {
         setLastTakenInfo(null);
       }
