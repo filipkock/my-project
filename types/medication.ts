@@ -14,4 +14,7 @@ export interface Medication {
   scheduledTime?: Date | { seconds: number };
   takenTime?: any;
   onTime?: boolean;
+  dosageAmount?: number;
+  dosageUnit?: string;
+  dosageStrength?: string;
 }

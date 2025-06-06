@@ -1,9 +1,10 @@
 import React from "react";
-import { View } from "react-native";
+import { View, TouchableWithoutFeedback } from "react-native";
 import { Card, CardContent } from "~/components/ui/card";
 import { Text } from "~/components/ui/text";
 import { Circle } from "~/lib/icons/Circle";
 import type { Medication } from "~/types/medication";
+import { useRouter } from "expo-router";
 
 const medicationCard = ({
   medication,
@@ -12,8 +13,17 @@ const medicationCard = ({
   medication: Medication;
   onTakeMedication: (reminderDocID: Medication) => void;
 }) => {
+  const router = useRouter();
+
   const handleTakeMedication = () => {
     onTakeMedication(medication);
+  };
+
+  const handleCardPress = () => {
+    router.push({
+      pathname: "/(app)/(tabs)/(home)/details/details",
+      params: { medication: JSON.stringify(medication) }
+    });
   };
 
   let takenTimeStr = "";
@@ -39,27 +49,33 @@ const medicationCard = ({
               className="text-primary"
               onPress={handleTakeMedication}
             />
-            <CardContent className="p-0">
-              <Text className="font-bold text-lg mb-2">
-                {medication.medicationName}
-              </Text>
-              <View className="flex-row gap-3 items-center">
-                <Text className="text-gray-500">
-                  {medication.medicationType}
+            <TouchableWithoutFeedback onPress={handleCardPress}>
+              <CardContent className="p-0 flex-1">
+                <Text className="font-bold text-lg mb-2">
+                  {medication.medicationName}
                 </Text>
-                <View className="w-1 h-1 rounded-full bg-gray-500" />
-                <Text className="text-gray-500">{medication.whenToTake}</Text>
-              </View>
-            </CardContent>
+                <View className="flex-row gap-3 items-center">
+                  <Text className="text-gray-500">
+                    {medication.medicationType}
+                  </Text>
+                  <View className="w-1 h-1 rounded-full bg-gray-500" />
+                  <Text className="text-gray-500">{medication.whenToTake}</Text>
+                </View>
+              </CardContent>
+            </TouchableWithoutFeedback>
           </>
         )}
         {medication.status === "taken" && (
-          <Text className="font-bold">
-            Status: Medication has been taken {takenTimeStr}
-            {typeof medication.onTime !== undefined && (
-              <Text>({medication.onTime ? "on time" : "not on time"})</Text>
-            )}
-          </Text>
+          <TouchableWithoutFeedback onPress={handleCardPress}>
+            <View className="flex-1">
+              <Text className="font-bold">
+                Status: Medication has been taken {takenTimeStr}
+                {typeof medication.onTime !== undefined && (
+                  <Text>({medication.onTime ? "on time" : "not on time"})</Text>
+                )}
+              </Text>
+            </View>
+          </TouchableWithoutFeedback>
         )}
       </Card>
     </View>
