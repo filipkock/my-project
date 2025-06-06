@@ -7,6 +7,7 @@ import {
   ActionSheetIOS,
   Modal,
   Pressable,
+  ActivityIndicator,
 } from "react-native";
 import { Agenda } from "react-native-calendars";
 import { getFromStorage } from "~/src/services/storage";
@@ -28,6 +29,17 @@ import { Text } from "~/components/ui/text";
 import DateTimePickerModal from "~/components/custom/DateTimePickerModal";
 import type { Medication } from "~/types/medication";
 
+// Typescript rules
+type DayInput =
+  | string
+  | {
+      dateString: string;
+      day: number;
+      month: number;
+      year: number;
+      timestamp: number;
+    };
+
 export default function MedicationList() {
   const [items, setItems] = useState<{ [date: string]: any[] }>({});
   const [markedDates, setMarkedDates] = useState<{ [date: string]: any }>({});
@@ -35,11 +47,6 @@ export default function MedicationList() {
     moment().format("YYYY-MM-DD")
   );
   const [fetchedMonths, setFetchedMonths] = useState(new Set<string>());
-  const [timePickerVisible, setTimePickerVisible] = useState(false);
-  const [timePickerInitial, setTimePickerInitial] = useState<Date>(new Date());
-  const [timePickerCallback, setTimePickerCallback] = useState<
-    null | ((date: Date) => void)
-  >(null);
   const [dateTimePickerVisible, setDateTimePickerVisible] = useState(false);
   const [dateTimePickerValue, setDateTimePickerValue] = useState<Date>(
     new Date()
@@ -47,6 +54,7 @@ export default function MedicationList() {
   const [dateTimePickerCallback, setDateTimePickerCallback] = useState<
     null | ((date: Date | null) => void)
   >(null);
+  const [loading, setLoading] = React.useState<Boolean>(false);
   const { colors } = useTheme();
 
   useEffect(() => {
@@ -170,7 +178,6 @@ export default function MedicationList() {
           status: reminder.status,
           reminderDocID: reminder.reminderDocID,
           date: reminder.date,
-          takenTime: reminder.takenTime,
           ...(reminder.takenTime && { takenTime: reminder.takenTime }),
           ...(reminder.onTime && { onTime: reminder.onTime }),
         });
@@ -287,18 +294,7 @@ export default function MedicationList() {
     // -----------------------------------------------------------------
     const saveAndNotify = async (taken: Date, onTime: boolean) => {
       await markMedicationAsTaken(med.reminderDocID, taken, onTime);
-
-      setItems((prev) => {
-        const updated = { ...prev };
-        for (const dateKey in updated) {
-          updated[dateKey] = updated[dateKey].map((item) =>
-            item.reminderDocID === med.reminderDocID
-              ? { ...item, status: "taken", takenTime: taken, onTime: onTime }
-              : item
-          );
-        }
-        return updated;
-      });
+      await handleDayPress(selectedDate);
 
       if (onTime) showReward();
     };
@@ -351,9 +347,18 @@ export default function MedicationList() {
   };
 
   /** 🔹 Called when the user selects a day */
-  const handleDayPress = (day: any) => {
-    setSelectedDate(day.dateString);
-    fetchMedicationListForDay(day.dateString);
+  const handleDayPress = async (day: DayInput) => {
+    setLoading(true);
+
+    const dateString = typeof day === "string" ? day : day.dateString;
+    setItems((prev) => ({ ...prev, [dateString]: [] }));
+    setSelectedDate(dateString);
+
+    try {
+      await fetchMedicationListForDay(dateString); // Wait until this completes
+    } finally {
+      setLoading(false); // Always run this, even if fetch throws
+    }
   };
 
   /** 🔹 Called when the user switches months */
@@ -402,7 +407,7 @@ export default function MedicationList() {
           onDayPress={handleDayPress}
           onMonthChange={handleMonthChange}
           renderItem={(item: any) => (
-            <View className="mx-10 my-5">
+            <View key={item.reminderDocID} className="mx-10 my-5">
               {item.showTimeHeader && (
                 <Text className="text-4xl font-semibold mb-4">
                   {item.reminderTime}
@@ -419,7 +424,11 @@ export default function MedicationList() {
           }}
           renderEmptyDate={() => (
             <View style={{ margin: 10 }}>
-              <Text>No medication reminders today.</Text>
+              {loading ? (
+                <ActivityIndicator size="small" />
+              ) : (
+                <Text>No medication reminders today.</Text>
+              )}
             </View>
           )}
         />
