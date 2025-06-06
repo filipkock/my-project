@@ -5,11 +5,13 @@ import { Text } from "~/components/ui/text";
 import { Card } from "~/components/ui/card";
 import moment from "moment";
 import type { Medication } from "~/types/medication";
-import { Timestamp } from "firebase/firestore";
+import { Timestamp, collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { db } from "~/config/firebase";
 
 export default function MedicationDetails() {
   const { medication } = useLocalSearchParams<{ medication: string }>();
   const [status, setStatus] = useState<"TAKE NOW" | "PAST DOSE" | "FUTURE DOSE">("TAKE NOW");
+  const [lastTakenInfo, setLastTakenInfo] = useState<string | null>(null);
   
   const parsedData = JSON.parse(medication);
   const medData: Medication = {
@@ -19,7 +21,36 @@ export default function MedicationDetails() {
 
   useEffect(() => {
     calculateStatus();
+    fetchLastTakenReminder();
   }, [medData]);
+
+  const fetchLastTakenReminder = async () => {
+    try {
+      const remindersRef = collection(db, "reminders");
+      const q = query(
+        remindersRef,
+        where("medId", "==", medData.medDocID),
+        where("status", "==", "taken"),
+        orderBy("takenTime", "desc"),
+        limit(1)
+      );
+
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        const lastReminder = querySnapshot.docs[0].data();
+        const takenTime = lastReminder.takenTime.toDate();
+        const formattedTime = moment(takenTime).format("HH:mm");
+        const formattedDate = moment(takenTime).format("MMMM D");
+        setLastTakenInfo(`Last taken at ${formattedTime} on ${formattedDate}`);
+      } else {
+        setLastTakenInfo(null);
+      }
+    } catch (error) {
+      console.error("Error fetching last taken reminder:", error);
+      setLastTakenInfo(null);
+    }
+  };
 
   const calculateStatus = () => {
     const now = new Date();
@@ -68,12 +99,18 @@ export default function MedicationDetails() {
           <Text className="text-lg">{formatScheduledTime()}</Text>
         </Card>
 
-        <Card className="p-4">
+        <Card className="p-4 mb-4">
           <Text className="text-lg">
             Take {medData.dosageAmount || 1} {medData.dosageUnit || "pill"}
             {medData.dosageStrength ? `, ${medData.dosageStrength}` : ""}
           </Text>
         </Card>
+
+        {lastTakenInfo && (
+          <Card className="p-4">
+            <Text className="text-lg text-gray-600">{lastTakenInfo}</Text>
+          </Card>
+        )}
       </View>
     </ScrollView>
   );
