@@ -64,45 +64,45 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
     }
   }, [params.medication]);
 
-  const fetchReminderDotsForMonth = async (monthMoment: moment.Moment) => {
-    const monthKey = monthMoment.format("YYYY-MM");
-    if (fetchedMonths.has(monthKey)) return;
+  // const fetchReminderDotsForMonth = async (monthMoment: moment.Moment) => {
+  //   const monthKey = monthMoment.format("YYYY-MM");
+  //   if (fetchedMonths.has(monthKey)) return;
 
-    try {
-      const startOfMonth = Timestamp.fromDate(
-        monthMoment.clone().startOf("month").toDate()
-      );
-      const endOfMonth = Timestamp.fromDate(
-        monthMoment.clone().endOf("month").toDate()
-      );
+  //   try {
+  //     const startOfMonth = Timestamp.fromDate(
+  //       monthMoment.clone().startOf("month").toDate()
+  //     );
+  //     const endOfMonth = Timestamp.fromDate(
+  //       monthMoment.clone().endOf("month").toDate()
+  //     );
 
-      const newMarkedDates: { [date: string]: any } = {};
-      const userinfo = await getFromStorage("userDetails");
-      if (!userinfo) return;
+  //     const newMarkedDates: { [date: string]: any } = {};
+  //     const userinfo = await getFromStorage("userDetails");
+  //     if (!userinfo) return;
 
-      const remindersQuery = query(
-        collection(db, "reminders"),
-        where("date", ">=", startOfMonth),
-        where("date", "<=", endOfMonth),
-        where("uid", "==", userinfo.uid)
-      );
+  //     const remindersQuery = query(
+  //       collection(db, "reminders"),
+  //       where("date", ">=", startOfMonth),
+  //       where("date", "<=", endOfMonth),
+  //       where("uid", "==", userinfo.uid)
+  //     );
 
-      const remindersSnapshot = await getDocs(remindersQuery);
+  //     const remindersSnapshot = await getDocs(remindersQuery);
 
-      remindersSnapshot.forEach((doc) => {
-        const dateString = moment(doc.data().date.toDate()).format("YYYY-MM-DD");
-        newMarkedDates[dateString] = {
-          marked: true,
-          dots: [{ key: "reminder", color: "blue" }],
-        };
-      });
+  //     remindersSnapshot.forEach((doc) => {
+  //       const dateString = moment(doc.data().date.toDate()).format("YYYY-MM-DD");
+  //       newMarkedDates[dateString] = {
+  //         marked: true,
+  //         dots: [{ key: "reminder", color: "blue" }],
+  //       };
+  //     });
 
-      setMarkedDates((prev) => ({ ...prev, ...newMarkedDates }));
-      setFetchedMonths((prev) => new Set(prev).add(monthKey));
-    } catch (error) {
-      console.error("Error fetching reminder dots:", error);
-    }
-  };
+  //     setMarkedDates((prev) => ({ ...prev, ...newMarkedDates }));
+  //     setFetchedMonths((prev) => new Set(prev).add(monthKey));
+  //   } catch (error) {
+  //     console.error("Error fetching reminder dots:", error);
+  //   }
+  // };
 
   const fetchMedicationListForDay = async (dayString: string) => {
     try {
