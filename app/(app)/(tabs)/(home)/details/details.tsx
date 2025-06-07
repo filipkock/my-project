@@ -12,8 +12,18 @@ import {
   getScheduledDate, 
   handleTakeMedication, 
   handleUntakeMedication 
-} from "~/src/utils/medicationActions";
+} from "~/src/utils/medication";
 import DateTimePickerModal from "~/components/custom/DateTimePickerModal";
+
+interface ReminderData {
+  takenTime: Timestamp;
+  medId: string;
+  status: string;
+}
+
+interface LastTakenReminder {
+  takenTime: Timestamp;
+}
 
 export default function MedicationDetails() {
   const { medication } = useLocalSearchParams<{ medication: string }>();
@@ -59,22 +69,32 @@ export default function MedicationDetails() {
         setDateTimePickerVisible(false);
         resolve(date);
       };
-      // Store the callback in a ref or state if needed
-      // For now, we'll just use the modal's onChange prop
     });
   };
 
   const handleMedicationAction = async () => {
     if (localMed.status === "taken") {
       await handleUntakeMedication(localMed, {
-        onSuccess: (takenTime, onTime) => {
+        onSuccess: async (takenTime, onTime) => {
+          // Update local state with a new object
           setLocalMed(prev => ({
             ...prev,
             status: "pending",
             takenTime: null,
             onTime: null
           }));
-          fetchLastTakenReminder();
+          
+          // Refresh the last taken info
+          await fetchLastTakenReminder();
+          
+          // Update the parent component's state without navigation
+          const updatedMedication = {
+            ...localMed,
+            status: "pending",
+            takenTime: null,
+            onTime: null
+          };
+          router.setParams({ medication: JSON.stringify(updatedMedication) });
         },
         onError: (error) => {
           console.error("Error undoing medication:", error);
@@ -84,14 +104,26 @@ export default function MedicationDetails() {
       });
     } else {
       await handleTakeMedication(localMed, {
-        onSuccess: (takenTime, onTime) => {
+        onSuccess: async (takenTime, onTime) => {
+          // Update local state with a new object
           setLocalMed(prev => ({
             ...prev,
             status: "taken",
             takenTime: Timestamp.fromDate(takenTime),
             onTime: onTime
           }));
-          fetchLastTakenReminder();
+          
+          // Refresh the last taken info
+          await fetchLastTakenReminder();
+          
+          // Update the parent component's state without navigation
+          const updatedMedication = {
+            ...localMed,
+            status: "taken",
+            takenTime: Timestamp.fromDate(takenTime),
+            onTime: onTime
+          };
+          router.setParams({ medication: JSON.stringify(updatedMedication) });
         },
         onError: (error) => {
           console.error("Error marking medication as taken:", error);
@@ -133,11 +165,11 @@ export default function MedicationDetails() {
       
       if (!querySnapshot.empty) {
         // Find the most recent reminder that was taken before the current scheduled time
-        let closestReminder: { takenTime: Timestamp } | null = null;
+        let closestReminder: LastTakenReminder | null = null;
         let minTimeDiff = Infinity;
 
         querySnapshot.forEach((doc) => {
-          const data = doc.data();
+          const data = doc.data() as ReminderData;
           if (!data.takenTime || !(data.takenTime instanceof Timestamp)) return;
           
           const takenTime = data.takenTime.toDate();

@@ -5,7 +5,7 @@ import { Text } from "~/components/ui/text";
 import { Circle } from "~/lib/icons/Circle";
 import type { Medication } from "~/src/types/medication";
 import { useRouter } from "expo-router";
-import { handleTakeMedication, handleUntakeMedication } from "~/src/utils/medicationActions";
+import { handleTakeMedication, handleUntakeMedication } from "~/src/utils/medication";
 import { Alert } from "react-native";
 import { Timestamp } from "firebase/firestore";
 
