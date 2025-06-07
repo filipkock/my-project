@@ -27,7 +27,10 @@ import MedicationCard from "~/components/custom/medicationCard";
 import { useTheme } from "@react-navigation/native";
 import { Text } from "~/components/ui/text";
 import DateTimePickerModal from "~/components/custom/DateTimePickerModal";
-import type { Medication } from "~/types/medication";
+import type { Medication } from "~/src/types/medication";
+import { getScheduledDate } from "~/src/utils/medicationActions";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 
 // Typescript rules
 type DayInput =
@@ -40,7 +43,12 @@ type DayInput =
       timestamp: number;
     };
 
-export default function MedicationList() {
+interface MedicationListProps {
+  medications: Medication[];
+  onMedicationUpdate: (medication: Medication) => void;
+}
+
+export default function MedicationList({ medications, onMedicationUpdate }: MedicationListProps) {
   const [items, setItems] = useState<{ [date: string]: any[] }>({});
   const [markedDates, setMarkedDates] = useState<{ [date: string]: any }>({});
   const [selectedDate, setSelectedDate] = useState(
@@ -56,6 +64,7 @@ export default function MedicationList() {
   >(null);
   const [loading, setLoading] = React.useState<Boolean>(false);
   const { colors } = useTheme();
+  const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -208,142 +217,72 @@ export default function MedicationList() {
     }
   };
 
-  // Helper: Mark medication as taken in Firestore
-  const markMedicationAsTaken = async (
-    reminderDocID: string,
-    takenTime: Date,
-    onTime: boolean
-  ) => {
-    const user = await getFromStorage("userDetails");
-    if (!user?.email) return;
-    try {
-      const reminderRef = doc(db, `reminders`, reminderDocID);
-      // Ensure takenTime is stored as Firestore Timestamp
-      await updateDoc(reminderRef, {
-        status: "taken",
-        takenTime: Timestamp.fromDate(new Date(takenTime)),
-        onTime: !!onTime, // ensure boolean
-      });
-      // Optionally update local state/UI here
-    } catch (e) {
-      console.error("Error updating medication status:", e);
-    }
-  };
-
   // Placeholder: Show reward UI
   const showReward = () => {
     // ...show reward UI...
   };
 
   // Helper: Open a modal date+time picker for both Android and iOS
-  const openDateTimePicker = (initialDate: Date): Promise<Date | null> => {
+  const openDateTimePicker = (medication: Medication, initialDate: Date): Promise<Date | null> => {
     return new Promise((resolve) => {
+      setSelectedMedication(medication);
       setDateTimePickerValue(initialDate);
-      setDateTimePickerCallback(() => (date: Date | null) => resolve(date));
       setDateTimePickerVisible(true);
+      const handleChange = (date: Date | null) => {
+        setDateTimePickerVisible(false);
+        resolve(date);
+      };
+      // Store the callback in a ref or state if needed
+      // For now, we'll just use the modal's onChange prop
     });
   };
 
-  // -------------------------------------------------------------------
-  // Tiny helpers for handleTakeMedication
-  // -------------------------------------------------------------------
-  /** Convert Firestore Timestamp → JS Date */
-  const tsToDate = (ts: Timestamp | { seconds: number }): Date =>
-    "toDate" in ts ? ts.toDate() : new Date(ts.seconds * 1000);
-
-  /** Build (and memo-cache) the real scheduled date-time */
-  const getScheduledDate = (med: Medication): Date | null => {
-    // if we already computed once, reuse it
-    if (med.scheduledTime) {
-      return med.scheduledTime instanceof Date
-        ? med.scheduledTime
-        : new Date(med.scheduledTime.seconds * 1000);
+  const handleMedicationUpdate = async (medication: Medication) => {
+    try {
+      // Update the local state
+      onMedicationUpdate(medication);
+      
+      // Refresh the current day's medications
+      await fetchMedicationListForDay(selectedDate);
+    } catch (error) {
+      console.error("Error updating medication:", error);
+      // Still try to refresh the list even if the callback fails
+      await fetchMedicationListForDay(selectedDate);
     }
-
-    const base = tsToDate(med.date); // → local date representing that calendar day
-    const [h, m] = med.reminderTime.split(":").map(Number);
-
-    if (isNaN(h) || isNaN(m)) return null; // bad format (should never happen now)
-
-    base.setHours(h, m, 0, 0);
-    med.scheduledTime = base; // cache for later use
-    return base;
   };
 
-  // -------------------------------------------------------------------
-  // Main handler for handleTakeMedication
-  // -------------------------------------------------------------------
-  const handleTakeMedication = async (med: Medication) => {
+  const calculateStatus = (medication: Medication) => {
     const now = new Date();
-    const scheduled = getScheduledDate(med);
-
-    if (!scheduled) {
-      Alert.alert(
-        "Error",
-        "This medication reminder has an invalid time format."
-      );
-      return;
-    }
-
-    const diffMinutes = Math.abs(now.getTime() - scheduled.getTime()) / 60000;
-    const isSameDay = scheduled.toDateString() === now.toDateString();
-    const withinOneHr = diffMinutes <= 60;
-
-    // -----------------------------------------------------------------
-    // Helper that actually saves + updates local UI
-    // -----------------------------------------------------------------
-    const saveAndNotify = async (taken: Date, onTime: boolean) => {
-      await markMedicationAsTaken(med.reminderDocID, taken, onTime);
-      await handleDayPress(selectedDate);
-
-      if (onTime) showReward();
-    };
-
-    // -----------------------------------------------------------------
-    // 1️⃣  Auto-mark ONLY if same calendar day  *and*  ≤ 60 min window
-    // -----------------------------------------------------------------
-    if (isSameDay && withinOneHr) {
-      await saveAndNotify(now, true);
-      return;
-    }
-
-    // -----------------------------------------------------------------
-    // 2️⃣  Otherwise ask the user
-    // -----------------------------------------------------------------
-    const options = ["Cancel", "On Time", "Now", "Set Time"];
-    const cancelButtonIndex = 0;
-
-    const handleAction = async (index: number) => {
-      if (index === 1) {
-        await saveAndNotify(scheduled, true);
-      } else if (index === 2) {
-        await saveAndNotify(now, false);
-      } else if (index === 3) {
-        // Use the new date+time picker modal
-        // Pass the scheduled date as the initial value, so the picker starts on the correct day
-        const picked = await openDateTimePicker(scheduled);
-        if (picked) {
-          // Use the picked date and time as-is (includes both date and time)
-          const onTime =
-            Math.abs(picked.getTime() - scheduled.getTime()) / 60000 <= 60;
-          await saveAndNotify(picked, onTime);
-        }
-      }
-    };
-
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        { options, cancelButtonIndex },
-        handleAction
-      );
+    const scheduledTime = getScheduledDate(medication);
+    const isToday = moment(scheduledTime).isSame(now, 'day');
+    const isPast = now > scheduledTime;
+    
+    if (medication.status === "taken") {
+      return "TAKEN";
+    } else if (isToday) {
+      return "TAKE NOW";
+    } else if (isPast) {
+      return "PAST DOSE";
     } else {
-      Alert.alert("Mark as Taken", "Choose when you took your medication:", [
-        { text: "Cancel", style: "cancel" },
-        { text: "On Time", onPress: () => handleAction(1) },
-        { text: "Now", onPress: () => handleAction(2) },
-        { text: "Set Time", onPress: () => handleAction(3) },
-      ]);
+      return "FUTURE DOSE";
     }
+  };
+
+  const formatScheduledTime = (medication: Medication) => {
+    const scheduledTime = getScheduledDate(medication);
+    return moment(scheduledTime).format("h:mm A");
+  };
+
+  const formatTakenTime = (medication: Medication) => {
+    if (!medication.takenTime) return null;
+    const takenTime = medication.takenTime.toDate();
+    const scheduledTime = getScheduledDate(medication);
+    const diffMinutes = Math.abs(takenTime.getTime() - scheduledTime.getTime()) / 60000;
+    const isSameDay = takenTime.toDateString() === scheduledTime.toDateString();
+    const withinOneHr = diffMinutes <= 60;
+    const onTime = isSameDay && withinOneHr;
+
+    return `Taken at ${moment(takenTime).format("h:mm A")} ${onTime ? "(on time)" : "(late)"}`;
   };
 
   /** 🔹 Called when the user selects a day */
@@ -380,7 +319,9 @@ export default function MedicationList() {
           value={dateTimePickerValue}
           onChange={(date) => {
             setDateTimePickerVisible(false);
-            if (dateTimePickerCallback) dateTimePickerCallback(date);
+            if (date && selectedMedication) {
+              handleMedicationUpdate(selectedMedication);
+            }
           }}
           onRequestClose={() => setDateTimePickerVisible(false)}
         />
@@ -415,7 +356,8 @@ export default function MedicationList() {
               )}
               <MedicationCard
                 medication={item}
-                onTakeMedication={() => handleTakeMedication(item)}
+                onMedicationUpdate={handleMedicationUpdate}
+                openDateTimePicker={(date) => openDateTimePicker(item, date)}
               />
             </View>
           )}

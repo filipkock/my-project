@@ -3,20 +3,59 @@ import { View, TouchableWithoutFeedback } from "react-native";
 import { Card, CardContent } from "~/components/ui/card";
 import { Text } from "~/components/ui/text";
 import { Circle } from "~/lib/icons/Circle";
-import type { Medication } from "~/types/medication";
+import type { Medication } from "~/src/types/medication";
 import { useRouter } from "expo-router";
+import { handleTakeMedication, handleUntakeMedication } from "~/src/utils/medicationActions";
+import { Alert } from "react-native";
+import { Timestamp } from "firebase/firestore";
 
-const medicationCard = ({
-  medication,
-  onTakeMedication,
-}: {
+interface MedicationCardProps {
   medication: Medication;
-  onTakeMedication: (reminderDocID: Medication) => void;
-}) => {
+  onMedicationUpdate: (medication: Medication) => void;
+  openDateTimePicker: (date: Date) => Promise<Date | null>;
+}
+
+const MedicationCard = ({
+  medication,
+  onMedicationUpdate,
+  openDateTimePicker,
+}: MedicationCardProps) => {
   const router = useRouter();
 
-  const handleTakeMedication = () => {
-    onTakeMedication(medication);
+  const handleMedicationAction = async () => {
+    if (medication.status === "taken") {
+      await handleUntakeMedication(medication, {
+        onSuccess: (takenTime, onTime) => {
+          onMedicationUpdate({
+            ...medication,
+            status: "pending",
+            takenTime: null,
+            onTime: null
+          });
+        },
+        onError: (error) => {
+          console.error("Error undoing medication:", error);
+          Alert.alert("Error", "Failed to undo medication. Please try again.");
+        },
+        openDateTimePicker
+      });
+    } else {
+      await handleTakeMedication(medication, {
+        onSuccess: (takenTime, onTime) => {
+          onMedicationUpdate({
+            ...medication,
+            status: "taken",
+            takenTime: Timestamp.fromDate(takenTime),
+            onTime
+          });
+        },
+        onError: (error) => {
+          console.error("Error marking medication as taken:", error);
+          Alert.alert("Error", "Failed to mark medication as taken. Please try again.");
+        },
+        openDateTimePicker
+      });
+    }
   };
 
   const handleCardPress = () => {
@@ -27,12 +66,8 @@ const medicationCard = ({
   };
 
   let takenTimeStr = "";
-  if (medication.status === "taken" && medication.takenTime) {
-    const taken =
-      typeof medication.takenTime === "object" &&
-      typeof medication.takenTime.toDate === "function"
-        ? medication.takenTime.toDate()
-        : new Date(medication.takenTime);
+  if (medication.status === "taken" && medication.takenTime instanceof Timestamp) {
+    const taken = medication.takenTime.toDate();
     takenTimeStr = `${taken.toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
@@ -47,7 +82,7 @@ const medicationCard = ({
             <Circle
               size={32}
               className="text-primary"
-              onPress={handleTakeMedication}
+              onPress={handleMedicationAction}
             />
             <TouchableWithoutFeedback onPress={handleCardPress}>
               <CardContent className="p-0 flex-1">
@@ -82,4 +117,4 @@ const medicationCard = ({
   );
 };
 
-export default medicationCard;
+export default MedicationCard;
