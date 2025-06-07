@@ -196,20 +196,11 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
           : { ...item }
       ));
 
-      // Update streak if medication status changed
-      if (medication.status === 'taken' && typeof medication.onTime === 'boolean') {
-        const userinfo = await getFromStorage("userDetails");
-        if (userinfo) {
-          const newStreak = await updateStreak(userinfo.uid, medication.onTime);
-          setStreak(newStreak);
-        }
-      } else if (medication.status === 'pending' && medication.onTime === true) {
-        // If undoing a medication that was taken on time, recalculate streak
-        const userinfo = await getFromStorage("userDetails");
-        if (userinfo) {
-          const newStreak = await recalculateStreakFromFirestore(userinfo.uid);
-          setStreak(newStreak);
-        }
+      // Update streak state reactively
+      const userinfo = await getFromStorage("userDetails");
+      if (userinfo) {
+        const currentStreak = await getStreakFromFirestore(userinfo.uid);
+        setStreak(currentStreak);
       }
 
       // Refresh from server

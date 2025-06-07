@@ -79,16 +79,19 @@ export const updateStreak = async (
     const ref = doc(db, 'userStreaks', uid);
     const snap = await getDoc(ref);
 
-    // work out the new value
-    let newStreak = 0;
-    if (snap.exists()) {
-      const current = (snap.data() as UserStreakDoc).streak ?? 0;
-      newStreak = onTime ? current + 1 : 0;
-    } else if (onTime) {
-      newStreak = 1;
+    // Get current streak value
+    const currentStreak = snap.exists() ? (snap.data() as UserStreakDoc).streak ?? 0 : 0;
+    let newStreak = currentStreak;
+
+    if (onTime) {
+      // Increment streak if taken on time
+      newStreak = currentStreak + 1;
+    } else {
+      // Reset streak to 0 only if explicitly marked as not on time
+      newStreak = 0;
     }
 
-    // write back (always include uid so generic rule passes)
+    // Write back (always include uid so generic rule passes)
     if (snap.exists()) {
       await updateDoc(ref, { streak: newStreak, uid });
     } else {
@@ -103,7 +106,32 @@ export const updateStreak = async (
   }
 };
 
-/** Force-reset the user’s streak. */
+/** Decrement the streak by 1 when undoing an on-time medication. */
+export const decrementStreak = async (uid: string): Promise<number> => {
+  try {
+    const ref = doc(db, 'userStreaks', uid);
+    const snap = await getDoc(ref);
+
+    // Get current streak value
+    const currentStreak = snap.exists() ? (snap.data() as UserStreakDoc).streak ?? 0 : 0;
+    const newStreak = Math.max(0, currentStreak - 1); // Ensure streak doesn't go below 0
+
+    // Write back (always include uid so generic rule passes)
+    if (snap.exists()) {
+      await updateDoc(ref, { streak: newStreak, uid });
+    } else {
+      await setDoc(ref, { streak: newStreak, uid });
+    }
+
+    await AsyncStorage.setItem(STREAK_KEY, String(newStreak));
+    return newStreak;
+  } catch (err) {
+    console.error('Error decrementing streak:', err);
+    return 0;
+  }
+};
+
+/** Force-reset the user's streak. */
 export const resetStreak = async (uid: string): Promise<void> => {
   try {
     await setDoc(doc(db, 'userStreaks', uid), { streak: 0, uid }, { merge: true });

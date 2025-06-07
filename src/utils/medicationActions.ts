@@ -3,7 +3,7 @@ import moment from "moment";
 import type { Medication } from "~/src/types/medication";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "~/config/firebase";
-import { updateStreak, recalculateStreakFromFirestore } from "~/src/utils/streak";
+import { updateStreak, decrementStreak } from "~/src/utils/streak";
 import { getFromStorage } from "~/src/services/storage";
 
 /** Convert Firestore Timestamp → JS Date */
@@ -74,11 +74,11 @@ export const handleUntakeMedication = async (
       onTime: null,
     });
 
-    // If the medication was taken on time, recalculate the streak
+    // If the medication was taken on time, decrement the streak by 1
     if (medication.onTime === true) {
       const userinfo = await getFromStorage("userDetails");
       if (userinfo) {
-        await recalculateStreakFromFirestore(userinfo.uid);
+        await decrementStreak(userinfo.uid);
       }
     }
 
@@ -102,12 +102,10 @@ export const markMedicationAsTaken = async (
       onTime,
     });
 
-    // Update streak if medication was taken on time
-    if (onTime) {
-      const userinfo = await getFromStorage("userDetails");
-      if (userinfo) {
-        await updateStreak(userinfo.uid, true);
-      }
+    // Always update streak - increment if on time, reset to 0 if not on time
+    const userinfo = await getFromStorage("userDetails");
+    if (userinfo) {
+      await updateStreak(userinfo.uid, onTime);
     }
 
     callbacks.onSuccess(takenTime, onTime);

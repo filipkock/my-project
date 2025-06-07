@@ -9,6 +9,7 @@ export interface MedicationActionCallbacks {
   onSuccess: (takenTime: Date, onTime: boolean) => void;
   onError: (error: Error) => void;
   openDateTimePicker: (date: Date) => Promise<Date | null>;
+  showTakeMedicationSheet?: () => void;
 }
 
 export const getScheduledDate = (medication: Medication): Date => {
