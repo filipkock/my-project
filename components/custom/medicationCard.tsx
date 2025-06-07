@@ -1,32 +1,49 @@
 import React, { useState } from "react";
-import { View, TouchableWithoutFeedback } from "react-native";
-import { Card, CardContent } from "~/components/ui/card";
+import { View, TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import { Text } from "~/components/ui/text";
-import { Circle } from "~/lib/icons/Circle";
+import { Button } from "~/components/ui/button";
+import { CheckCircle, Clock } from "lucide-react-native";
 import type { Medication } from "~/src/types/medication";
-import { useRouter } from "expo-router";
-import { handleTakeMedication, handleUntakeMedication } from "~/src/utils/medication";
-import { Alert } from "react-native";
-import { Timestamp } from "firebase/firestore";
-import UndoMedicationModal from "./UndoMedicationModal";
+import { handleTakeMedication, handleUntakeMedication } from "~/src/utils/medicationActions";
+import { getScheduledDate } from "~/src/utils/medicationActions";
+import TakeMedicationSheet from "./TakeMedicationSheet";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { Card, CardContent } from '~/components/ui/card';
+import { Circle } from '~/lib/icons/Circle';
+import { useRouter } from 'expo-router';
+import { Timestamp } from 'firebase/firestore';
+import { markMedicationAsTaken } from "~/src/utils/medicationActions";
 
 interface MedicationCardProps {
   medication: Medication;
   onMedicationUpdate: (medication: Medication) => void;
-  openDateTimePicker: (date: Date) => Promise<Date | null>;
 }
 
-const MedicationCard = ({
+const MedicationCard: React.FC<MedicationCardProps> = ({
   medication,
   onMedicationUpdate,
-  openDateTimePicker,
-}: MedicationCardProps) => {
+}) => {
   const router = useRouter();
-  const [showUndoModal, setShowUndoModal] = useState(false);
+  const [isTakeSheetVisible, setIsTakeSheetVisible] = useState(false);
+  const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
 
   const handleMedicationAction = async () => {
     if (medication.status === "taken") {
-      setShowUndoModal(true);
+      await handleUntakeMedication(medication, {
+        onSuccess: (takenTime, onTime) => {
+          onMedicationUpdate({
+            ...medication,
+            status: "pending",
+            takenTime: null,
+            onTime: null
+          });
+        },
+        onError: (error) => {
+          console.error('Error undoing medication:', error);
+        },
+        openDateTimePicker: async () => null,
+        showTakeMedicationSheet: () => {},
+      });
     } else {
       await handleTakeMedication(medication, {
         onSuccess: (takenTime, onTime) => {
@@ -38,53 +55,107 @@ const MedicationCard = ({
           });
         },
         onError: (error) => {
-          console.error("Error marking medication as taken:", error);
-          Alert.alert("Error", "Failed to mark medication as taken. Please try again.");
+          console.error('Error marking medication as taken:', error);
         },
-        openDateTimePicker
+        openDateTimePicker: async (date: Date) => {
+          setIsDateTimePickerVisible(true);
+          return new Promise<Date | null>((resolve) => {
+            const handleDatePicked = (pickedDate: Date) => {
+              setIsDateTimePickerVisible(false);
+              resolve(pickedDate);
+            };
+            // @ts-ignore
+            window.handleDatePicked = handleDatePicked;
+          });
+        },
+        showTakeMedicationSheet: () => {
+          setIsTakeSheetVisible(true);
+        },
       });
     }
   };
 
-  const handleUndoConfirm = async () => {
-    setShowUndoModal(false);
-    await handleUntakeMedication(medication, {
-      onSuccess: (takenTime, onTime) => {
+  const handleTakeOnTime = async () => {
+    const scheduledTime = getScheduledDate(medication);
+    await markMedicationAsTaken(medication, scheduledTime, true, {
+      onSuccess: (takenTime: Date, onTime: boolean) => {
         onMedicationUpdate({
           ...medication,
-          status: "pending",
-          takenTime: null,
-          onTime: null
+          status: "taken",
+          takenTime: Timestamp.fromDate(takenTime),
+          onTime
         });
       },
-      onError: (error) => {
-        console.error("Error undoing medication:", error);
-        Alert.alert("Error", "Failed to undo medication. Please try again.");
+      onError: (error: Error) => {
+        console.error('Error marking medication as taken:', error);
       },
-      openDateTimePicker
+      openDateTimePicker: async () => null,
+      showTakeMedicationSheet: () => {},
     });
+    setIsTakeSheetVisible(false);
+  };
+
+  const handleTakeNow = async () => {
+    const now = new Date();
+    await markMedicationAsTaken(medication, now, false, {
+      onSuccess: (takenTime: Date, onTime: boolean) => {
+        onMedicationUpdate({
+          ...medication,
+          status: "taken",
+          takenTime: Timestamp.fromDate(takenTime),
+          onTime
+        });
+      },
+      onError: (error: Error) => {
+        console.error('Error marking medication as taken:', error);
+      },
+      openDateTimePicker: async () => null,
+      showTakeMedicationSheet: () => {},
+    });
+    setIsTakeSheetVisible(false);
+  };
+
+  const handleSetTime = async (date: Date) => {
+    const scheduledTime = getScheduledDate(medication);
+    const isOnTime = Math.abs(date.getTime() - scheduledTime.getTime()) <= 60 * 60 * 1000; // Within 1 hour
+    await markMedicationAsTaken(medication, date, isOnTime, {
+      onSuccess: (takenTime: Date, onTime: boolean) => {
+        onMedicationUpdate({
+          ...medication,
+          status: "taken",
+          takenTime: Timestamp.fromDate(takenTime),
+          onTime
+        });
+      },
+      onError: (error: Error) => {
+        console.error('Error marking medication as taken:', error);
+      },
+      openDateTimePicker: async () => null,
+      showTakeMedicationSheet: () => {},
+    });
+    setIsTakeSheetVisible(false);
   };
 
   const handleCardPress = () => {
     router.push({
-      pathname: "/(app)/(tabs)/(home)/details/details",
+      pathname: '/(app)/(tabs)/(home)/details/details',
       params: { medication: JSON.stringify(medication) }
     });
   };
 
-  let takenTimeStr = "";
-  if (medication.status === "taken" && medication.takenTime instanceof Timestamp) {
+  let takenTimeStr = '';
+  if (medication.status === 'taken' && medication.takenTime instanceof Timestamp) {
     const taken = medication.takenTime.toDate();
     takenTimeStr = `${taken.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
+      hour: '2-digit',
+      minute: '2-digit',
     })}, ${taken.toLocaleDateString()}`;
   }
 
   return (
     <View className="w-full">
       <Card className="w-full flex flex-row items-center p-6 gap-4">
-        {medication.status === "pending" && (
+        {medication.status === 'pending' && (
           <>
             <Circle
               size={32}
@@ -107,13 +178,13 @@ const MedicationCard = ({
             </TouchableWithoutFeedback>
           </>
         )}
-        {medication.status === "taken" && (
+        {medication.status === 'taken' && (
           <TouchableWithoutFeedback onPress={handleCardPress}>
             <View className="flex-1">
               <Text className="font-bold">
                 Status: Medication has been taken {takenTimeStr}
                 {typeof medication.onTime !== undefined && (
-                  <Text> ({medication.onTime ? "on time" : "not on time"})</Text>
+                  <Text> ({medication.onTime ? 'on time' : 'not on time'})</Text>
                 )}
               </Text>
             </View>
@@ -121,10 +192,24 @@ const MedicationCard = ({
         )}
       </Card>
 
-      <UndoMedicationModal
-        visible={showUndoModal}
-        onConfirm={handleUndoConfirm}
-        onCancel={() => setShowUndoModal(false)}
+      <TakeMedicationSheet
+        visible={isTakeSheetVisible}
+        onDismiss={() => setIsTakeSheetVisible(false)}
+        medication={medication}
+        onTakeOnTime={handleTakeOnTime}
+        onTakeNow={handleTakeNow}
+        onSetTime={handleSetTime}
+      />
+
+      <DateTimePickerModal
+        isVisible={isDateTimePickerVisible}
+        mode="datetime"
+        onConfirm={(date: Date) => {
+          setIsDateTimePickerVisible(false);
+          // @ts-ignore
+          window.handleDatePicked(date);
+        }}
+        onCancel={() => setIsDateTimePickerVisible(false)}
       />
     </View>
   );

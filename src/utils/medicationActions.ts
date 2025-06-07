@@ -1,5 +1,4 @@
 import { Timestamp } from "firebase/firestore";
-import { Alert, Platform, ActionSheetIOS } from "react-native";
 import moment from "moment";
 import type { Medication } from "~/src/types/medication";
 import { doc, updateDoc } from "firebase/firestore";
@@ -15,6 +14,7 @@ export interface MedicationActionCallbacks {
   onSuccess: (takenTime: Date, onTime: boolean) => void;
   onError: (error: Error) => void;
   openDateTimePicker: (date: Date) => Promise<Date | null>;
+  showTakeMedicationSheet: (medication: Medication) => void;
 }
 
 export const getScheduledDate = (medication: Medication): Date => {
@@ -55,40 +55,8 @@ export const handleTakeMedication = async (
       return;
     }
 
-    // Otherwise, show action sheet
-    const options = ["Cancel", "On Time", "Now", "Set Time"];
-    const cancelButtonIndex = 0;
-
-    const handleAction = async (index: number) => {
-      if (index === 1) {
-        // On Time
-        await markMedicationAsTaken(medication, scheduledTime, true, callbacks);
-      } else if (index === 2) {
-        // Now
-        await markMedicationAsTaken(medication, now, false, callbacks);
-      } else if (index === 3) {
-        // Set Time
-        const picked = await callbacks.openDateTimePicker(scheduledTime);
-        if (picked) {
-          const onTime = Math.abs(picked.getTime() - scheduledTime.getTime()) / 60000 <= 60;
-          await markMedicationAsTaken(medication, picked, onTime, callbacks);
-        }
-      }
-    };
-
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        { options, cancelButtonIndex },
-        handleAction
-      );
-    } else {
-      Alert.alert("Mark as Taken", "Choose when you took your medication:", [
-        { text: "Cancel", style: "cancel" },
-        { text: "On Time", onPress: () => handleAction(1) },
-        { text: "Now", onPress: () => handleAction(2) },
-        { text: "Set Time", onPress: () => handleAction(3) },
-      ]);
-    }
+    // Show the bottom sheet for other cases
+    callbacks.showTakeMedicationSheet(medication);
   } catch (error) {
     callbacks.onError(error as Error);
   }
@@ -120,7 +88,7 @@ export const handleUntakeMedication = async (
   }
 };
 
-const markMedicationAsTaken = async (
+export const markMedicationAsTaken = async (
   medication: Medication,
   takenTime: Date,
   onTime: boolean,
