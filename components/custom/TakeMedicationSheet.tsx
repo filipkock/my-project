@@ -27,6 +27,9 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
+  const scheduledTime = getScheduledDate(medication);
+  const isFutureMedication = scheduledTime > new Date();
+
   const handleDateChange = (event: any, date?: Date) => {
     if (date) {
       setSelectedDate(date);
@@ -35,14 +38,17 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
 
   const handleConfirm = () => {
     onSetTime(selectedDate);
+    onDismiss();
   };
 
   const handleTakeOnTime = () => {
     onTakeOnTime();
+    onDismiss();
   };
 
   const handleTakeNow = () => {
     onTakeNow();
+    onDismiss();
   };
 
   return (
@@ -91,6 +97,12 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
                 <Text className="text-base text-gray-500">Choose a specific time</Text>
               </Button>
             </View>
+
+            {isFutureMedication && (
+              <Text className="text-sm text-red-500 mt-2">
+                Warning: This medication is scheduled for a future time.
+              </Text>
+            )}
           </>
         ) : (
           <View className="space-y-6">
