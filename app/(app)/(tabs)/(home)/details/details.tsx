@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, ScrollView } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Text } from "~/components/ui/text";
-import { Card } from "~/components/ui/card";
+import { Badge } from "~/components/ui/badge";
 import moment from "moment";
 import type { Medication } from "~/types/medication";
 import { Timestamp, collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
@@ -62,7 +62,7 @@ export default function MedicationDetails() {
         });
 
         if (closestReminder) {
-          const takenTime = closestReminder.takenTime.toDate();
+          const takenTime = (closestReminder as any).takenTime.toDate();
           const formattedTime = moment(takenTime).format("HH:mm");
           const formattedDate = moment(takenTime).format("MMMM D");
           setLastTakenInfo(`Previously taken at ${formattedTime} on ${formattedDate}`);
@@ -108,36 +108,33 @@ export default function MedicationDetails() {
 
   return (
     <ScrollView className="flex-1 bg-background">
-      <View className="p-4">
-        <Text className="text-3xl font-bold mb-6">{medData.medicationName}</Text>
+      <View className="p-10 space-y-6">
+        {status && (
+          <Badge variant="default" className="self-start">
+            <Text className="text-xs font-medium">{status}</Text>
+          </Badge>
+        )}
         
-        <Card className="p-4 mb-4">
-          <Text className={`text-lg font-bold mb-2 ${
-            status === "TAKE NOW" ? "text-green-500" :
-            status === "PAST DOSE" ? "text-red-500" :
-            "text-blue-500"
-          }`}>
-            {status}
-          </Text>
-        </Card>
+        <Text className="text-3xl font-bold">{medData.medicationName}</Text>
 
-        <Card className="p-4 mb-4">
-          <Text className="text-lg">{formatScheduledTime()}</Text>
-        </Card>
+        <View className="flex-row items-center space-x-3">
+          {/* Add relevant icons here later */}
+          <Text className="text-base">{formatScheduledTime()}</Text>
+        </View>
 
-        <Card className="p-4 mb-4">
-          <Text className="text-lg">
+        <View className="flex-row items-center space-x-3">
+          <Text className="text-base">
             Take {medData.dosageAmount || 1} {medData.dosageUnit || "pill"}
             {medData.dosageStrength ? `, ${medData.dosageStrength}` : ""}
           </Text>
-        </Card>
+        </View>
 
         {lastTakenInfo && (
-          <Card className="p-4">
-            <Text className="text-lg text-gray-600">{lastTakenInfo}</Text>
-          </Card>
+          <View className="flex-row items-center space-x-3">
+            <Text className="text-base text-muted-foreground">{lastTakenInfo}</Text>
+          </View>
         )}
       </View>
     </ScrollView>
   );
-} 
+}

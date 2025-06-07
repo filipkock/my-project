@@ -427,7 +427,7 @@ export default function MedicationList() {
               {loading ? (
                 <ActivityIndicator size="small" />
               ) : (
-                <Text>No medication reminders today.</Text>
+              <Text>No medication reminders today.</Text>
               )}
             </View>
           )}
