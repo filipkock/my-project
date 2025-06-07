@@ -14,7 +14,7 @@ import moment from "moment";
 import { db } from "~/config/firebase";
 import type { Medication } from "~/src/types/medication";
 import { getScheduledDate } from "~/src/utils/medicationActions";
-import CalendarStrip from "./CalendarStrip";
+import HorizontalDayScroller from "../calendar/HorizontalDayScroller";
 import MedicationListForDay from "./MedicationListForDay";
 import DateTimePickerModal from "./DateTimePickerModal";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -29,9 +29,7 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
   const router = useRouter();
   const params = useLocalSearchParams();
   const [items, setItems] = useState<Medication[]>([]);
-  const [markedDates, setMarkedDates] = useState<{ [date: string]: any }>({});
   const [selectedDate, setSelectedDate] = useState(moment().format("YYYY-MM-DD"));
-  const [fetchedMonths, setFetchedMonths] = useState(new Set<string>());
   const [dateTimePickerVisible, setDateTimePickerVisible] = useState(false);
   const [dateTimePickerValue, setDateTimePickerValue] = useState<Date>(new Date());
   const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
@@ -63,46 +61,6 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
       handleMedicationUpdate(updatedMedication);
     }
   }, [params.medication]);
-
-  // const fetchReminderDotsForMonth = async (monthMoment: moment.Moment) => {
-  //   const monthKey = monthMoment.format("YYYY-MM");
-  //   if (fetchedMonths.has(monthKey)) return;
-
-  //   try {
-  //     const startOfMonth = Timestamp.fromDate(
-  //       monthMoment.clone().startOf("month").toDate()
-  //     );
-  //     const endOfMonth = Timestamp.fromDate(
-  //       monthMoment.clone().endOf("month").toDate()
-  //     );
-
-  //     const newMarkedDates: { [date: string]: any } = {};
-  //     const userinfo = await getFromStorage("userDetails");
-  //     if (!userinfo) return;
-
-  //     const remindersQuery = query(
-  //       collection(db, "reminders"),
-  //       where("date", ">=", startOfMonth),
-  //       where("date", "<=", endOfMonth),
-  //       where("uid", "==", userinfo.uid)
-  //     );
-
-  //     const remindersSnapshot = await getDocs(remindersQuery);
-
-  //     remindersSnapshot.forEach((doc) => {
-  //       const dateString = moment(doc.data().date.toDate()).format("YYYY-MM-DD");
-  //       newMarkedDates[dateString] = {
-  //         marked: true,
-  //         dots: [{ key: "reminder", color: "blue" }],
-  //       };
-  //     });
-
-  //     setMarkedDates((prev) => ({ ...prev, ...newMarkedDates }));
-  //     setFetchedMonths((prev) => new Set(prev).add(monthKey));
-  //   } catch (error) {
-  //     console.error("Error fetching reminder dots:", error);
-  //   }
-  // };
 
   const fetchMedicationListForDay = async (dayString: string) => {
     try {
@@ -238,10 +196,9 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
           }}
           onRequestClose={() => setDateTimePickerVisible(false)}
         />
-        <CalendarStrip
+        <HorizontalDayScroller
           selectedDate={selectedDate}
           onSelectDate={handleDayPress}
-          markedDates={markedDates}
         />
         <MedicationListForDay
           items={items}
