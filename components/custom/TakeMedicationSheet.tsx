@@ -57,56 +57,59 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
       onClose={onDismiss}
       title={showDatePicker ? "Select Date & Time" : "Mark as Taken"}
     >
-      <View className="space-y-8 px-4">
+      <View className="px-4 pb-7">
         {!showDatePicker ? (
           <>
-            <View className="space-y-2">
-              <Text className="text-lg text-gray-900">
+            <View className="mb-8">
+              <Text className="text-2xl font-bold mb-2">
                 When did you take {medication.medicationName}?
               </Text>
-              <Text className="text-base text-gray-500">
+              <Text className="text-base text-muted-foreground">
                 Choose the most accurate option:
               </Text>
             </View>
             
-            <View className="space-y-8 flex flex-col gap-2">
+            <View className="space-y-4 flex flex-col gap-3">
               <Button
                 variant="secondary"
                 onPress={handleTakeOnTime}
-                className="w-full py-10"
+                className="w-full py-8"
               >
-                <Text className="text-lg font-medium">On Time</Text>
-                <Text className="text-base text-gray-500">Mark as taken at scheduled time</Text>
+                <View className="items-center">
+                  <Text className="text-lg font-semibold mb-1">On Time</Text>
+                </View>
               </Button>
 
               <Button
                 variant="secondary"
                 onPress={handleTakeNow}
-                className="w-full py-6"
+                className="w-full py-8"
               >
-                <Text className="text-lg font-medium">Now</Text>
-                <Text className="text-base text-gray-500">Mark as taken at current time</Text>
+                <View className="items-center">
+                  <Text className="text-lg font-semibold mb-1">Now</Text>
+                </View>
               </Button>
 
               <Button
                 variant="secondary"
                 onPress={() => setShowDatePicker(true)}
-                className="w-full py-4"
+                className="w-full py-8"
               >
-                <Text className="text-lg font-medium">Set Time</Text>
-                <Text className="text-base text-gray-500">Choose a specific time</Text>
+                <View className="items-center">
+                  <Text className="text-lg font-semibold mb-1">Set Time</Text>
+                </View>
               </Button>
             </View>
 
             {isFutureMedication && (
-              <Text className="text-sm text-red-500 mt-2">
+              <Text className="text-sm text-red-500 mt-6 text-center">
                 Warning: This medication is scheduled for a future time.
               </Text>
             )}
           </>
         ) : (
           <View className="space-y-6">
-            <Text className="text-base text-gray-500 text-center">
+            <Text className="text-lg font-semibold text-center mb-2">
               Select when you took {medication.medicationName}
             </Text>
             <DateTimePicker
@@ -119,9 +122,9 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
             />
             <Button
               onPress={handleConfirm}
-              className="w-full py-4"
+              className="w-full py-4 mt-4"
             >
-              <Text className="text-lg font-medium">Confirm Time</Text>
+              <Text className="text-lg font-semibold">Confirm Time</Text>
             </Button>
           </View>
         )}
@@ -129,9 +132,9 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
         <Button
           variant="ghost"
           onPress={showDatePicker ? () => setShowDatePicker(false) : onDismiss}
-          className="w-full py-4"
+          className="w-full py-4 mt-4"
         >
-          <Text className="text-lg text-gray-500">
+          <Text className="text-base text-muted-foreground">
             {showDatePicker ? "Back" : "Cancel"}
           </Text>
         </Button>

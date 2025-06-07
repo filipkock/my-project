@@ -177,7 +177,7 @@ export default function HorizontalDayScroller({
   const keyExtractor = useCallback((item: DayInfo) => item.date, []);
 
   return (
-    <View className="py-2">
+    <View className="py-2 pb-8">
       <View className="flex-row items-center justify-between px-4 mb-3">
         <View className="flex-1 items-center">
           <Text className="text-xl font-semibold text-foreground">
@@ -205,7 +205,7 @@ export default function HorizontalDayScroller({
         renderItem={renderDay}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 8 }}
+        contentContainerStyle={{ paddingHorizontal: 8, marginBottom: 16 }}
         decelerationRate="fast"
         snapToInterval={DAY_PILL_WIDTH}
         snapToAlignment="center"

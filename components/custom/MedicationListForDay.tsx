@@ -44,7 +44,7 @@ export default function MedicationListForDay({
   }, {} as { [key: string]: Medication[] });
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 pt-6">
       {Object.entries(groupedItems).map(([time, timeItems]) => (
         <View key={time} className="mb-6">
           <Text className="text-4xl font-semibold mb-4 mx-10">

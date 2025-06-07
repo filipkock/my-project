@@ -16,11 +16,13 @@ import { markMedicationAsTaken } from "~/src/utils/medicationActions";
 interface MedicationCardProps {
   medication: Medication;
   onMedicationUpdate: (medication: Medication) => void;
+  openDateTimePicker: (date: Date) => Promise<Date | null>;
 }
 
 const MedicationCard: React.FC<MedicationCardProps> = ({
   medication,
   onMedicationUpdate,
+  openDateTimePicker,
 }) => {
   const router = useRouter();
   const [isTakeSheetVisible, setIsTakeSheetVisible] = useState(false);
