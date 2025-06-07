@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { View, ScrollView, Alert } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Text } from "~/components/ui/text";
@@ -14,6 +14,7 @@ import {
   handleUntakeMedication 
 } from "~/src/utils/medication";
 import DateTimePickerModal from "~/components/custom/DateTimePickerModal";
+import UndoMedicationModal from "~/components/custom/UndoMedicationModal";
 
 interface ReminderData {
   takenTime: Timestamp;
@@ -26,103 +27,86 @@ interface LastTakenReminder {
 }
 
 export default function MedicationDetails() {
-  const { medication } = useLocalSearchParams<{ medication: string }>();
+  const params = useLocalSearchParams();
   const router = useRouter();
   const [localMed, setLocalMed] = useState<Medication>(() => {
-    const parsed = JSON.parse(medication);
+    const parsed = JSON.parse(params.medication as string);
     return {
       ...parsed,
       date: new Timestamp(parsed.date.seconds, parsed.date.nanoseconds)
     };
   });
   const [lastTakenInfo, setLastTakenInfo] = useState<string | null>(null);
-  const [dateTimePickerValue, setDateTimePickerValue] = useState<Date>(new Date());
   const [dateTimePickerVisible, setDateTimePickerVisible] = useState(false);
+  const [dateTimePickerValue, setDateTimePickerValue] = useState<Date>(new Date());
+  const [showUndoModal, setShowUndoModal] = useState(false);
 
-  useEffect(() => {
-    calculateStatus();
-    fetchLastTakenReminder();
-  }, [localMed]);
-
-  const calculateStatus = () => {
-    const now = new Date();
-    const scheduledTime = getScheduledDate(localMed);
-    const isToday = moment(scheduledTime).isSame(now, 'day');
-    const isPast = now > scheduledTime;
-    
-    if (localMed.status === "taken") {
-      return "TAKEN";
-    } else if (isToday) {
-      return "TAKE NOW";
-    } else if (isPast) {
-      return "PAST DOSE";
-    } else {
-      return "FUTURE DOSE";
-    }
-  };
-
-  const openDateTimePicker = (initialDate: Date): Promise<Date | null> => {
+  const openDateTimePicker = useCallback(async (date: Date): Promise<Date | null> => {
     return new Promise((resolve) => {
-      setDateTimePickerValue(initialDate);
+      setDateTimePickerValue(date);
       setDateTimePickerVisible(true);
-      const handleChange = (date: Date | null) => {
+      const handleChange = (newDate: Date | null) => {
         setDateTimePickerVisible(false);
-        resolve(date);
+        resolve(newDate);
       };
     });
-  };
+  }, []);
 
-  const handleMedicationAction = async () => {
+  const fetchLastTakenReminder = useCallback(async () => {
+    try {
+      const q = query(
+        collection(db, "reminders"),
+        where("medId", "==", localMed.medDocID),
+        where("status", "==", "taken"),
+        orderBy("takenTime", "desc"),
+        limit(1)
+      );
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        const lastTaken = snapshot.docs[0].data() as ReminderData;
+        const takenTime = lastTaken.takenTime.toDate();
+        setLastTakenInfo(
+          `Last taken on ${moment(takenTime).format("MMMM D, YYYY")} at ${moment(takenTime).format("HH:mm")}`
+        );
+      } else {
+        setLastTakenInfo(null);
+      }
+    } catch (error) {
+      console.error("Error fetching last taken reminder:", error);
+      setLastTakenInfo(null);
+    }
+  }, [localMed.medDocID]);
+
+  useEffect(() => {
+    fetchLastTakenReminder();
+  }, [fetchLastTakenReminder]);
+
+  const calculateStatus = useCallback(() => {
     if (localMed.status === "taken") {
-      await handleUntakeMedication(localMed, {
-        onSuccess: async (takenTime, onTime) => {
-          // Update local state with a new object
-          setLocalMed(prev => ({
-            ...prev,
-            status: "pending",
-            takenTime: null,
-            onTime: null
-          }));
-          
-          // Refresh the last taken info
-          await fetchLastTakenReminder();
-          
-          // Update the parent component's state without navigation
-          const updatedMedication = {
-            ...localMed,
-            status: "pending",
-            takenTime: null,
-            onTime: null
-          };
-          router.setParams({ medication: JSON.stringify(updatedMedication) });
-        },
-        onError: (error) => {
-          console.error("Error undoing medication:", error);
-          Alert.alert("Error", "Failed to undo medication. Please try again.");
-        },
-        openDateTimePicker
-      });
+      return "Taken";
+    }
+    const scheduledTime = getScheduledDate(localMed);
+    const now = new Date();
+    if (scheduledTime < now) {
+      return "Overdue";
+    }
+    return "Upcoming";
+  }, [localMed]);
+
+  const handleMedicationAction = useCallback(async () => {
+    if (localMed.status === "taken") {
+      setShowUndoModal(true);
     } else {
       await handleTakeMedication(localMed, {
         onSuccess: async (takenTime, onTime) => {
-          // Update local state with a new object
-          setLocalMed(prev => ({
-            ...prev,
-            status: "taken",
-            takenTime: Timestamp.fromDate(takenTime),
-            onTime: onTime
-          }));
-          
-          // Refresh the last taken info
-          await fetchLastTakenReminder();
-          
-          // Update the parent component's state without navigation
           const updatedMedication = {
             ...localMed,
             status: "taken",
             takenTime: Timestamp.fromDate(takenTime),
             onTime: onTime
           };
+          setLocalMed(updatedMedication);
+          await fetchLastTakenReminder();
           router.setParams({ medication: JSON.stringify(updatedMedication) });
         },
         onError: (error) => {
@@ -132,74 +116,42 @@ export default function MedicationDetails() {
         openDateTimePicker
       });
     }
-  };
+  }, [localMed, fetchLastTakenReminder, router, openDateTimePicker]);
 
-  const formatScheduledTime = () => {
+  const handleUndoConfirm = useCallback(async () => {
+    setShowUndoModal(false);
+    await handleUntakeMedication(localMed, {
+      onSuccess: async (takenTime, onTime) => {
+        const updatedMedication = {
+          ...localMed,
+          status: "pending",
+          takenTime: null,
+          onTime: null
+        };
+        setLocalMed(updatedMedication);
+        await fetchLastTakenReminder();
+        router.setParams({ medication: JSON.stringify(updatedMedication) });
+      },
+      onError: (error) => {
+        console.error("Error undoing medication:", error);
+        Alert.alert("Error", "Failed to undo medication. Please try again.");
+      },
+      openDateTimePicker
+    });
+  }, [localMed, fetchLastTakenReminder, router, openDateTimePicker]);
+
+  const formatScheduledTime = useCallback(() => {
     const scheduledTime = getScheduledDate(localMed);
     const isToday = moment(scheduledTime).isSame(new Date(), 'day');
     const timeStr = moment(scheduledTime).format("HH:mm");
     return `Scheduled for ${timeStr}, ${isToday ? "today" : moment(scheduledTime).format("MMMM D")}`;
-  };
+  }, [localMed]);
 
-  const formatTakenTime = () => {
+  const formatTakenTime = useCallback(() => {
     if (!localMed.takenTime || !(localMed.takenTime instanceof Timestamp)) return null;
     const takenTime = localMed.takenTime.toDate();
     return `Taken at ${moment(takenTime).format("HH:mm")}`;
-  };
-
-  const fetchLastTakenReminder = async () => {
-    try {
-      // Calculate the current reminder's scheduled datetime
-      const scheduledTime = getScheduledDate(localMed);
-
-      // Query all taken reminders for this medication
-      const remindersRef = collection(db, "reminders");
-      const q = query(
-        remindersRef,
-        where("medId", "==", localMed.medDocID),
-        where("status", "==", "taken"),
-        orderBy("takenTime", "desc")
-      );
-
-      const querySnapshot = await getDocs(q);
-      
-      if (!querySnapshot.empty) {
-        // Find the most recent reminder that was taken before the current scheduled time
-        let closestReminder: LastTakenReminder | null = null;
-        let minTimeDiff = Infinity;
-
-        querySnapshot.forEach((doc) => {
-          const data = doc.data() as ReminderData;
-          if (!data.takenTime || !(data.takenTime instanceof Timestamp)) return;
-          
-          const takenTime = data.takenTime.toDate();
-          
-          // Only consider reminders taken before the current scheduled time
-          if (takenTime < scheduledTime) {
-            const timeDiff = scheduledTime.getTime() - takenTime.getTime();
-            if (timeDiff < minTimeDiff) {
-              minTimeDiff = timeDiff;
-              closestReminder = { takenTime: data.takenTime };
-            }
-          }
-        });
-
-        if (closestReminder?.takenTime) {
-          const takenTime = closestReminder.takenTime.toDate();
-          const formattedTime = moment(takenTime).format("HH:mm");
-          const formattedDate = moment(takenTime).format("MMMM D");
-          setLastTakenInfo(`Previously taken at ${formattedTime} on ${formattedDate}`);
-        } else {
-          setLastTakenInfo(null);
-        }
-      } else {
-        setLastTakenInfo(null);
-      }
-    } catch (error) {
-      console.error("Error fetching last taken reminder:", error);
-      setLastTakenInfo(null);
-    }
-  };
+  }, [localMed]);
 
   return (
     <View className="flex-1 bg-background">
@@ -248,6 +200,12 @@ export default function MedicationDetails() {
           </Text>
         </Button>
       </View>
+
+      <UndoMedicationModal
+        visible={showUndoModal}
+        onConfirm={handleUndoConfirm}
+        onCancel={() => setShowUndoModal(false)}
+      />
 
       <DateTimePickerModal
         visible={dateTimePickerVisible}

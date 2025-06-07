@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, TouchableWithoutFeedback } from "react-native";
 import { Card, CardContent } from "~/components/ui/card";
 import { Text } from "~/components/ui/text";
@@ -8,6 +8,7 @@ import { useRouter } from "expo-router";
 import { handleTakeMedication, handleUntakeMedication } from "~/src/utils/medication";
 import { Alert } from "react-native";
 import { Timestamp } from "firebase/firestore";
+import UndoMedicationModal from "./UndoMedicationModal";
 
 interface MedicationCardProps {
   medication: Medication;
@@ -21,24 +22,11 @@ const MedicationCard = ({
   openDateTimePicker,
 }: MedicationCardProps) => {
   const router = useRouter();
+  const [showUndoModal, setShowUndoModal] = useState(false);
 
   const handleMedicationAction = async () => {
     if (medication.status === "taken") {
-      await handleUntakeMedication(medication, {
-        onSuccess: (takenTime, onTime) => {
-          onMedicationUpdate({
-            ...medication,
-            status: "pending",
-            takenTime: null,
-            onTime: null
-          });
-        },
-        onError: (error) => {
-          console.error("Error undoing medication:", error);
-          Alert.alert("Error", "Failed to undo medication. Please try again.");
-        },
-        openDateTimePicker
-      });
+      setShowUndoModal(true);
     } else {
       await handleTakeMedication(medication, {
         onSuccess: (takenTime, onTime) => {
@@ -56,6 +44,25 @@ const MedicationCard = ({
         openDateTimePicker
       });
     }
+  };
+
+  const handleUndoConfirm = async () => {
+    setShowUndoModal(false);
+    await handleUntakeMedication(medication, {
+      onSuccess: (takenTime, onTime) => {
+        onMedicationUpdate({
+          ...medication,
+          status: "pending",
+          takenTime: null,
+          onTime: null
+        });
+      },
+      onError: (error) => {
+        console.error("Error undoing medication:", error);
+        Alert.alert("Error", "Failed to undo medication. Please try again.");
+      },
+      openDateTimePicker
+    });
   };
 
   const handleCardPress = () => {
@@ -106,13 +113,19 @@ const MedicationCard = ({
               <Text className="font-bold">
                 Status: Medication has been taken {takenTimeStr}
                 {typeof medication.onTime !== undefined && (
-                  <Text>({medication.onTime ? "on time" : "not on time"})</Text>
+                  <Text> ({medication.onTime ? "on time" : "not on time"})</Text>
                 )}
               </Text>
             </View>
           </TouchableWithoutFeedback>
         )}
       </Card>
+
+      <UndoMedicationModal
+        visible={showUndoModal}
+        onConfirm={handleUndoConfirm}
+        onCancel={() => setShowUndoModal(false)}
+      />
     </View>
   );
 };
