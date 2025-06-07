@@ -2484,14 +2484,9 @@
   resolved "https://registry.npmjs.org/@rn-primitives/slot/-/slot-1.1.0.tgz"
   integrity sha512-/6LkEPMoGGyJiCAYo3MTCy9letbH6SIm5Dw6wal/ypq3Jvar9llYJstIP2KSZNhx3PmZMN1a581KVgNZ2Jyt5g==
 
-"@rn-primitives/slot@1.2.0":
+"@rn-primitives/slot@1.2.0", "@rn-primitives/slot@^1.2.0":
   version "1.2.0"
   resolved "https://registry.npmjs.org/@rn-primitives/slot/-/slot-1.2.0.tgz"
-  integrity sha512-cpbn+JLjSeq3wcA4uqgFsUimMrWYWx2Ks7r5rkwd1ds1utxynsGkLOKpYVQkATwWrYhtcoF1raxIKEqXuMN+/w==
-
-"@rn-primitives/slot@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@rn-primitives/slot/-/slot-1.2.0.tgz#54f757cb324cbf4670b81456526ae60e723ec6e4"
   integrity sha512-cpbn+JLjSeq3wcA4uqgFsUimMrWYWx2Ks7r5rkwd1ds1utxynsGkLOKpYVQkATwWrYhtcoF1raxIKEqXuMN+/w==
 
 "@rn-primitives/tooltip@~1.1.0":
@@ -4269,6 +4264,11 @@ expo-font@~13.0.4:
   integrity sha512-eAP5hyBgC8gafFtprsz0HMaB795qZfgJWqTmU0NfbSin1wUuVySFMEPMOrTkTgmazU73v4Cb4x7p86jY1XXYUw==
   dependencies:
     fontfaceobserver "^2.1.0"
+
+expo-haptics@~14.0.1:
+  version "14.0.1"
+  resolved "https://registry.yarnpkg.com/expo-haptics/-/expo-haptics-14.0.1.tgz#ff4ead605e33f1917e615c9328af7ac1c34892dc"
+  integrity sha512-V81FZ7xRUfqM6uSI6FA1KnZ+QpEKnISqafob/xEfcx1ymwhm4V3snuLWWFjmAz+XaZQTqlYa8z3QbqEXz7G63w==
 
 expo-json-utils@~0.14.0:
   version "0.14.0"

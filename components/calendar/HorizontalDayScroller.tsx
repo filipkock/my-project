@@ -1,11 +1,12 @@
-import React, { useRef, useState, useCallback, useEffect } from "react";
+import React, { useRef, useState, useCallback, useEffect, useMemo } from "react";
 import {
   View,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   NativeSyntheticEvent,
   NativeScrollEvent,
   LayoutChangeEvent,
+  Dimensions,
 } from "react-native";
 import { Text } from "~/components/ui/text";
 import { Button } from "~/components/ui/button";
@@ -26,102 +27,111 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { cn } from "~/lib/utils";
+import * as Haptics from "expo-haptics";
 
-const DAYS_TO_SHOW = 30;
-const SCROLL_THRESHOLD = 0.8;
 const DAY_PILL_WIDTH = 50;
 const DAY_PILL_HEIGHT = 60;
+const WINDOW_WIDTH = Dimensions.get("window").width;
+const DAYS_BEFORE = 14; // 2 weeks before
+const DAYS_AFTER = 42; // 6 weeks ahead
+const TOTAL_DAYS = DAYS_BEFORE + DAYS_AFTER + 1; // +1 for today
 
 interface HorizontalDayScrollerProps {
   selectedDate: string;
   onSelectDate: (date: string) => void;
 }
 
+const DayPill = React.memo(({ 
+  day, 
+  isSelected, 
+  isToday, 
+  onPress 
+}: { 
+  day: DayInfo; 
+  isSelected: boolean; 
+  isToday: boolean; 
+  onPress: () => void;
+}) => {
+  const getPillStyles = () => {
+    return cn(
+      "w-[50px] h-[60px] rounded-[20px] mx-1 items-center justify-center p-2",
+      isSelected && "bg-black dark:bg-white",
+      isToday && !isSelected && "bg-transparent border-2 border-black dark:border-white",
+      !isSelected && !isToday && "bg-transparent border border-border"
+    );
+  };
+
+  const getTextStyles = (isDayName = false) => {
+    return cn(
+      isDayName ? "text-xs mb-1" : "text-base font-semibold",
+      isSelected && "text-white dark:text-black",
+      isToday && !isSelected && "text-black dark:text-white",
+      !isSelected && !isToday && "text-muted-foreground"
+    );
+  };
+
+  return (
+    <TouchableOpacity
+      className={getPillStyles()}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <Text className={getTextStyles(true)}>
+        {day.day}
+      </Text>
+      <Text className={getTextStyles()}>
+        {day.dateNum}
+      </Text>
+    </TouchableOpacity>
+  );
+});
+
 export default function HorizontalDayScroller({
   selectedDate,
   onSelectDate,
 }: HorizontalDayScrollerProps) {
-  const scrollViewRef = useRef<ScrollView>(null);
-  const [days, setDays] = useState<DayInfo[]>(() => {
-    const startDate = moment(selectedDate).subtract(DAYS_TO_SHOW / 2, "days");
-    return generateDaysRange(
-      startDate,
-      DAYS_TO_SHOW,
-      selectedDate,
-      moment(selectedDate).format("YYYY-MM")
-    );
-  });
-  const [containerWidth, setContainerWidth] = useState(0);
+  const flatListRef = useRef<FlatList>(null);
   const todayButtonOpacity = useSharedValue(1);
   const todayButtonScale = useSharedValue(1);
 
-  useEffect(() => {
-    const today = getTodayString();
-    const todayIndex = getTodayIndex(days);
-    
-    if (todayIndex !== -1) {
-      scrollViewRef.current?.scrollTo({
-        x: todayIndex * DAY_PILL_WIDTH,
-        animated: false,
-      });
-      onSelectDate(today);
-    }
-  }, []);
-
-  const loadMoreDays = useCallback((direction: "start" | "end") => {
-    setDays((currentDays) => {
-      const newDays = [...currentDays];
-      const startDate = direction === "start"
-        ? moment(currentDays[0].date).subtract(DAYS_TO_SHOW / 2, "days")
-        : moment(currentDays[currentDays.length - 1].date).add(1, "days");
-
-      const additionalDays = generateDaysRange(
-        startDate,
-        DAYS_TO_SHOW / 2,
-        selectedDate,
-        moment(selectedDate).format("YYYY-MM"),
-        direction === "start" ? 0 : currentDays.length
-      );
-
-      if (direction === "start") {
-        newDays.unshift(...additionalDays);
-      } else {
-        newDays.push(...additionalDays);
-      }
-
-      return newDays;
-    });
+  // Generate all days once and memoize
+  const days = useMemo(() => {
+    const startDate = moment().subtract(DAYS_BEFORE, "days");
+    return generateDaysRange(
+      startDate,
+      TOTAL_DAYS,
+      selectedDate,
+      moment(selectedDate).format("YYYY-MM")
+    );
   }, [selectedDate]);
 
-  const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-    const scrollPosition = contentOffset.x;
-    const maxScroll = contentSize.width - layoutMeasurement.width;
-    const scrollPercentage = scrollPosition / maxScroll;
+  // Calculate today's index once
+  const todayIndex = useMemo(() => {
+    return getTodayIndex(days);
+  }, [days]);
 
-    if (scrollPercentage < 1 - SCROLL_THRESHOLD) {
-      loadMoreDays("start");
-    } else if (scrollPercentage > SCROLL_THRESHOLD) {
-      loadMoreDays("end");
+  // Auto-scroll to today on mount
+  useEffect(() => {
+    if (todayIndex !== -1) {
+      flatListRef.current?.scrollToIndex({
+        index: todayIndex,
+        animated: false,
+        viewPosition: 0.5,
+      });
     }
-  }, [loadMoreDays]);
+  }, [todayIndex]);
 
   const scrollToToday = useCallback(() => {
-    const today = getTodayString();
-    const todayIndex = getTodayIndex(days);
-    
     if (todayIndex !== -1) {
-      scrollViewRef.current?.scrollTo({
-        x: todayIndex * DAY_PILL_WIDTH,
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      flatListRef.current?.scrollToIndex({
+        index: todayIndex,
         animated: true,
+        viewPosition: 0.5,
       });
-      onSelectDate(today);
+      onSelectDate(getTodayString());
     }
-  }, [days, onSelectDate]);
-
-  const handleContainerLayout = (event: LayoutChangeEvent) => {
-    setContainerWidth(event.nativeEvent.layout.width);
-  };
+  }, [todayIndex, onSelectDate]);
 
   const isTodaySelected = selectedDate === getTodayString();
 
@@ -139,32 +149,35 @@ export default function HorizontalDayScroller({
     return moment(date).format("D MMMM");
   };
 
-  const getPillStyles = (day: DayInfo) => {
+  const handleDayPress = useCallback((day: DayInfo) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onSelectDate(day.date);
+  }, [onSelectDate]);
+
+  const renderDay = useCallback(({ item: day }: { item: DayInfo }) => {
     const isSelected = day.date === selectedDate;
     const isToday = day.date === getTodayString();
 
-    return cn(
-      "w-[50px] h-[60px] rounded-[20px] mx-1 items-center justify-center p-2",
-      isSelected && "bg-black dark:bg-white",
-      isToday && !isSelected && "bg-transparent border-2 border-black dark:border-white",
-      !isSelected && !isToday && "bg-transparent border border-border"
+    return (
+      <DayPill
+        day={day}
+        isSelected={isSelected}
+        isToday={isToday}
+        onPress={() => handleDayPress(day)}
+      />
     );
-  };
+  }, [selectedDate, handleDayPress]);
 
-  const getTextStyles = (day: DayInfo, isDayName = false) => {
-    const isSelected = day.date === selectedDate;
-    const isToday = day.date === getTodayString();
+  const getItemLayout = useCallback((_: any, index: number) => ({
+    length: DAY_PILL_WIDTH,
+    offset: DAY_PILL_WIDTH * index,
+    index,
+  }), []);
 
-    return cn(
-      isDayName ? "text-xs mb-1" : "text-base font-semibold",
-      isSelected && "text-white dark:text-black",
-      isToday && !isSelected && "text-black dark:text-white",
-      !isSelected && !isToday && "text-muted-foreground"
-    );
-  };
+  const keyExtractor = useCallback((item: DayInfo) => item.date, []);
 
   return (
-    <View className="py-2" onLayout={handleContainerLayout}>
+    <View className="py-2">
       <View className="flex-row items-center justify-between px-4 mb-3">
         <View className="flex-1 items-center">
           <Text className="text-xl font-semibold text-foreground">
@@ -186,33 +199,30 @@ export default function HorizontalDayScroller({
         </Animated.View>
       </View>
 
-      <ScrollView
-        ref={scrollViewRef}
+      <FlatList
+        ref={flatListRef}
+        data={days}
+        renderItem={renderDay}
         horizontal
         showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        className="px-2"
+        contentContainerStyle={{ paddingHorizontal: 8 }}
         decelerationRate="fast"
         snapToInterval={DAY_PILL_WIDTH}
         snapToAlignment="center"
-      >
-        {days.map((day) => (
-          <TouchableOpacity
-            key={day.date}
-            className={getPillStyles(day)}
-            onPress={() => onSelectDate(day.date)}
-            activeOpacity={0.7}
-          >
-            <Text className={getTextStyles(day, true)}>
-              {day.day}
-            </Text>
-            <Text className={getTextStyles(day)}>
-              {day.dateNum}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+        getItemLayout={getItemLayout}
+        keyExtractor={keyExtractor}
+        initialScrollIndex={todayIndex}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={7}
+        windowSize={5}
+        onScrollToIndexFailed={() => {
+          // Fallback to scrolling to the middle of the list
+          flatListRef.current?.scrollToIndex({
+            index: Math.floor(days.length / 2),
+            animated: false,
+          });
+        }}
+      />
     </View>
   );
 } 
