@@ -13,10 +13,11 @@ import {
 import moment from "moment";
 import { db } from "~/config/firebase";
 import type { Medication } from "~/src/types/medication";
-import { getScheduledDate } from "~/src/utils/medicationActions";
+import { getStreakFromFirestore, updateStreak, recalculateStreakFromFirestore } from "~/src/utils/streak";
 import HorizontalDayScroller from "../calendar/HorizontalDayScroller";
 import MedicationListForDay from "./MedicationListForDay";
 import DateTimePickerModal from "./DateTimePickerModal";
+import StreakDisplay from "./StreakDisplay";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -34,6 +35,19 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
   const [dateTimePickerValue, setDateTimePickerValue] = useState<Date>(new Date());
   const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
   const [loading, setLoading] = useState(false);
+  const [streak, setStreak] = useState(0);
+
+  // Initialize streak on component mount
+  useEffect(() => {
+    const initializeStreak = async () => {
+      const userinfo = await getFromStorage("userDetails");
+      if (userinfo) {
+        const currentStreak = await getStreakFromFirestore(userinfo.uid);
+        setStreak(currentStreak);
+      }
+    };
+    initializeStreak();
+  }, []);
 
   // Refresh data when screen comes into focus
   useFocusEffect(
@@ -174,6 +188,15 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
           : { ...item }
       ));
 
+      // Update streak if medication status changed
+      if (medication.status === 'taken' && typeof medication.onTime === 'boolean') {
+        const userinfo = await getFromStorage("userDetails");
+        if (userinfo) {
+          const newStreak = await updateStreak(userinfo.uid, medication.onTime);
+          setStreak(newStreak);
+        }
+      }
+
       // Refresh from server
       await fetchMedicationListForDay(selectedDate);
     } catch (error) {
@@ -185,6 +208,7 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
+        <StreakDisplay streak={streak} />
         <DateTimePickerModal
           visible={dateTimePickerVisible}
           value={dateTimePickerValue}
