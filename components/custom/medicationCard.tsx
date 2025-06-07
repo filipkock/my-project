@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { View, TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import { Text } from "~/components/ui/text";
-import { Button } from "~/components/ui/button";
-import { CheckCircle, Clock } from "lucide-react-native";
+import { CheckCircleIcon } from 'react-native-heroicons/solid';
 import type { Medication } from "~/src/types/medication";
 import { handleTakeMedication, handleUntakeMedication } from "~/src/utils/medicationActions";
 import { getScheduledDate } from "~/src/utils/medicationActions";
@@ -146,15 +145,22 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
   let takenTimeStr = '';
   if (medication.status === 'taken' && medication.takenTime instanceof Timestamp) {
     const taken = medication.takenTime.toDate();
-    takenTimeStr = `${taken.toLocaleTimeString([], {
+    const scheduledTime = getScheduledDate(medication);
+    const isSameDay = taken.toDateString() === scheduledTime.toDateString();
+    
+    takenTimeStr = taken.toLocaleTimeString([], {
       hour: '2-digit',
       minute: '2-digit',
-    })}, ${taken.toLocaleDateString()}`;
+    });
+    
+    if (!isSameDay) {
+      takenTimeStr += `, ${taken.toLocaleDateString([], { day: 'numeric', month: 'short' })}`;
+    }
   }
 
   return (
     <View className="w-full">
-      <Card className="w-full flex flex-row items-center p-6 gap-4">
+      <Card className={`w-full flex flex-row items-center p-6 gap-4 ${medication.status === 'taken' ? 'opacity-70 bg-transparent' : ''}`}>
         {medication.status === 'pending' && (
           <>
             <Circle
@@ -179,16 +185,26 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
           </>
         )}
         {medication.status === 'taken' && (
-          <TouchableWithoutFeedback onPress={handleCardPress}>
-            <View className="flex-1">
-              <Text className="font-bold">
-                Status: Medication has been taken {takenTimeStr}
-                {typeof medication.onTime !== undefined && (
-                  <Text> ({medication.onTime ? 'on time' : 'not on time'})</Text>
-                )}
-              </Text>
-            </View>
-          </TouchableWithoutFeedback>
+          <>
+            <CheckCircleIcon size={32} color="black" opacity={0.7} />
+            <TouchableWithoutFeedback onPress={handleCardPress}>
+              <View className="flex-1">
+                <Text className="font-bold text-lg mb-2">
+                  {medication.medicationName}
+                </Text>
+                <View className="flex-row gap-3 items-center">
+                  <Text className="text-gray-500">
+                    Taken {takenTimeStr}
+                  </Text>
+                  {typeof medication.onTime !== undefined && (
+                    <Text className="text-gray-500">
+                      {medication.onTime ? '• On time' : '• Late'}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </>
         )}
       </Card>
 
