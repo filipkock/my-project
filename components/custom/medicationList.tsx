@@ -37,17 +37,25 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
   const [loading, setLoading] = useState(false);
   const [streak, setStreak] = useState(0);
 
-  // Initialize streak on component mount
-  useEffect(() => {
-    const initializeStreak = async () => {
-      const userinfo = await getFromStorage("userDetails");
-      if (userinfo) {
-        const currentStreak = await getStreakFromFirestore(userinfo.uid);
-        setStreak(currentStreak);
-      }
-    };
-    initializeStreak();
+  // Initialize streak on component mount and when screen comes into focus
+  const initializeStreak = useCallback(async () => {
+    const userinfo = await getFromStorage("userDetails");
+    if (userinfo) {
+      const currentStreak = await getStreakFromFirestore(userinfo.uid);
+      setStreak(currentStreak);
+    }
   }, []);
+
+  useEffect(() => {
+    initializeStreak();
+  }, [initializeStreak]);
+
+  // Refresh streak when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      initializeStreak();
+    }, [initializeStreak])
+  );
 
   // Refresh data when screen comes into focus
   useFocusEffect(
@@ -193,6 +201,13 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
         const userinfo = await getFromStorage("userDetails");
         if (userinfo) {
           const newStreak = await updateStreak(userinfo.uid, medication.onTime);
+          setStreak(newStreak);
+        }
+      } else if (medication.status === 'pending' && medication.onTime === true) {
+        // If undoing a medication that was taken on time, recalculate streak
+        const userinfo = await getFromStorage("userDetails");
+        if (userinfo) {
+          const newStreak = await recalculateStreakFromFirestore(userinfo.uid);
           setStreak(newStreak);
         }
       }

@@ -13,6 +13,8 @@ import {
   handleTakeMedication, 
   handleUntakeMedication 
 } from "~/src/utils/medication";
+import { updateStreak, recalculateStreakFromFirestore } from "~/src/utils/streak";
+import { getFromStorage } from "~/src/services/storage";
 import DateTimePickerModal from "~/components/custom/DateTimePickerModal";
 import UndoMedicationModal from "~/components/custom/UndoMedicationModal";
 
@@ -108,6 +110,14 @@ export default function MedicationDetails() {
           setLocalMed(updatedMedication);
           await fetchLastTakenReminder();
           router.setParams({ medication: JSON.stringify(updatedMedication) });
+
+          // Update streak if taken on time
+          if (onTime) {
+            const userinfo = await getFromStorage("userDetails");
+            if (userinfo) {
+              await updateStreak(userinfo.uid, true);
+            }
+          }
         },
         onError: (error) => {
           console.error("Error marking medication as taken:", error);
@@ -131,6 +141,14 @@ export default function MedicationDetails() {
         setLocalMed(updatedMedication);
         await fetchLastTakenReminder();
         router.setParams({ medication: JSON.stringify(updatedMedication) });
+
+        // Recalculate streak if the medication was taken on time
+        if (localMed.onTime === true) {
+          const userinfo = await getFromStorage("userDetails");
+          if (userinfo) {
+            await recalculateStreakFromFirestore(userinfo.uid);
+          }
+        }
       },
       onError: (error) => {
         console.error("Error undoing medication:", error);
