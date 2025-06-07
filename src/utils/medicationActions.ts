@@ -14,7 +14,7 @@ export interface MedicationActionCallbacks {
   onSuccess: (takenTime: Date, onTime: boolean) => void;
   onError: (error: Error) => void;
   openDateTimePicker: (date: Date) => Promise<Date | null>;
-  showTakeMedicationSheet: (medication: Medication) => void;
+  showTakeMedicationSheet?: () => void;
 }
 
 export const getScheduledDate = (medication: Medication): Date => {
@@ -56,7 +56,7 @@ export const handleTakeMedication = async (
     }
 
     // Show the bottom sheet for other cases
-    callbacks.showTakeMedicationSheet(medication);
+    callbacks.showTakeMedicationSheet?.();
   } catch (error) {
     callbacks.onError(error as Error);
   }

@@ -11,12 +11,13 @@ import { db } from "~/config/firebase";
 import { 
   getScheduledDate, 
   handleTakeMedication, 
-  handleUntakeMedication 
+  handleUntakeMedication,
+  markMedicationAsTaken
 } from "~/src/utils/medication";
 import { updateStreak, recalculateStreakFromFirestore } from "~/src/utils/streak";
 import { getFromStorage } from "~/src/services/storage";
-import DateTimePickerModal from "~/components/custom/DateTimePickerModal";
 import UndoMedicationModal from "~/components/custom/UndoMedicationModal";
+import TakeMedicationSheet from "~/components/custom/TakeMedicationSheet";
 
 interface ReminderData {
   takenTime: Timestamp;
@@ -39,20 +40,8 @@ export default function MedicationDetails() {
     };
   });
   const [lastTakenInfo, setLastTakenInfo] = useState<string | null>(null);
-  const [dateTimePickerVisible, setDateTimePickerVisible] = useState(false);
-  const [dateTimePickerValue, setDateTimePickerValue] = useState<Date>(new Date());
   const [showUndoModal, setShowUndoModal] = useState(false);
-
-  const openDateTimePicker = useCallback(async (date: Date): Promise<Date | null> => {
-    return new Promise((resolve) => {
-      setDateTimePickerValue(date);
-      setDateTimePickerVisible(true);
-      const handleChange = (newDate: Date | null) => {
-        setDateTimePickerVisible(false);
-        resolve(newDate);
-      };
-    });
-  }, []);
+  const [isTakeSheetVisible, setIsTakeSheetVisible] = useState(false);
 
   const fetchLastTakenReminder = useCallback(async () => {
     try {
@@ -99,34 +88,103 @@ export default function MedicationDetails() {
     if (localMed.status === "taken") {
       setShowUndoModal(true);
     } else {
-      await handleTakeMedication(localMed, {
-        onSuccess: async (takenTime, onTime) => {
-          const updatedMedication = {
-            ...localMed,
-            status: "taken",
-            takenTime: Timestamp.fromDate(takenTime),
-            onTime: onTime
-          };
-          setLocalMed(updatedMedication);
-          await fetchLastTakenReminder();
-          router.setParams({ medication: JSON.stringify(updatedMedication) });
-
-          // Update streak if taken on time
-          if (onTime) {
-            const userinfo = await getFromStorage("userDetails");
-            if (userinfo) {
-              await updateStreak(userinfo.uid, true);
-            }
-          }
-        },
-        onError: (error) => {
-          console.error("Error marking medication as taken:", error);
-          Alert.alert("Error", "Failed to mark medication as taken. Please try again.");
-        },
-        openDateTimePicker
-      });
+      setIsTakeSheetVisible(true);
     }
-  }, [localMed, fetchLastTakenReminder, router, openDateTimePicker]);
+  }, [localMed]);
+
+  const handleTakeOnTime = async () => {
+    const scheduledTime = getScheduledDate(localMed);
+    await markMedicationAsTaken(localMed, scheduledTime, true, {
+      onSuccess: async (takenTime, onTime) => {
+        const updatedMedication = {
+          ...localMed,
+          status: "taken",
+          takenTime: Timestamp.fromDate(takenTime),
+          onTime
+        };
+        setLocalMed(updatedMedication);
+        await fetchLastTakenReminder();
+        router.setParams({ medication: JSON.stringify(updatedMedication) });
+
+        // Update streak if taken on time
+        if (onTime) {
+          const userinfo = await getFromStorage("userDetails");
+          if (userinfo) {
+            await updateStreak(userinfo.uid, true);
+          }
+        }
+      },
+      onError: (error) => {
+        console.error("Error marking medication as taken:", error);
+        Alert.alert("Error", "Failed to mark medication as taken. Please try again.");
+      },
+      openDateTimePicker: async () => null,
+      showTakeMedicationSheet: () => {},
+    });
+  };
+
+  const handleTakeNow = async () => {
+    const now = new Date();
+    await markMedicationAsTaken(localMed, now, false, {
+      onSuccess: async (takenTime, onTime) => {
+        const updatedMedication = {
+          ...localMed,
+          status: "taken",
+          takenTime: Timestamp.fromDate(takenTime),
+          onTime
+        };
+        setLocalMed(updatedMedication);
+        await fetchLastTakenReminder();
+        router.setParams({ medication: JSON.stringify(updatedMedication) });
+
+        // Update streak if taken on time
+        if (onTime) {
+          const userinfo = await getFromStorage("userDetails");
+          if (userinfo) {
+            await updateStreak(userinfo.uid, true);
+          }
+        }
+      },
+      onError: (error) => {
+        console.error("Error marking medication as taken:", error);
+        Alert.alert("Error", "Failed to mark medication as taken. Please try again.");
+      },
+      openDateTimePicker: async () => null,
+      showTakeMedicationSheet: () => {},
+    });
+  };
+
+  const handleSetTime = async (date: Date) => {
+    const scheduledTime = getScheduledDate(localMed);
+    const isOnTime = Math.abs(date.getTime() - scheduledTime.getTime()) <= 60 * 60 * 1000; // Within 1 hour
+    await markMedicationAsTaken(localMed, date, isOnTime, {
+      onSuccess: async (takenTime, onTime) => {
+        const updatedMedication = {
+          ...localMed,
+          status: "taken",
+          takenTime: Timestamp.fromDate(takenTime),
+          onTime
+        };
+        setLocalMed(updatedMedication);
+        await fetchLastTakenReminder();
+        router.setParams({ medication: JSON.stringify(updatedMedication) });
+
+        // Update streak if taken on time
+        if (onTime) {
+          const userinfo = await getFromStorage("userDetails");
+          if (userinfo) {
+            await updateStreak(userinfo.uid, true);
+          }
+        }
+      },
+      onError: (error) => {
+        console.error("Error marking medication as taken:", error);
+        Alert.alert("Error", "Failed to mark medication as taken. Please try again.");
+      },
+      openDateTimePicker: async () => null,
+      showTakeMedicationSheet: () => {},
+    });
+  };
 
   const handleUndoConfirm = useCallback(async () => {
     setShowUndoModal(false);
@@ -154,9 +212,10 @@ export default function MedicationDetails() {
         console.error("Error undoing medication:", error);
         Alert.alert("Error", "Failed to undo medication. Please try again.");
       },
-      openDateTimePicker
+      openDateTimePicker: async () => null,
+      showTakeMedicationSheet: () => {},
     });
-  }, [localMed, fetchLastTakenReminder, router, openDateTimePicker]);
+  }, [localMed, fetchLastTakenReminder, router]);
 
   const formatScheduledTime = useCallback(() => {
     const scheduledTime = getScheduledDate(localMed);
@@ -225,16 +284,13 @@ export default function MedicationDetails() {
         onCancel={() => setShowUndoModal(false)}
       />
 
-      <DateTimePickerModal
-        visible={dateTimePickerVisible}
-        value={dateTimePickerValue}
-        onChange={(date) => {
-          setDateTimePickerVisible(false);
-          if (date) {
-            handleMedicationAction();
-          }
-        }}
-        onRequestClose={() => setDateTimePickerVisible(false)}
+      <TakeMedicationSheet
+        visible={isTakeSheetVisible}
+        onDismiss={() => setIsTakeSheetVisible(false)}
+        medication={localMed}
+        onTakeOnTime={handleTakeOnTime}
+        onTakeNow={handleTakeNow}
+        onSetTime={handleSetTime}
       />
     </View>
   );
