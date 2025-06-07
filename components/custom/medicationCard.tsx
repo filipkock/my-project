@@ -12,6 +12,7 @@ import { Circle } from '~/lib/icons/Circle';
 import { useRouter } from 'expo-router';
 import { Timestamp } from 'firebase/firestore';
 import { markMedicationAsTaken } from "~/src/utils/medicationActions";
+import { useTheme } from '@react-navigation/native';
 
 interface MedicationCardProps {
   medication: Medication;
@@ -27,6 +28,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
   const router = useRouter();
   const [isTakeSheetVisible, setIsTakeSheetVisible] = useState(false);
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
+  const { colors } = useTheme();
 
   const handleMedicationAction = async () => {
     if (medication.status === "taken") {
@@ -188,7 +190,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
         )}
         {medication.status === 'taken' && (
           <>
-            <CheckCircleIcon size={32} color="black" opacity={0.7} />
+            <CheckCircleIcon size={32} color={colors.primary} opacity={0.7} />
             <TouchableWithoutFeedback onPress={handleCardPress}>
               <View className="flex-1">
                 <Text className="font-bold text-lg mb-2">
