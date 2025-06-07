@@ -121,12 +121,16 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
   /** 🔹 Fetch medication reminders for a selected day */
   const fetchMedicationListForDay = async (dayString: string) => {
     try {
+      setLoading(true);
       const selectedDayTimestamp = Timestamp.fromDate(
         moment(dayString, "YYYY-MM-DD").toDate()
       );
 
       const userinfo = await getFromStorage("userDetails");
-      if (!userinfo) return;
+      if (!userinfo) {
+        setItems({ [dayString]: [] });
+        return;
+      }
 
       // 🔹 Step 1: Fetch reminders for today
       const remindersQuery = query(
@@ -214,6 +218,9 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
       setItems({ [dayString]: flattened });
     } catch (error) {
       console.error("Error fetching medication for day:", error);
+      setItems({ [dayString]: [] });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -287,17 +294,9 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
 
   /** 🔹 Called when the user selects a day */
   const handleDayPress = async (day: DayInput) => {
-    setLoading(true);
-
     const dateString = typeof day === "string" ? day : day.dateString;
-    setItems((prev) => ({ ...prev, [dateString]: [] }));
     setSelectedDate(dateString);
-
-    try {
-      await fetchMedicationListForDay(dateString); // Wait until this completes
-    } finally {
-      setLoading(false); // Always run this, even if fetch throws
-    }
+    await fetchMedicationListForDay(dateString);
   };
 
   /** 🔹 Called when the user switches months */
