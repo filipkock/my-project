@@ -1,18 +1,21 @@
 import React, { useState } from "react";
 import { View, TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import { Text } from "~/components/ui/text";
-import { CheckCircleIcon } from 'react-native-heroicons/solid';
+import { CheckCircleIcon } from "react-native-heroicons/solid";
 import type { Medication } from "~/src/types/medication";
-import { handleTakeMedication, handleUntakeMedication } from "~/src/utils/medicationActions";
+import {
+  handleTakeMedication,
+  handleUntakeMedication,
+} from "~/src/utils/medicationActions";
 import { getScheduledDate } from "~/src/utils/medicationActions";
 import TakeMedicationSheet from "./TakeMedicationSheet";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { Card, CardContent } from '~/components/ui/card';
-import { Circle } from '~/lib/icons/Circle';
-import { useRouter } from 'expo-router';
-import { Timestamp } from 'firebase/firestore';
+import { Card, CardContent } from "~/components/ui/card";
+import { Circle } from "~/lib/icons/Circle";
+import { useRouter } from "expo-router";
+import { Timestamp } from "firebase/firestore";
 import { markMedicationAsTaken } from "~/src/utils/medicationActions";
-import { useTheme } from '@react-navigation/native';
+import { useTheme } from "@react-navigation/native";
 
 interface MedicationCardProps {
   medication: Medication;
@@ -38,11 +41,11 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
             ...medication,
             status: "pending",
             takenTime: null,
-            onTime: null
+            onTime: null,
           });
         },
         onError: (error) => {
-          console.error('Error undoing medication:', error);
+          console.error("Error undoing medication:", error);
         },
         openDateTimePicker: async () => null,
         showTakeMedicationSheet: () => {},
@@ -54,11 +57,11 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
             ...medication,
             status: "taken",
             takenTime: Timestamp.fromDate(takenTime),
-            onTime
+            onTime,
           });
         },
         onError: (error) => {
-          console.error('Error marking medication as taken:', error);
+          console.error("Error marking medication as taken:", error);
         },
         openDateTimePicker: async (date: Date) => {
           setIsDateTimePickerVisible(true);
@@ -86,11 +89,11 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
           ...medication,
           status: "taken",
           takenTime: Timestamp.fromDate(takenTime),
-          onTime
+          onTime,
         });
       },
       onError: (error: Error) => {
-        console.error('Error marking medication as taken:', error);
+        console.error("Error marking medication as taken:", error);
       },
       openDateTimePicker: async () => null,
       showTakeMedicationSheet: () => {},
@@ -106,11 +109,11 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
           ...medication,
           status: "taken",
           takenTime: Timestamp.fromDate(takenTime),
-          onTime
+          onTime,
         });
       },
       onError: (error: Error) => {
-        console.error('Error marking medication as taken:', error);
+        console.error("Error marking medication as taken:", error);
       },
       openDateTimePicker: async () => null,
       showTakeMedicationSheet: () => {},
@@ -120,18 +123,19 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
 
   const handleSetTime = async (date: Date) => {
     const scheduledTime = getScheduledDate(medication);
-    const isOnTime = Math.abs(date.getTime() - scheduledTime.getTime()) <= 60 * 60 * 1000; // Within 1 hour
+    const isOnTime =
+      Math.abs(date.getTime() - scheduledTime.getTime()) <= 60 * 60 * 1000; // Within 1 hour
     await markMedicationAsTaken(medication, date, isOnTime, {
       onSuccess: (takenTime: Date, onTime: boolean) => {
         onMedicationUpdate({
           ...medication,
           status: "taken",
           takenTime: Timestamp.fromDate(takenTime),
-          onTime
+          onTime,
         });
       },
       onError: (error: Error) => {
-        console.error('Error marking medication as taken:', error);
+        console.error("Error marking medication as taken:", error);
       },
       openDateTimePicker: async () => null,
       showTakeMedicationSheet: () => {},
@@ -141,31 +145,41 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
 
   const handleCardPress = () => {
     router.push({
-      pathname: '/(app)/(tabs)/(home)/details/details',
-      params: { medication: JSON.stringify(medication) }
+      pathname: "/(app)/(tabs)/(home)/details/details",
+      params: { medication: JSON.stringify(medication) },
     });
   };
 
-  let takenTimeStr = '';
-  if (medication.status === 'taken' && medication.takenTime instanceof Timestamp) {
+  let takenTimeStr = "";
+  if (
+    medication.status === "taken" &&
+    medication.takenTime instanceof Timestamp
+  ) {
     const taken = medication.takenTime.toDate();
     const scheduledTime = getScheduledDate(medication);
     const isSameDay = taken.toDateString() === scheduledTime.toDateString();
-    
+
     takenTimeStr = taken.toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
+      hour: "2-digit",
+      minute: "2-digit",
     });
-    
+
     if (!isSameDay) {
-      takenTimeStr += `, ${taken.toLocaleDateString([], { day: 'numeric', month: 'short' })}`;
+      takenTimeStr += `, ${taken.toLocaleDateString([], {
+        day: "numeric",
+        month: "short",
+      })}`;
     }
   }
 
   return (
     <View className="w-full">
-      <Card className={`w-full flex flex-row items-center p-6 gap-4 ${medication.status === 'taken' ? 'opacity-70 bg-transparent' : ''}`}>
-        {medication.status === 'pending' && (
+      <Card
+        className={`w-full flex flex-row items-center p-6 gap-4 ${
+          medication.status === "taken" ? "opacity-70 bg-transparent" : ""
+        }`}
+      >
+        {medication.status === "pending" && (
           <>
             <Circle
               size={32}
@@ -188,7 +202,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
             </TouchableWithoutFeedback>
           </>
         )}
-        {medication.status === 'taken' && (
+        {medication.status === "taken" && (
           <>
             <CheckCircleIcon size={32} color={colors.primary} opacity={0.7} />
             <TouchableWithoutFeedback onPress={handleCardPress}>
@@ -197,12 +211,10 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
                   {medication.medicationName}
                 </Text>
                 <View className="flex-row gap-3 items-center">
-                  <Text className="text-gray-500">
-                    Taken {takenTimeStr}
-                  </Text>
+                  <Text className="text-gray-500">Taken {takenTimeStr}</Text>
                   {typeof medication.onTime !== undefined && (
                     <Text className="text-gray-500">
-                      {medication.onTime ? '• On time' : '• Late'}
+                      {medication.onTime ? "• On time" : "• Late"}
                     </Text>
                   )}
                 </View>

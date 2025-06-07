@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { View } from 'react-native';
-import { Text } from '~/components/ui/text';
-import { Button } from '~/components/ui/button';
-import BottomSheet from './BottomSheet';
-import type { Medication } from '~/src/types/medication';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { getScheduledDate } from '~/src/utils/medicationActions';
+import React, { useState } from "react";
+import { View } from "react-native";
+import { Text } from "~/components/ui/text";
+import { Button } from "~/components/ui/button";
+import { Alert, AlertTitle, AlertDescription } from "~/components/ui/alert";
+import { AlertTriangle } from "~/lib/icons/AlertTriangle";
+import BottomSheet from "./BottomSheet";
+import type { Medication } from "~/src/types/medication";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { getScheduledDate } from "~/src/utils/medicationActions";
 
 interface TakeMedicationSheetProps {
   visible: boolean;
@@ -61,14 +63,23 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
         {!showDatePicker ? (
           <>
             <View className="mb-8">
-              <Text className="text-2xl font-bold mb-2">
+              <Text className="text-2xl font-bold">
                 When did you take {medication.medicationName}?
               </Text>
-              <Text className="text-base text-muted-foreground">
-                Choose the most accurate option:
-              </Text>
+              {isFutureMedication && (
+                <Alert
+                  icon={AlertTriangle}
+                  variant="destructive"
+                  className="mt-4"
+                >
+                  <AlertTitle>Warning!</AlertTitle>
+                  <AlertDescription>
+                    This medication is scheduled for a future time
+                  </AlertDescription>
+                </Alert>
+              )}
             </View>
-            
+
             <View className="space-y-4 flex flex-col gap-3">
               <Button
                 variant="secondary"
@@ -100,12 +111,6 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
                 </View>
               </Button>
             </View>
-
-            {isFutureMedication && (
-              <Text className="text-sm text-red-500 mt-6 text-center">
-                Warning: This medication is scheduled for a future time.
-              </Text>
-            )}
           </>
         ) : (
           <View className="space-y-6">
@@ -120,10 +125,7 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
               maximumDate={new Date()}
               minimumDate={new Date(2020, 0, 1)}
             />
-            <Button
-              onPress={handleConfirm}
-              className="w-full py-4 mt-4"
-            >
+            <Button onPress={handleConfirm} className="w-full py-4 mt-4">
               <Text className="text-lg font-semibold">Confirm Time</Text>
             </Button>
           </View>
@@ -143,4 +145,4 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
   );
 };
 
-export default TakeMedicationSheet; 
+export default TakeMedicationSheet;

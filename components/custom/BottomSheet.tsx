@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 import {
   Modal,
   View,
@@ -8,8 +8,8 @@ import {
   Dimensions,
   ViewStyle,
   PanResponder,
-} from 'react-native';
-import { Text } from '~/components/ui/text';
+} from "react-native";
+import { Text } from "~/components/ui/text";
 
 interface BottomSheetProps {
   visible: boolean;
@@ -19,7 +19,7 @@ interface BottomSheetProps {
   style?: ViewStyle;
 }
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.5; // 50% of screen height
 const SWIPE_THRESHOLD = 50; // Minimum distance to trigger dismiss
 
@@ -40,7 +40,8 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
         return gestureState.dy > 0; // Only respond to downward gestures
       },
       onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dy > 0) { // Only allow downward movement
+        if (gestureState.dy > 0) {
+          // Only allow downward movement
           translateY.setValue(gestureState.dy);
         }
       },
@@ -115,20 +116,11 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             },
           ]}
         >
-          <Pressable
-            style={styles.backdropPressable}
-            onPress={onClose}
-          />
+          <Pressable style={styles.backdropPressable} onPress={onClose} />
         </Animated.View>
 
         {/* Sheet */}
-        <Animated.View
-          style={[
-            styles.sheet,
-            style,
-            animatedStyle,
-          ]}
-        >
+        <Animated.View style={[styles.sheet, style, animatedStyle]}>
           {/* Handle */}
           <View {...panResponder.panHandlers} style={styles.handleContainer}>
             <View style={styles.handle} />
@@ -154,21 +146,21 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'black',
+    backgroundColor: "black",
   },
   backdropPressable: {
     flex: 1,
   },
   sheet: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     height: SHEET_HEIGHT,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: -2,
@@ -179,12 +171,12 @@ const styles = StyleSheet.create({
   },
   handleContainer: {
     paddingVertical: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   handle: {
     width: 40,
     height: 4,
-    backgroundColor: '#D1D5DB',
+    backgroundColor: "#D1D5DB",
     borderRadius: 2,
   },
   content: {
@@ -192,4 +184,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BottomSheet; 
+export default BottomSheet;
