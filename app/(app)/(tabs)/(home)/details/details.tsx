@@ -139,34 +139,13 @@ export default function MedicationDetails() {
         onTime,
       };
       setLocalMed(updatedMedication);
-      await fetchLastTakenReminder();
-      router.setParams({ medication: JSON.stringify(updatedMedication) });
-
       const userinfo = await getFromStorage("userDetails");
       if (userinfo) {
-        const today = new Date();
-        const start = new Date(today.setHours(0, 0, 0, 0));
-        const end = new Date(today.setHours(23, 59, 59, 999));
-        const q = query(
-          collection(db, "reminders"),
-          where("uid", "==", userinfo.uid),
-          where("date", ">=", Timestamp.fromDate(start)),
-          where("date", "<=", Timestamp.fromDate(end))
-        );
-        const docs = await getDocs(q);
-        const reminders = docs.docs.map((d) => d.data() as ReminderData);
-        const takenToday = reminders.filter((r) => r.onTime).length;
-        const totalToday = reminders.length;
-        if (totalToday > 1) {
-          router.push({
-            pathname: "/(app)/(tabs)/(home)/(progress)/DailyProgress",
-            params: {
-              taken: String(takenToday),
-              total: String(totalToday),
-            },
-          });
-        }
+        await updateStreak(userinfo.uid, onTime);
       }
+      await fetchLastTakenReminder();
+
+      // Navigation to DailyProgress page is handled from the medication list page.
     },
     [localMed, fetchLastTakenReminder, router]
   );
