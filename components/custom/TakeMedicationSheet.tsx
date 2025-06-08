@@ -64,7 +64,11 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
     <BottomSheet
       visible={visible}
       onClose={onDismiss}
-      title={showDatePicker ? "Select Date & Time" : "Mark as Taken"}
+      title={
+        showDatePicker
+          ? "Select Date & Time"
+          : `When did you take ${medication.medicationName}?`
+      }
     >
       <View className="px-4 pb-7">
         {!showDatePicker ? (
@@ -72,16 +76,9 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
             <View className="mb-8">
               {isSameDayFuture && (
                 <Alert icon={AlertTriangle} variant="destructive">
-                  <AlertTitle>Future Medication!</AlertTitle>
-                  <AlertDescription>
-                    This medication is scheduled for later today. Are you sure
-                    you want to take it now?
-                  </AlertDescription>
+                  <Text>Warning! This is scheduled for later today.</Text>
                 </Alert>
               )}
-              <Text className="text-2xl font-bold mt-4">
-                When did you take {medication.medicationName}?
-              </Text>
             </View>
 
             {isDifferentDayFuture ? (
@@ -97,7 +94,8 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
                   <Button
                     variant="secondary"
                     onPress={handleTakeOnTime}
-                    className="w-full py-8"
+                    className="w-full"
+                    size="lg"
                   >
                     <View className="items-center">
                       <Text className="text-lg font-semibold mb-1">
@@ -109,7 +107,8 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
                   <Button
                     variant="secondary"
                     onPress={handleTakeNow}
-                    className="w-full py-8"
+                    className="w-full"
+                    size="lg"
                   >
                     <View className="items-center">
                       <Text className="text-lg font-semibold mb-1">Now</Text>
@@ -119,7 +118,8 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
                   <Button
                     variant="secondary"
                     onPress={() => setShowDatePicker(true)}
-                    className="w-full py-8"
+                    className="w-full"
+                    size="lg"
                   >
                     <View className="items-center">
                       <Text className="text-lg font-semibold mb-1">

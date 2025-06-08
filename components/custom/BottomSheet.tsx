@@ -128,7 +128,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
 
           {/* Title */}
           {title && (
-            <Text className="text-xl font-semibold text-gray-900 mb-4 px-4">
+            <Text className="text-2xl font-semibold text-gray-900 mb-4 px-4 pt-4">
               {title}
             </Text>
           )}
