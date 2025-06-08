@@ -36,7 +36,8 @@ export const shouldShowActionSheet = (medication: Medication): boolean => {
 
 export const handleTakeMedication = async (
   medication: Medication,
-  callbacks: MedicationActionCallbacks
+  callbacks: MedicationActionCallbacks,
+  selectedDate?: string
 ) => {
   try {
     const now = new Date();
@@ -53,7 +54,13 @@ export const handleTakeMedication = async (
 
     // If within time window, mark as taken immediately
     if (isSameDay && withinOneHr) {
-      await markMedicationAsTaken(medication, now, true, callbacks);
+      await markMedicationAsTaken(
+        medication,
+        now,
+        true,
+        callbacks,
+        selectedDate ?? moment().format("YYYY-MM-DD")
+      );
       return;
     }
 

@@ -23,7 +23,7 @@ import {
   handleTakeMedication,
   handleUntakeMedication,
   markMedicationAsTaken,
-} from "~/src/utils/medication";
+} from "~/src/utils/medicationActions";
 import { updateStreak, decrementStreak } from "~/src/utils/streak";
 import { getFromStorage } from "~/src/services/storage";
 import UndoMedicationModal from "~/components/custom/UndoMedicationModal";
@@ -106,18 +106,24 @@ export default function MedicationDetails() {
 
   const handleTakeOnTime = async () => {
     const scheduledTime = getScheduledDate(localMed);
-    await markMedicationAsTaken(localMed, scheduledTime, true, {
-      onSuccess: handleSuccessfulIntake,
-      onError: (error: Error) => {
-        console.error("Error marking medication as taken:", error);
-        Alert.alert(
-          "Error",
-          "Failed to mark medication as taken. Please try again."
-        );
+    await markMedicationAsTaken(
+      localMed,
+      scheduledTime,
+      true,
+      {
+        onSuccess: handleSuccessfulIntake,
+        onError: (error: Error) => {
+          console.error("Error marking medication as taken:", error);
+          Alert.alert(
+            "Error",
+            "Failed to mark medication as taken. Please try again."
+          );
+        },
+        openDateTimePicker: async () => null,
+        showTakeMedicationSheet: () => {},
       },
-      openDateTimePicker: async () => null,
-      showTakeMedicationSheet: () => {},
-    });
+      selectedDate
+    );
   };
 
   const handleMedicationAction = useCallback(async () => {
@@ -160,36 +166,48 @@ export default function MedicationDetails() {
 
   const handleTakeNow = async () => {
     const now = new Date();
-    await markMedicationAsTaken(localMed, now, false, {
-      onSuccess: handleSuccessfulIntake,
-      onError: (error: Error) => {
-        console.error("Error marking medication as taken:", error);
-        Alert.alert(
-          "Error",
-          "Failed to mark medication as taken. Please try again."
-        );
+    await markMedicationAsTaken(
+      localMed,
+      now,
+      false,
+      {
+        onSuccess: handleSuccessfulIntake,
+        onError: (error: Error) => {
+          console.error("Error marking medication as taken:", error);
+          Alert.alert(
+            "Error",
+            "Failed to mark medication as taken. Please try again."
+          );
+        },
+        openDateTimePicker: async () => null,
+        showTakeMedicationSheet: () => {},
       },
-      openDateTimePicker: async () => null,
-      showTakeMedicationSheet: () => {},
-    });
+      selectedDate
+    );
   };
 
   const handleSetTime = async (date: Date) => {
     const scheduledTime = getScheduledDate(localMed);
     const isOnTime =
       Math.abs(date.getTime() - scheduledTime.getTime()) <= 60 * 60 * 1000; // Within 1 hour
-    await markMedicationAsTaken(localMed, date, isOnTime, {
-      onSuccess: handleSuccessfulIntake,
-      onError: (error: Error) => {
-        console.error("Error marking medication as taken:", error);
-        Alert.alert(
-          "Error",
-          "Failed to mark medication as taken. Please try again."
-        );
+    await markMedicationAsTaken(
+      localMed,
+      date,
+      isOnTime,
+      {
+        onSuccess: handleSuccessfulIntake,
+        onError: (error: Error) => {
+          console.error("Error marking medication as taken:", error);
+          Alert.alert(
+            "Error",
+            "Failed to mark medication as taken. Please try again."
+          );
+        },
+        openDateTimePicker: async () => null,
+        showTakeMedicationSheet: () => {},
       },
-      openDateTimePicker: async () => null,
-      showTakeMedicationSheet: () => {},
-    });
+      selectedDate
+    );
   };
 
   const handleUndoConfirm = useCallback(async () => {
