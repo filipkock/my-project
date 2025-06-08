@@ -190,3 +190,35 @@ export const resetStreak = async (uid: string): Promise<void> => {
     console.error("Error resetting streak:", err);
   }
 };
+
+export const maybeDecrementStreakOnUntake = async (
+  uid: string,
+  selectedDate: string
+): Promise<void> => {
+  try {
+    const todayStr = new Date().toISOString().split("T")[0];
+    if (selectedDate !== todayStr) return; // only affect streaks for today
+
+    const selectedDayTimestamp = Timestamp.fromDate(
+      new Date(selectedDate + "T00:00:00")
+    );
+
+    const remindersQuery = query(
+      collection(db, "reminders"),
+      where("date", "==", selectedDayTimestamp),
+      where("uid", "==", uid)
+    );
+
+    const snapshot = await getDocs(remindersQuery);
+    const reminders = snapshot.docs.map((doc) => doc.data() as ReminderData);
+
+    const totalReminders = reminders.length;
+    const takenCount = reminders.filter((r) => r.status === "taken").length;
+
+    if (takenCount === totalReminders) {
+      await decrementStreak(uid);
+    }
+  } catch (err) {
+    console.error("Error checking untake streak condition:", err);
+  }
+};

@@ -38,21 +38,25 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
 
   const handleMedicationAction = async () => {
     if (medication.status === "taken") {
-      await handleUntakeMedication(medication, {
-        onSuccess: (takenTime, onTime) => {
-          onMedicationUpdate({
-            ...medication,
-            status: "pending",
-            takenTime: null,
-            onTime: null,
-          });
+      await handleUntakeMedication(
+        medication,
+        {
+          onSuccess: (takenTime, onTime) => {
+            onMedicationUpdate({
+              ...medication,
+              status: "pending",
+              takenTime: null,
+              onTime: null,
+            });
+          },
+          onError: (error) => {
+            console.error("Error undoing medication:", error);
+          },
+          openDateTimePicker: async () => null,
+          showTakeMedicationSheet: () => {},
         },
-        onError: (error) => {
-          console.error("Error undoing medication:", error);
-        },
-        openDateTimePicker: async () => null,
-        showTakeMedicationSheet: () => {},
-      });
+        selectedDate
+      );
     } else {
       await handleTakeMedication(medication, {
         onSuccess: (takenTime, onTime) => {

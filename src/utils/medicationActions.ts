@@ -9,9 +9,8 @@ import moment from "moment";
 import type { Medication } from "~/src/types/medication";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "~/config/firebase";
-import { updateStreak, decrementStreak } from "~/src/utils/streak";
+import { updateStreak, maybeDecrementStreakOnUntake } from "~/src/utils/streak";
 import { getFromStorage } from "~/src/services/storage";
-import { useSelectedDate } from "~/src/context/SelectedDateContext";
 
 /** Convert Firestore Timestamp → JS Date */
 export const tsToDate = (ts: Timestamp | { seconds: number }): Date =>
@@ -80,33 +79,14 @@ export const handleTakeMedication = async (
 export const handleUntakeMedication = async (
   medication: Medication,
   callbacks: MedicationActionCallbacks,
-  selectedDate?: string
+  selectedDate: string
 ) => {
   try {
-    // If user has been rewarded for the day, decrement the streak by 1
     const userinfo = await getFromStorage("userDetails");
     if (userinfo && selectedDate) {
-      const selectedDayTimestamp = Timestamp.fromDate(
-        new Date(selectedDate + "T00:00:00")
-      );
-
-      const remindersQuery = query(
-        collection(db, "reminders"),
-        where("date", "==", selectedDayTimestamp),
-        where("uid", "==", userinfo.uid)
-      );
-
-      const snapshot = await getDocs(remindersQuery);
-
-      const reminders = snapshot.docs.map((doc) => doc.data());
-      const totalReminders = reminders.length;
-      const takenCount = reminders.filter((r) => r.status === "taken").length;
-
-      // If user has already been awarded for a completed day, do not decrement
-      const hasCompletedDay = takenCount === totalReminders;
-
-      if (hasCompletedDay) {
-        await decrementStreak(userinfo.uid);
+      const todayStr = moment().format("YYYY-MM-DD");
+      if (selectedDate === todayStr) {
+        await maybeDecrementStreakOnUntake(userinfo.uid, selectedDate);
       }
     }
 
