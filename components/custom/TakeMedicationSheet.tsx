@@ -66,7 +66,7 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
       onClose={onDismiss}
       title={
         showDatePicker
-          ? "Select Date & Time"
+          ? "Select Time"
           : `When did you take ${medication.medicationName}?`
       }
     >
@@ -143,16 +143,16 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
         ) : (
           <View className="space-y-6">
             <Text className="text-lg font-semibold text-center mb-2">
-              Select when you took {medication.medicationName}
+              What time did you take {medication.medicationName}?
             </Text>
-            <DateTimePicker
-              value={selectedDate}
-              mode="datetime"
-              display="spinner"
-              onChange={handleDateChange}
-              maximumDate={new Date()}
-              minimumDate={new Date(2020, 0, 1)}
-            />
+            <View className="items-center">
+              <DateTimePicker
+                value={selectedDate}
+                mode="time"
+                display="spinner"
+                onChange={handleDateChange}
+              />
+            </View>
             <Button onPress={handleConfirm} className="w-full py-4 mt-4">
               <Text className="text-lg font-semibold">Confirm Time</Text>
             </Button>
