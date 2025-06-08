@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   collection,
@@ -101,6 +102,24 @@ export const updateStreak = async (
       newStreak = currentStreak + 1;
     } else if (!onTime) {
       newStreak = 0;
+    }
+
+    const takenToday = reminders.filter((r) => r.onTime).length;
+    const totalToday = reminders.length;
+
+    const selectedDate = today; // In this context, selectedDate is today
+    const selectedIsToday =
+      today.getDate() === selectedDate.getDate() &&
+      today.getMonth() === selectedDate.getMonth() &&
+      today.getFullYear() === selectedDate.getFullYear();
+    if (onTime && totalToday > 1 && selectedIsToday) {
+      router.push({
+        pathname: "/(app)/(tabs)/(home)/DailyProgress",
+        params: {
+          taken: String(takenToday),
+          total: String(totalToday),
+        },
+      });
     }
 
     // Write back (always include uid so generic rule passes)
