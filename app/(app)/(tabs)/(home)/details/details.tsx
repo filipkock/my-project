@@ -97,13 +97,38 @@ export default function MedicationDetails() {
     return "Upcoming";
   }, [localMed]);
 
+  const handleTakeOnTime = async () => {
+    const scheduledTime = getScheduledDate(localMed);
+    await markMedicationAsTaken(localMed, scheduledTime, true, {
+      onSuccess: handleSuccessfulIntake,
+      onError: (error) => {
+        console.error("Error marking medication as taken:", error);
+        Alert.alert(
+          "Error",
+          "Failed to mark medication as taken. Please try again."
+        );
+      },
+      openDateTimePicker: async () => null,
+      showTakeMedicationSheet: () => {},
+    });
+  };
+
   const handleMedicationAction = useCallback(async () => {
     if (localMed.status === "taken") {
       setShowUndoModal(true);
     } else {
-      setIsTakeSheetVisible(true);
+      const scheduledTime = getScheduledDate(localMed);
+      const now = new Date();
+      const timeDiff = Math.abs(scheduledTime.getTime() - now.getTime());
+      const oneHour = 60 * 60 * 1000;
+
+      if (timeDiff <= oneHour) {
+        await handleTakeOnTime();
+      } else {
+        setIsTakeSheetVisible(true);
+      }
     }
-  }, [localMed]);
+  }, [localMed, handleTakeOnTime]);
 
   const handleSuccessfulIntake = useCallback(
     async (takenTime: Date, onTime: boolean) => {
@@ -145,22 +170,6 @@ export default function MedicationDetails() {
     },
     [localMed, fetchLastTakenReminder, router]
   );
-
-  const handleTakeOnTime = async () => {
-    const scheduledTime = getScheduledDate(localMed);
-    await markMedicationAsTaken(localMed, scheduledTime, true, {
-      onSuccess: handleSuccessfulIntake,
-      onError: (error) => {
-        console.error("Error marking medication as taken:", error);
-        Alert.alert(
-          "Error",
-          "Failed to mark medication as taken. Please try again."
-        );
-      },
-      openDateTimePicker: async () => null,
-      showTakeMedicationSheet: () => {},
-    });
-  };
 
   const handleTakeNow = async () => {
     const now = new Date();
