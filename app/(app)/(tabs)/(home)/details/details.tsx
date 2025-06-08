@@ -14,6 +14,8 @@ import {
   orderBy,
   limit,
   getDocs,
+  updateDoc,
+  doc,
 } from "firebase/firestore";
 import { db } from "~/config/firebase";
 import {
@@ -89,6 +91,9 @@ export default function MedicationDetails() {
   const calculateStatus = useCallback(() => {
     if (localMed.status === "taken") {
       return "Taken";
+    }
+    if (localMed.status === "skipped") {
+      return "Skipped";
     }
     const scheduledTime = getScheduledDate(localMed);
     const now = new Date();
@@ -265,6 +270,14 @@ export default function MedicationDetails() {
             </View>
           )}
 
+          {localMed.status === "skipped" && (
+            <View className="flex-row items-center space-x-3">
+              <Text className="text-base text-muted-foreground">
+                This medication was marked as skipped.
+              </Text>
+            </View>
+          )}
+
           {lastTakenInfo && localMed.status !== "taken" && (
             <View className="flex-row items-center space-x-3">
               <Text className="text-base text-muted-foreground">
@@ -276,21 +289,78 @@ export default function MedicationDetails() {
       </ScrollView>
 
       <View className="p-4 border-t border-border bg-background">
-        <Button
-          onPress={handleMedicationAction}
-          className="w-full"
-          variant={localMed.status === "taken" ? "outline" : "default"}
-        >
-          <Text
-            className={
-              localMed.status === "taken" ? "text-foreground" : "text-white"
-            }
+        {localMed.status === "taken" && (
+          <Button
+            onPress={() => setShowUndoModal(true)}
+            className="w-full"
+            variant="outline"
           >
-            {localMed.status === "taken"
-              ? "Undo Medication"
-              : "Take Medication"}
-          </Text>
-        </Button>
+            <Text className="text-foreground">Undo Medication</Text>
+          </Button>
+        )}
+
+        {localMed.status === "skipped" && (
+          <Button
+            onPress={async () => {
+              setIsTakeSheetVisible(true);
+            }}
+            className="w-full"
+            variant="default"
+          >
+            <Text className="text-white">Mark as Taken</Text>
+          </Button>
+        )}
+
+        {localMed.status === "pending" && (
+          <>
+            <Button
+              onPress={handleMedicationAction}
+              className="w-full"
+              variant="default"
+            >
+              <Text className="text-white">Take Medication</Text>
+            </Button>
+            <View className="mt-2">
+              <Button
+                onPress={async () => {
+                  const updatedMedication = {
+                    ...localMed,
+                    status: "skipped",
+                    takenTime: null,
+                    onTime: false,
+                  };
+                  setLocalMed(updatedMedication);
+                  router.setParams({
+                    medication: JSON.stringify(updatedMedication),
+                  });
+
+                  // Update Firestore
+                  if (localMed.reminderDocID) {
+                    const reminderRef = doc(
+                      db,
+                      "reminders",
+                      localMed.reminderDocID
+                    );
+                    await updateDoc(reminderRef, {
+                      status: "skipped",
+                      takenTime: null,
+                      onTime: false,
+                    });
+                  }
+
+                  const userinfo = await getFromStorage("userDetails");
+                  if (userinfo) {
+                    await updateStreak(userinfo.uid, false, false); // No streak increment
+                  }
+                }}
+                className="w-full"
+                variant="outline"
+              >
+                <Text className="text-foreground">Skip Medication</Text>
+              </Button>
+            </View>
+          </>
+        )}
       </View>
 
       <UndoMedicationModal

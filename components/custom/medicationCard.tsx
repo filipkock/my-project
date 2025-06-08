@@ -240,6 +240,21 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
             </TouchableWithoutFeedback>
           </>
         )}
+        {medication.status === "skipped" && (
+          <>
+            <CheckCircleIcon size={32} color="#f87171" opacity={0.7} />
+            <TouchableWithoutFeedback onPress={handleCardPress}>
+              <View className="flex-1">
+                <Text className="font-bold text-lg mb-2">
+                  {medication.medicationName}
+                </Text>
+                <View className="flex-row gap-3 items-center">
+                  <Text className="text-gray-500">Skipped</Text>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </>
+        )}
       </Card>
 
       <TakeMedicationSheet
