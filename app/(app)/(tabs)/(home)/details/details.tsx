@@ -154,16 +154,11 @@ export default function MedicationDetails() {
         onTime,
       };
       setLocalMed(updatedMedication);
-      const userinfo = await getFromStorage("userDetails");
-      if (userinfo) {
-        const isToday = selectedDate === moment().format("YYYY-MM-DD");
-        await updateStreak(userinfo.uid, onTime, isToday);
-      }
       await fetchLastTakenReminder();
 
       // Navigation to DailyProgress page is handled from the medication list page.
     },
-    [localMed, fetchLastTakenReminder, selectedDate]
+    [localMed, fetchLastTakenReminder]
   );
 
   const handleTakeNow = async () => {

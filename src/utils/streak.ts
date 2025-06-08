@@ -27,6 +27,8 @@ interface ReminderData {
 interface UserStreakDoc {
   streak: number;
   uid: string;
+  /** ISO “YYYY‑MM‑DD” date the streak was last incremented */
+  lastUpdated?: string;
 }
 
 /* Converter (optional strong‑typing) */
@@ -85,6 +87,10 @@ export const updateStreak = async (
     const currentStreak = snap.exists()
       ? (snap.data() as UserStreakDoc).streak ?? 0
       : 0;
+    const lastUpdated = snap.exists()
+      ? (snap.data() as UserStreakDoc).lastUpdated ?? ""
+      : "";
+    const todayStr = new Date().toISOString().split("T")[0];
     let newStreak = currentStreak;
 
     /* 2️⃣ Fetch today’s reminders */
@@ -103,16 +109,15 @@ export const updateStreak = async (
     const skippedCount = reminders.filter((r) => r.status === "skipped").length;
     const totalToday = reminders.length;
 
-    /* 3️⃣ Apply new rules */
+    /* 3️⃣ Apply new rules (prevent double award) */
     if (totalToday > 0 && takenCount === totalToday) {
-      /* ✅ all doses taken (on‑time OR late) */
-      newStreak = currentStreak + 1;
-    } else if (takenCount + skippedCount > 0) {
-      /* ➖ at least one dose recorded */
-      newStreak = currentStreak; // unchanged
+      if (lastUpdated !== todayStr) {
+        newStreak = currentStreak + 1; // award once per day
+      }
+    } else if (takenCount + skippedCount === 0) {
+      newStreak = 0; // nothing logged
     } else {
-      /* ❌ nothing logged */
-      newStreak = 0;
+      newStreak = currentStreak; // streak unchanged
     }
 
     /* 4️⃣ Trigger DailyProgress after any dose is marked as taken */
@@ -126,11 +131,19 @@ export const updateStreak = async (
       });
     }
 
-    /* 5️⃣ Persist streak */
+    /* 5️⃣ Persist streak (and lastUpdated flag) */
+    let payload: Partial<UserStreakDoc> = { streak: newStreak, uid };
+
+    if (newStreak === 0) {
+      payload.lastUpdated = ""; // reset case
+    } else if (takenCount === totalToday && totalToday > 0) {
+      payload.lastUpdated = todayStr; // record the award day
+    }
+
     if (snap.exists()) {
-      await updateDoc(ref, { streak: newStreak, uid });
+      await updateDoc(ref, payload);
     } else {
-      await setDoc(ref, { streak: newStreak, uid });
+      await setDoc(ref, payload);
     }
     await AsyncStorage.setItem(STREAK_KEY, String(newStreak));
 
@@ -151,11 +164,11 @@ export const decrementStreak = async (uid: string): Promise<number> => {
       : 0;
     const next = Math.max(0, current - 1);
 
-    if (snap.exists()) {
-      await updateDoc(ref, { streak: next, uid });
-    } else {
-      await setDoc(ref, { streak: next, uid });
-    }
+    await setDoc(
+      ref,
+      { streak: next, uid, lastUpdated: "" }, // clear lastUpdated so a new award is allowed
+      { merge: true }
+    );
     await AsyncStorage.setItem(STREAK_KEY, String(next));
     return next;
   } catch (err) {
