@@ -143,7 +143,7 @@ export const markMedicationAsTaken = async (
     // Always update streak - increment if on time, reset to 0 if not on time
     const userinfo = await getFromStorage("userDetails");
     if (userinfo) {
-      await updateStreak(userinfo.uid, onTime, isToday);
+      await updateStreak(userinfo.uid, isToday);
     }
 
     callbacks.onSuccess(takenTime, onTime);

@@ -17,49 +17,46 @@ import { db } from "~/config/firebase";
 
 const STREAK_KEY = "@medication_streak";
 
-/** ──────────────────────────────────────────────────────────────────────────
+/* ──────────────────────────────────────────────────────────────────────────
  * Types
  * ──────────────────────────────────────────────────────────────────────── */
 interface ReminderData {
   date: Timestamp; // stored in Firestore
-  onTime: boolean;
+  status: "taken" | "skipped" | "pending";
 }
-
 interface UserStreakDoc {
   streak: number;
   uid: string;
 }
 
-/** Optional: strong-type the collection
- -------------------------------------------------------- */
+/* Converter (optional strong‑typing) */
 const streakConverter: FirestoreDataConverter<UserStreakDoc> = {
-  toFirestore: (data) => data,
+  toFirestore: (d) => d,
   fromFirestore: (snap) => snap.data() as UserStreakDoc,
 };
 
-/** ──────────────────────────────────────────────────────────────────────────
+/* ──────────────────────────────────────────────────────────────────────────
  * Helpers
  * ──────────────────────────────────────────────────────────────────────── */
-const getToday = () => {
+const startOfToday = () => {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
   return d;
 };
 const MS_IN_DAY = 86_400_000;
 
-/** ──────────────────────────────────────────────────────────────────────────
+/* ──────────────────────────────────────────────────────────────────────────
  * Public API
  * ──────────────────────────────────────────────────────────────────────── */
 
-/** Fetch the current streak (Firestore → cache). */
+/** Get streak (Firestore → cache) */
 export const getStreakFromFirestore = async (uid: string): Promise<number> => {
   try {
-    const docSnap = await getDoc(
+    const snap = await getDoc(
       doc(db, "userStreaks", uid).withConverter(streakConverter)
     );
-
-    if (docSnap.exists()) {
-      const streak = docSnap.data().streak ?? 0;
+    if (snap.exists()) {
+      const streak = snap.data().streak ?? 0;
       await AsyncStorage.setItem(STREAK_KEY, String(streak));
       return streak;
     }
@@ -71,23 +68,27 @@ export const getStreakFromFirestore = async (uid: string): Promise<number> => {
   }
 };
 
-/** Increment or reset the streak after a dose event. */
+/**
+ * Main streak updater.
+ *  - Increases streak if *all* meds for today are taken (on‑time **or** late)
+ *  - Keeps streak if at least one med is taken/skipped
+ *  - Resets streak if nothing is logged by midnight
+ */
 export const updateStreak = async (
   uid: string,
-  onTime: boolean,
   isToday: boolean = true
 ): Promise<number> => {
   try {
+    /* 1️⃣ Fetch current streak */
     const ref = doc(db, "userStreaks", uid);
     const snap = await getDoc(ref);
-
-    // Get current streak value
     const currentStreak = snap.exists()
       ? (snap.data() as UserStreakDoc).streak ?? 0
       : 0;
     let newStreak = currentStreak;
 
-    const today = getToday();
+    /* 2️⃣ Fetch today’s reminders */
+    const today = startOfToday();
     const tomorrow = new Date(today.getTime() + MS_IN_DAY);
     const q = query(
       collection(db, "reminders"),
@@ -97,35 +98,42 @@ export const updateStreak = async (
     );
     const docs = await getDocs(q);
     const reminders = docs.docs.map((d) => d.data() as ReminderData);
-    const allTaken = reminders.every((r) => r.onTime === true);
 
-    if (onTime && allTaken) {
+    const takenCount = reminders.filter((r) => r.status === "taken").length;
+    const skippedCount = reminders.filter((r) => r.status === "skipped").length;
+    const totalToday = reminders.length;
+
+    /* 3️⃣ Apply new rules */
+    if (totalToday > 0 && takenCount === totalToday) {
+      /* ✅ all doses taken (on‑time OR late) */
       newStreak = currentStreak + 1;
-    } else if (!onTime) {
+    } else if (takenCount + skippedCount > 0) {
+      /* ➖ at least one dose recorded */
+      newStreak = currentStreak; // unchanged
+    } else {
+      /* ❌ nothing logged */
       newStreak = 0;
     }
 
-    const takenToday = reminders.filter((r) => r.onTime).length;
-    const totalToday = reminders.length;
-
-    if (isToday && onTime && totalToday > 1) {
+    /* 4️⃣ Trigger DailyProgress after any dose is marked as taken */
+    if (isToday && takenCount > 0) {
       router.replace({
         pathname: "/(app)/(tabs)/(home)/(progress)/DailyProgress",
         params: {
-          taken: String(takenToday),
+          taken: String(takenCount),
           total: String(totalToday),
         },
       });
     }
 
-    // Write back (always include uid so generic rule passes)
+    /* 5️⃣ Persist streak */
     if (snap.exists()) {
       await updateDoc(ref, { streak: newStreak, uid });
     } else {
       await setDoc(ref, { streak: newStreak, uid });
     }
-
     await AsyncStorage.setItem(STREAK_KEY, String(newStreak));
+
     return newStreak;
   } catch (err) {
     console.error("Error updating streak:", err);
@@ -133,34 +141,30 @@ export const updateStreak = async (
   }
 };
 
-/** Decrement the streak by 1 when undoing an on-time medication. */
+/** Decrement streak by 1 (undo on‑time or late dose) */
 export const decrementStreak = async (uid: string): Promise<number> => {
   try {
     const ref = doc(db, "userStreaks", uid);
     const snap = await getDoc(ref);
-
-    // Get current streak value
-    const currentStreak = snap.exists()
+    const current = snap.exists()
       ? (snap.data() as UserStreakDoc).streak ?? 0
       : 0;
-    const newStreak = Math.max(0, currentStreak - 1); // Ensure streak doesn't go below 0
+    const next = Math.max(0, current - 1);
 
-    // Write back (always include uid so generic rule passes)
     if (snap.exists()) {
-      await updateDoc(ref, { streak: newStreak, uid });
+      await updateDoc(ref, { streak: next, uid });
     } else {
-      await setDoc(ref, { streak: newStreak, uid });
+      await setDoc(ref, { streak: next, uid });
     }
-
-    await AsyncStorage.setItem(STREAK_KEY, String(newStreak));
-    return newStreak;
+    await AsyncStorage.setItem(STREAK_KEY, String(next));
+    return next;
   } catch (err) {
     console.error("Error decrementing streak:", err);
     return 0;
   }
 };
 
-/** Force-reset the user's streak. */
+/** Reset streak fully */
 export const resetStreak = async (uid: string): Promise<void> => {
   try {
     await setDoc(
@@ -171,57 +175,5 @@ export const resetStreak = async (uid: string): Promise<void> => {
     await AsyncStorage.setItem(STREAK_KEY, "0");
   } catch (err) {
     console.error("Error resetting streak:", err);
-  }
-};
-
-/** Recalculate the streak from the reminders collection (repair tool). */
-export const recalculateStreakFromFirestore = async (
-  uid: string
-): Promise<number> => {
-  try {
-    // newest → oldest taken reminders for this user
-    const q = query(
-      collection(db, "reminders"),
-      where("uid", "==", uid),
-      where("status", "==", "taken"),
-      orderBy("date", "desc")
-    );
-    const snapshot = await getDocs(q);
-
-    const reminders = snapshot.docs.map((d) => d.data() as ReminderData);
-
-    if (reminders.length === 0) {
-      await resetStreak(uid);
-      return 0;
-    }
-
-    let streak = 0;
-    let cursor = getToday();
-
-    for (const { date, onTime } of reminders) {
-      const reminderDate = date.toDate();
-      reminderDate.setHours(0, 0, 0, 0);
-
-      const diff = cursor.getTime() - reminderDate.getTime();
-
-      if (diff === 0 || diff === MS_IN_DAY) {
-        if (onTime) {
-          streak += 1;
-          cursor = reminderDate; // step back one day
-        } else {
-          break; // missed dose
-        }
-      } else {
-        break; // gap in days
-      }
-    }
-
-    await setDoc(doc(db, "userStreaks", uid), { streak, uid }, { merge: true });
-    await AsyncStorage.setItem(STREAK_KEY, String(streak));
-
-    return streak;
-  } catch (err) {
-    console.error("Error recalculating streak:", err);
-    return 0;
   }
 };
