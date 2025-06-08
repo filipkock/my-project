@@ -221,12 +221,8 @@ export default function MedicationList({
         const currentStreak = await getStreakFromFirestore(userinfo.uid);
         setStreak(currentStreak);
       }
-
-      // Refresh from server
-      await fetchMedicationListForDay(selectedDate);
     } catch (error) {
       console.error("Error updating medication:", error);
-      await fetchMedicationListForDay(selectedDate);
     }
   };
 
