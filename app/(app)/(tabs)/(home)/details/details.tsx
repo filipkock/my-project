@@ -14,6 +14,8 @@ import {
   orderBy,
   limit,
   getDocs,
+  updateDoc,
+  doc,
 } from "firebase/firestore";
 import { db } from "~/config/firebase";
 import {
@@ -54,6 +56,7 @@ export default function MedicationDetails() {
   const [lastTakenInfo, setLastTakenInfo] = useState<string | null>(null);
   const [showUndoModal, setShowUndoModal] = useState(false);
   const [isTakeSheetVisible, setIsTakeSheetVisible] = useState(false);
+  const { selectedDate } = useSelectedDate();
 
   const fetchLastTakenReminder = useCallback(async () => {
     try {
@@ -90,6 +93,9 @@ export default function MedicationDetails() {
     if (localMed.status === "taken") {
       return "Taken";
     }
+    if (localMed.status === "skipped") {
+      return "Skipped";
+    }
     const scheduledTime = getScheduledDate(localMed);
     const now = new Date();
     if (scheduledTime < now) {
@@ -102,7 +108,7 @@ export default function MedicationDetails() {
     const scheduledTime = getScheduledDate(localMed);
     await markMedicationAsTaken(localMed, scheduledTime, true, {
       onSuccess: handleSuccessfulIntake,
-      onError: (error) => {
+      onError: (error: Error) => {
         console.error("Error marking medication as taken:", error);
         Alert.alert(
           "Error",
@@ -131,8 +137,6 @@ export default function MedicationDetails() {
     }
   }, [localMed, handleTakeOnTime]);
 
-  const { selectedDate } = useSelectedDate();
-
   const handleSuccessfulIntake = useCallback(
     async (takenTime: Date, onTime: boolean) => {
       const updatedMedication = {
@@ -151,14 +155,14 @@ export default function MedicationDetails() {
 
       // Navigation to DailyProgress page is handled from the medication list page.
     },
-    [localMed, fetchLastTakenReminder, router, selectedDate]
+    [localMed, fetchLastTakenReminder, selectedDate]
   );
 
   const handleTakeNow = async () => {
     const now = new Date();
     await markMedicationAsTaken(localMed, now, false, {
       onSuccess: handleSuccessfulIntake,
-      onError: (error) => {
+      onError: (error: Error) => {
         console.error("Error marking medication as taken:", error);
         Alert.alert(
           "Error",
@@ -176,7 +180,7 @@ export default function MedicationDetails() {
       Math.abs(date.getTime() - scheduledTime.getTime()) <= 60 * 60 * 1000; // Within 1 hour
     await markMedicationAsTaken(localMed, date, isOnTime, {
       onSuccess: handleSuccessfulIntake,
-      onError: (error) => {
+      onError: (error: Error) => {
         console.error("Error marking medication as taken:", error);
         Alert.alert(
           "Error",
@@ -210,7 +214,7 @@ export default function MedicationDetails() {
           }
         }
       },
-      onError: (error) => {
+      onError: (error: Error) => {
         console.error("Error undoing medication:", error);
         Alert.alert("Error", "Failed to undo medication. Please try again.");
       },
@@ -265,6 +269,14 @@ export default function MedicationDetails() {
             </View>
           )}
 
+          {localMed.status === "skipped" && (
+            <View className="flex-row items-center space-x-3">
+              <Text className="text-base text-muted-foreground">
+                This medication was marked as skipped.
+              </Text>
+            </View>
+          )}
+
           {lastTakenInfo && localMed.status !== "taken" && (
             <View className="flex-row items-center space-x-3">
               <Text className="text-base text-muted-foreground">
@@ -276,21 +288,78 @@ export default function MedicationDetails() {
       </ScrollView>
 
       <View className="p-4 border-t border-border bg-background">
-        <Button
-          onPress={handleMedicationAction}
-          className="w-full"
-          variant={localMed.status === "taken" ? "outline" : "default"}
-        >
-          <Text
-            className={
-              localMed.status === "taken" ? "text-foreground" : "text-white"
-            }
+        {localMed.status === "taken" && (
+          <Button
+            onPress={() => setShowUndoModal(true)}
+            className="w-full"
+            variant="outline"
           >
-            {localMed.status === "taken"
-              ? "Undo Medication"
-              : "Take Medication"}
-          </Text>
-        </Button>
+            <Text className="text-foreground">Undo Medication</Text>
+          </Button>
+        )}
+
+        {localMed.status === "skipped" && (
+          <Button
+            onPress={async () => {
+              setIsTakeSheetVisible(true);
+            }}
+            className="w-full"
+            variant="default"
+          >
+            <Text className="text-white">Mark as Taken</Text>
+          </Button>
+        )}
+
+        {localMed.status === "pending" && (
+          <>
+            <Button
+              onPress={handleMedicationAction}
+              className="w-full"
+              variant="default"
+            >
+              <Text className="text-white">Take Medication</Text>
+            </Button>
+            <View className="mt-2">
+              <Button
+                onPress={async () => {
+                  const updatedMedication = {
+                    ...localMed,
+                    status: "skipped",
+                    takenTime: null,
+                    onTime: false,
+                  };
+                  setLocalMed(updatedMedication);
+                  router.setParams({
+                    medication: JSON.stringify(updatedMedication),
+                  });
+
+                  // Update Firestore
+                  if (localMed.reminderDocID) {
+                    const reminderRef = doc(
+                      db,
+                      "reminders",
+                      localMed.reminderDocID
+                    );
+                    await updateDoc(reminderRef, {
+                      status: "skipped",
+                      takenTime: null,
+                      onTime: false,
+                    });
+                  }
+
+                  const userinfo = await getFromStorage("userDetails");
+                  if (userinfo) {
+                    await updateStreak(userinfo.uid, false, false); // No streak increment
+                  }
+                }}
+                className="w-full"
+                variant="outline"
+              >
+                <Text className="text-foreground">Skip Medication</Text>
+              </Button>
+            </View>
+          </>
+        )}
       </View>
 
       <UndoMedicationModal

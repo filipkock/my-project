@@ -94,10 +94,10 @@ export const markMedicationAsTaken = async (
   medication: Medication,
   takenTime: Date,
   onTime: boolean,
-  callbacks: MedicationActionCallbacks
+  callbacks: MedicationActionCallbacks,
+  selectedDate: string
 ) => {
   try {
-    const { selectedDate } = useSelectedDate();
     const isToday = selectedDate === moment().format("YYYY-MM-DD");
 
     const reminderRef = doc(db, "reminders", medication.reminderDocID);

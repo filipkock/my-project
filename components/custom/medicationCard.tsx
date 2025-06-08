@@ -17,6 +17,7 @@ import { useRouter } from "expo-router";
 import { Timestamp } from "firebase/firestore";
 import { markMedicationAsTaken } from "~/src/utils/medicationActions";
 import { useTheme } from "@react-navigation/native";
+import { useSelectedDate } from "~/src/context/SelectedDateContext";
 
 interface MedicationCardProps {
   medication: Medication;
@@ -30,6 +31,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
   openDateTimePicker,
 }) => {
   const router = useRouter();
+  const { selectedDate } = useSelectedDate();
   const [isTakeSheetVisible, setIsTakeSheetVisible] = useState(false);
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
   const { colors } = useTheme();
@@ -84,41 +86,53 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
 
   const handleTakeOnTime = async () => {
     const scheduledTime = getScheduledDate(medication);
-    await markMedicationAsTaken(medication, scheduledTime, true, {
-      onSuccess: (takenTime: Date, onTime: boolean) => {
-        onMedicationUpdate({
-          ...medication,
-          status: "taken",
-          takenTime: Timestamp.fromDate(takenTime),
-          onTime,
-        });
+    await markMedicationAsTaken(
+      medication,
+      scheduledTime,
+      true,
+      {
+        onSuccess: (takenTime: Date, onTime: boolean) => {
+          onMedicationUpdate({
+            ...medication,
+            status: "taken",
+            takenTime: Timestamp.fromDate(takenTime),
+            onTime,
+          });
+        },
+        onError: (error: Error) => {
+          console.error("Error marking medication as taken:", error);
+        },
+        openDateTimePicker: async () => null,
+        showTakeMedicationSheet: () => {},
       },
-      onError: (error: Error) => {
-        console.error("Error marking medication as taken:", error);
-      },
-      openDateTimePicker: async () => null,
-      showTakeMedicationSheet: () => {},
-    });
+      selectedDate
+    );
     setIsTakeSheetVisible(false);
   };
 
   const handleTakeNow = async () => {
     const now = new Date();
-    await markMedicationAsTaken(medication, now, false, {
-      onSuccess: (takenTime: Date, onTime: boolean) => {
-        onMedicationUpdate({
-          ...medication,
-          status: "taken",
-          takenTime: Timestamp.fromDate(takenTime),
-          onTime,
-        });
+    await markMedicationAsTaken(
+      medication,
+      now,
+      false,
+      {
+        onSuccess: (takenTime: Date, onTime: boolean) => {
+          onMedicationUpdate({
+            ...medication,
+            status: "taken",
+            takenTime: Timestamp.fromDate(takenTime),
+            onTime,
+          });
+        },
+        onError: (error: Error) => {
+          console.error("Error marking medication as taken:", error);
+        },
+        openDateTimePicker: async () => null,
+        showTakeMedicationSheet: () => {},
       },
-      onError: (error: Error) => {
-        console.error("Error marking medication as taken:", error);
-      },
-      openDateTimePicker: async () => null,
-      showTakeMedicationSheet: () => {},
-    });
+      selectedDate
+    );
     setIsTakeSheetVisible(false);
   };
 
@@ -126,21 +140,27 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
     const scheduledTime = getScheduledDate(medication);
     const isOnTime =
       Math.abs(date.getTime() - scheduledTime.getTime()) <= 60 * 60 * 1000; // Within 1 hour
-    await markMedicationAsTaken(medication, date, isOnTime, {
-      onSuccess: (takenTime: Date, onTime: boolean) => {
-        onMedicationUpdate({
-          ...medication,
-          status: "taken",
-          takenTime: Timestamp.fromDate(takenTime),
-          onTime,
-        });
+    await markMedicationAsTaken(
+      medication,
+      date,
+      isOnTime,
+      {
+        onSuccess: (takenTime: Date, onTime: boolean) => {
+          onMedicationUpdate({
+            ...medication,
+            status: "taken",
+            takenTime: Timestamp.fromDate(takenTime),
+            onTime,
+          });
+        },
+        onError: (error: Error) => {
+          console.error("Error marking medication as taken:", error);
+        },
+        openDateTimePicker: async () => null,
+        showTakeMedicationSheet: () => {},
       },
-      onError: (error: Error) => {
-        console.error("Error marking medication as taken:", error);
-      },
-      openDateTimePicker: async () => null,
-      showTakeMedicationSheet: () => {},
-    });
+      selectedDate
+    );
     setIsTakeSheetVisible(false);
   };
 
@@ -235,6 +255,21 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
                       {medication.onTime ? "• On time" : "• Late"}
                     </Text>
                   )}
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </>
+        )}
+        {medication.status === "skipped" && (
+          <>
+            <CheckCircleIcon size={32} color="#f87171" opacity={0.7} />
+            <TouchableWithoutFeedback onPress={handleCardPress}>
+              <View className="flex-1">
+                <Text className="font-bold text-lg mb-2">
+                  {medication.medicationName}
+                </Text>
+                <View className="flex-row gap-3 items-center">
+                  <Text className="text-gray-500">Skipped</Text>
                 </View>
               </View>
             </TouchableWithoutFeedback>
