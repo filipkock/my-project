@@ -80,18 +80,28 @@ export default function DailyProgress() {
         </Text>
 
         {takenCount === totalCount && (
-          <Animated.Text
-            style={{
-              transform: [{ scale }],
-              opacity,
-              fontSize: 32,
-              fontWeight: "bold",
-              color: colors.primary,
-              marginTop: 20,
-            }}
-          >
-            🔥 Streak +1!
-          </Animated.Text>
+          <>
+            <Animated.Text
+              style={{
+                transform: [{ scale }],
+                opacity,
+                fontSize: 32,
+                fontWeight: "bold",
+                color: colors.primary,
+                marginTop: 20,
+              }}
+            >
+              🔥 Streak +1!
+            </Animated.Text>
+            <Button
+              className="mt-4"
+              onPress={() =>
+                router.replace("/(app)/(tabs)/(home)/(progress)/Reward")
+              }
+            >
+              <Text>🎁 Claim Your Reward</Text>
+            </Button>
+          </>
         )}
 
         <Button
