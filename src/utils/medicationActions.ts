@@ -1,4 +1,10 @@
-import { Timestamp } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  Timestamp,
+  where,
+} from "firebase/firestore";
 import moment from "moment";
 import type { Medication } from "~/src/types/medication";
 import { doc, updateDoc } from "firebase/firestore";
@@ -73,23 +79,43 @@ export const handleTakeMedication = async (
 
 export const handleUntakeMedication = async (
   medication: Medication,
-  callbacks: MedicationActionCallbacks
+  callbacks: MedicationActionCallbacks,
+  selectedDate?: string
 ) => {
   try {
+    // If user has been rewarded for the day, decrement the streak by 1
+    const userinfo = await getFromStorage("userDetails");
+    if (userinfo && selectedDate) {
+      const selectedDayTimestamp = Timestamp.fromDate(
+        new Date(selectedDate + "T00:00:00")
+      );
+
+      const remindersQuery = query(
+        collection(db, "reminders"),
+        where("date", "==", selectedDayTimestamp),
+        where("uid", "==", userinfo.uid)
+      );
+
+      const snapshot = await getDocs(remindersQuery);
+
+      const reminders = snapshot.docs.map((doc) => doc.data());
+      const totalReminders = reminders.length;
+      const takenCount = reminders.filter((r) => r.status === "taken").length;
+
+      // If user has already been awarded for a completed day, do not decrement
+      const hasCompletedDay = takenCount === totalReminders;
+
+      if (hasCompletedDay) {
+        await decrementStreak(userinfo.uid);
+      }
+    }
+
     const reminderRef = doc(db, "reminders", medication.reminderDocID);
     await updateDoc(reminderRef, {
       status: "pending",
       takenTime: null,
       onTime: null,
     });
-
-    // If the medication was taken on time, decrement the streak by 1
-    if (medication.onTime === true) {
-      const userinfo = await getFromStorage("userDetails");
-      if (userinfo) {
-        await decrementStreak(userinfo.uid);
-      }
-    }
 
     callbacks.onSuccess(new Date(), false);
   } catch (error) {

@@ -214,25 +214,29 @@ export default function MedicationDetails() {
 
   const handleUndoConfirm = useCallback(async () => {
     setShowUndoModal(false);
-    await handleUntakeMedication(localMed, {
-      onSuccess: async (takenTime, onTime) => {
-        const updatedMedication = {
-          ...localMed,
-          status: "pending",
-          takenTime: null,
-          onTime: null,
-        };
-        setLocalMed(updatedMedication);
-        await fetchLastTakenReminder();
-        router.setParams({ medication: JSON.stringify(updatedMedication) });
+    await handleUntakeMedication(
+      localMed,
+      {
+        onSuccess: async (takenTime, onTime) => {
+          const updatedMedication = {
+            ...localMed,
+            status: "pending",
+            takenTime: null,
+            onTime: null,
+          };
+          setLocalMed(updatedMedication);
+          await fetchLastTakenReminder();
+          router.setParams({ medication: JSON.stringify(updatedMedication) });
+        },
+        onError: (error: Error) => {
+          console.error("Error undoing medication:", error);
+          Alert.alert("Error", "Failed to undo medication. Please try again.");
+        },
+        openDateTimePicker: async () => null,
+        showTakeMedicationSheet: () => {},
       },
-      onError: (error: Error) => {
-        console.error("Error undoing medication:", error);
-        Alert.alert("Error", "Failed to undo medication. Please try again.");
-      },
-      openDateTimePicker: async () => null,
-      showTakeMedicationSheet: () => {},
-    });
+      selectedDate
+    );
   }, [localMed, fetchLastTakenReminder, router]);
 
   const formatScheduledTime = useCallback(() => {
@@ -359,10 +363,6 @@ export default function MedicationDetails() {
                     });
                   }
 
-                  const userinfo = await getFromStorage("userDetails");
-                  if (userinfo) {
-                    await updateStreak(userinfo.uid, false, false); // No streak increment
-                  }
                   setShowSkippedInfo(true);
                 }}
                 className="w-full"
