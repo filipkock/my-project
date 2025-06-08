@@ -30,7 +30,14 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const scheduledTime = getScheduledDate(medication);
-  const isFutureMedication = scheduledTime > new Date();
+  const now = new Date();
+  const isFutureMedication = scheduledTime > now;
+  const isSameDay =
+    scheduledTime.getDate() === now.getDate() &&
+    scheduledTime.getMonth() === now.getMonth() &&
+    scheduledTime.getFullYear() === now.getFullYear();
+  const isSameDayFuture = isFutureMedication && isSameDay;
+  const isDifferentDayFuture = isFutureMedication && !isSameDay;
 
   const handleDateChange = (event: any, date?: Date) => {
     if (date) {
@@ -63,54 +70,66 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
         {!showDatePicker ? (
           <>
             <View className="mb-8">
-              <Text className="text-2xl font-bold">
-                When did you take {medication.medicationName}?
-              </Text>
-              {isFutureMedication && (
-                <Alert
-                  icon={AlertTriangle}
-                  variant="destructive"
-                  className="mt-4"
-                >
-                  <AlertTitle>Warning!</AlertTitle>
+              {isSameDayFuture && (
+                <Alert icon={AlertTriangle} variant="destructive">
+                  <AlertTitle>Future Medication!</AlertTitle>
                   <AlertDescription>
-                    This medication is scheduled for a future time
+                    This medication is scheduled for later today. Are you sure
+                    you want to take it now?
                   </AlertDescription>
                 </Alert>
               )}
+              <Text className="text-2xl font-bold mt-4">
+                When did you take {medication.medicationName}?
+              </Text>
             </View>
 
-            <View className="space-y-4 flex flex-col gap-3">
-              <Button
-                variant="secondary"
-                onPress={handleTakeOnTime}
-                className="w-full py-8"
-              >
-                <View className="items-center">
-                  <Text className="text-lg font-semibold mb-1">On Time</Text>
-                </View>
-              </Button>
+            {isDifferentDayFuture ? (
+              <View className="bg-muted p-4 rounded-md">
+                <Text className="text-center text-base font-medium">
+                  🎉 You're early! We'll remind you when it's time to take your
+                  medication.
+                </Text>
+              </View>
+            ) : (
+              <>
+                <View className="space-y-4 flex flex-col gap-3">
+                  <Button
+                    variant="secondary"
+                    onPress={handleTakeOnTime}
+                    className="w-full py-8"
+                  >
+                    <View className="items-center">
+                      <Text className="text-lg font-semibold mb-1">
+                        On Time
+                      </Text>
+                    </View>
+                  </Button>
 
-              <Button
-                variant="secondary"
-                onPress={handleTakeNow}
-                className="w-full py-8"
-              >
-                <View className="items-center">
-                  <Text className="text-lg font-semibold mb-1">Now</Text>
-                </View>
-              </Button>
+                  <Button
+                    variant="secondary"
+                    onPress={handleTakeNow}
+                    className="w-full py-8"
+                  >
+                    <View className="items-center">
+                      <Text className="text-lg font-semibold mb-1">Now</Text>
+                    </View>
+                  </Button>
 
-              <Button
-                variant="secondary"
-                onPress={() => setShowDatePicker(true)}
-                className="w-full py-8"
-              >
-                <View className="items-center">
-                  <Text className="text-lg font-semibold mb-1">Set Time</Text>
+                  <Button
+                    variant="secondary"
+                    onPress={() => setShowDatePicker(true)}
+                    className="w-full py-8"
+                  >
+                    <View className="items-center">
+                      <Text className="text-lg font-semibold mb-1">
+                        Set Time
+                      </Text>
+                    </View>
+                  </Button>
                 </View>
-              </Button>
-            </View>
+              </>
+            )}
           </>
         ) : (
           <View className="space-y-6">
