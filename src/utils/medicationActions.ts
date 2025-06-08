@@ -5,6 +5,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import { db } from "~/config/firebase";
 import { updateStreak, decrementStreak } from "~/src/utils/streak";
 import { getFromStorage } from "~/src/services/storage";
+import { useSelectedDate } from "~/src/context/SelectedDateContext";
 
 /** Convert Firestore Timestamp → JS Date */
 export const tsToDate = (ts: Timestamp | { seconds: number }): Date =>
@@ -45,7 +46,8 @@ export const handleTakeMedication = async (
       throw new Error("Invalid medication time format");
     }
 
-    const diffMinutes = Math.abs(now.getTime() - scheduledTime.getTime()) / 60000;
+    const diffMinutes =
+      Math.abs(now.getTime() - scheduledTime.getTime()) / 60000;
     const isSameDay = scheduledTime.toDateString() === now.toDateString();
     const withinOneHr = diffMinutes <= 60;
 
@@ -95,6 +97,9 @@ export const markMedicationAsTaken = async (
   callbacks: MedicationActionCallbacks
 ) => {
   try {
+    const { selectedDate } = useSelectedDate();
+    const isToday = selectedDate === moment().format("YYYY-MM-DD");
+
     const reminderRef = doc(db, "reminders", medication.reminderDocID);
     await updateDoc(reminderRef, {
       status: "taken",
@@ -105,11 +110,11 @@ export const markMedicationAsTaken = async (
     // Always update streak - increment if on time, reset to 0 if not on time
     const userinfo = await getFromStorage("userDetails");
     if (userinfo) {
-      await updateStreak(userinfo.uid, onTime);
+      await updateStreak(userinfo.uid, onTime, isToday);
     }
 
     callbacks.onSuccess(takenTime, onTime);
   } catch (error) {
     callbacks.onError(error as Error);
   }
-}; 
+};

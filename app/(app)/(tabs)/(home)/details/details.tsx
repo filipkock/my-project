@@ -26,6 +26,7 @@ import { updateStreak, decrementStreak } from "~/src/utils/streak";
 import { getFromStorage } from "~/src/services/storage";
 import UndoMedicationModal from "~/components/custom/UndoMedicationModal";
 import TakeMedicationSheet from "~/components/custom/TakeMedicationSheet";
+import { useSelectedDate } from "~/src/context/SelectedDateContext";
 
 interface ReminderData {
   takenTime: Timestamp;
@@ -130,6 +131,8 @@ export default function MedicationDetails() {
     }
   }, [localMed, handleTakeOnTime]);
 
+  const { selectedDate } = useSelectedDate();
+
   const handleSuccessfulIntake = useCallback(
     async (takenTime: Date, onTime: boolean) => {
       const updatedMedication = {
@@ -141,13 +144,14 @@ export default function MedicationDetails() {
       setLocalMed(updatedMedication);
       const userinfo = await getFromStorage("userDetails");
       if (userinfo) {
-        await updateStreak(userinfo.uid, onTime);
+        const isToday = selectedDate === moment().format("YYYY-MM-DD");
+        await updateStreak(userinfo.uid, onTime, isToday);
       }
       await fetchLastTakenReminder();
 
       // Navigation to DailyProgress page is handled from the medication list page.
     },
-    [localMed, fetchLastTakenReminder, router]
+    [localMed, fetchLastTakenReminder, router, selectedDate]
   );
 
   const handleTakeNow = async () => {

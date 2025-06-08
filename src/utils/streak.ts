@@ -74,7 +74,8 @@ export const getStreakFromFirestore = async (uid: string): Promise<number> => {
 /** Increment or reset the streak after a dose event. */
 export const updateStreak = async (
   uid: string,
-  onTime: boolean
+  onTime: boolean,
+  isToday: boolean = true
 ): Promise<number> => {
   try {
     const ref = doc(db, "userStreaks", uid);
@@ -107,12 +108,7 @@ export const updateStreak = async (
     const takenToday = reminders.filter((r) => r.onTime).length;
     const totalToday = reminders.length;
 
-    const selectedDate = today; // In this context, selectedDate is today
-    const selectedIsToday =
-      today.getDate() === selectedDate.getDate() &&
-      today.getMonth() === selectedDate.getMonth() &&
-      today.getFullYear() === selectedDate.getFullYear();
-    if (onTime && totalToday > 1 && selectedIsToday) {
+    if (isToday && onTime && totalToday > 1) {
       router.replace({
         pathname: "/(app)/(tabs)/(home)/(progress)/DailyProgress",
         params: {

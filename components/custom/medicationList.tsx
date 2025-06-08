@@ -20,6 +20,7 @@ import DateTimePickerModal from "./DateTimePickerModal";
 import StreakDisplay from "./StreakDisplay";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
+import { useSelectedDate } from "~/src/context/SelectedDateContext";
 
 interface MedicationListProps {
   medications: Medication[];
@@ -33,9 +34,8 @@ export default function MedicationList({
   const router = useRouter();
   const params = useLocalSearchParams();
   const [items, setItems] = useState<Medication[]>([]);
-  const [selectedDate, setSelectedDate] = useState(
-    moment().format("YYYY-MM-DD")
-  );
+  const today = moment().format("YYYY-MM-DD");
+  const { selectedDate = today, setSelectedDate } = useSelectedDate();
   const [dateTimePickerVisible, setDateTimePickerVisible] = useState(false);
   const [dateTimePickerValue, setDateTimePickerValue] = useState<Date>(
     new Date()
