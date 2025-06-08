@@ -24,11 +24,12 @@ import {
   handleUntakeMedication,
   markMedicationAsTaken,
 } from "~/src/utils/medicationActions";
-import { updateStreak, decrementStreak } from "~/src/utils/streak";
+import { updateStreak } from "~/src/utils/streak";
 import { getFromStorage } from "~/src/services/storage";
 import UndoMedicationModal from "~/components/custom/UndoMedicationModal";
 import TakeMedicationSheet from "~/components/custom/TakeMedicationSheet";
 import { useSelectedDate } from "~/src/context/SelectedDateContext";
+import BottomSheet from "~/components/custom/BottomSheet";
 
 interface ReminderData {
   takenTime: Timestamp;
@@ -56,6 +57,7 @@ export default function MedicationDetails() {
   const [lastTakenInfo, setLastTakenInfo] = useState<string | null>(null);
   const [showUndoModal, setShowUndoModal] = useState(false);
   const [isTakeSheetVisible, setIsTakeSheetVisible] = useState(false);
+  const [showSkippedInfo, setShowSkippedInfo] = useState(false);
   const { selectedDate } = useSelectedDate();
 
   const fetchLastTakenReminder = useCallback(async () => {
@@ -223,14 +225,6 @@ export default function MedicationDetails() {
         setLocalMed(updatedMedication);
         await fetchLastTakenReminder();
         router.setParams({ medication: JSON.stringify(updatedMedication) });
-
-        // Decrement streak by 1 if the medication was taken on time
-        if (localMed.onTime === true) {
-          const userinfo = await getFromStorage("userDetails");
-          if (userinfo) {
-            await decrementStreak(userinfo.uid);
-          }
-        }
       },
       onError: (error: Error) => {
         console.error("Error undoing medication:", error);
@@ -369,6 +363,7 @@ export default function MedicationDetails() {
                   if (userinfo) {
                     await updateStreak(userinfo.uid, false, false); // No streak increment
                   }
+                  setShowSkippedInfo(true);
                 }}
                 className="w-full"
                 variant="outline"
@@ -394,6 +389,22 @@ export default function MedicationDetails() {
         onTakeNow={handleTakeNow}
         onSetTime={handleSetTime}
       />
+
+      <BottomSheet
+        visible={showSkippedInfo}
+        onClose={() => setShowSkippedInfo(false)}
+        title="Heads up!"
+      >
+        <View className="px-6 space-y-4">
+          <Text className="text-base text-center text-gray-800">
+            Skipped! This medication won’t affect your streak or rewards.
+          </Text>
+          <Text className="text-sm text-center text-gray-500">
+            Just make sure to log all your other medications today to keep your
+            streak going strong.
+          </Text>
+        </View>
+      </BottomSheet>
     </View>
   );
 }

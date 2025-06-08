@@ -197,7 +197,9 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
     <View className="w-full">
       <Card
         className={`relative w-full flex flex-row items-center p-6 gap-4 ${
-          medication.status === "taken" ? "opacity-70 bg-transparent" : ""
+          medication.status === "taken" || medication.status === "skipped"
+            ? "opacity-70 bg-transparent"
+            : ""
         }`}
       >
         {medication.status === "pending" && (
@@ -262,7 +264,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
         )}
         {medication.status === "skipped" && (
           <>
-            <CheckCircleIcon size={32} color="#f87171" opacity={0.7} />
+            <Circle size={32} className="text-primary" />
             <TouchableWithoutFeedback onPress={handleCardPress}>
               <View className="flex-1">
                 <Text className="font-bold text-lg mb-2">
