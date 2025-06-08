@@ -11,6 +11,7 @@ import { getScheduledDate } from "~/src/utils/medicationActions";
 import TakeMedicationSheet from "./TakeMedicationSheet";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Card, CardContent } from "~/components/ui/card";
+import { Badge } from "~/components/ui/badge";
 import { Circle } from "~/lib/icons/Circle";
 import { useRouter } from "expo-router";
 import { Timestamp } from "firebase/firestore";
@@ -175,7 +176,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
   return (
     <View className="w-full">
       <Card
-        className={`w-full flex flex-row items-center p-6 gap-4 ${
+        className={`relative w-full flex flex-row items-center p-6 gap-4 ${
           medication.status === "taken" ? "opacity-70 bg-transparent" : ""
         }`}
       >
@@ -188,6 +189,23 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
             />
             <TouchableWithoutFeedback onPress={handleCardPress}>
               <CardContent className="p-0 flex-1">
+                {(() => {
+                  const scheduledTime = getScheduledDate(medication);
+                  const now = new Date();
+                  const oneHour = 60 * 60 * 1000;
+                  const timeDiff = Math.abs(
+                    scheduledTime.getTime() - now.getTime()
+                  );
+
+                  if (timeDiff <= oneHour) {
+                    return (
+                      <Badge className="absolute -top-9 -left-10 z-10">
+                        <Text className="text-xs">TAKE NOW</Text>
+                      </Badge>
+                    );
+                  }
+                  return null;
+                })()}
                 <Text className="font-bold text-lg mb-2">
                   {medication.medicationName}
                 </Text>
