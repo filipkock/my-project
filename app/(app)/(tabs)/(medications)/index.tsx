@@ -10,6 +10,7 @@ import { Text } from "~/components/ui/text";
 import { db } from "~/config/firebase";
 import { Plus } from "~/lib/icons/plus";
 import { getFromStorage } from "~/src/services/storage";
+import MedicationCreationCard from "~/components/custom/medCreation/MedicationCreationCard";
 
 interface Medication {
   id: string;
@@ -56,26 +57,6 @@ const Index = () => {
     <SafeAreaView className="flex-1 bg-secondary/30">
       <ScrollView>
         <View className="flex-1 w-full p-10 gap-5">
-          {/* Create new medication section */}
-          <Card className="w-full rounded-2xl">
-            <CardHeader>
-              <CardTitle>Good morning {user?.displayName}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Text className="mb-4">
-                Here you can get an overview of all you medications
-              </Text>
-              <Button
-                variant={"default"}
-                className="w-full flex flex-row gap-3"
-                onPress={() => router.push("/addNewMedication/main")}
-              >
-                <Plus size={22} color="white" />
-                <Text>Add medication</Text>
-              </Button>
-            </CardContent>
-          </Card>
-
           {medications.length === 0 ? (
             <Card className="w-full rounded-2xl">
               <CardHeader>
@@ -85,32 +66,22 @@ const Index = () => {
               </CardHeader>
             </Card>
           ) : (
-            <View className="flex-1 gap-4">
-              {medications.map((medication) => (
-                <Card key={medication.id} className="w-full rounded-2xl">
-                  <CardHeader>
-                    <CardTitle>{medication.medicationName}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Text className="text-base mb-3">
-                      Type: {medication.medicationType}
-                    </Text>
-                    <Text className="text-base mb-3">
-                      Interval: {medication.intakeInterval}
-                    </Text>
-                    <Text className="text-base mb-3">
-                      When to Take: {medication.whenToTake}
-                    </Text>
-                    <Text className="text-base mb-3">
-                      Reminder Time: {medication.time}
-                    </Text>
-                  </CardContent>
-                </Card>
+            <View className="w-full flex-1 gap-4">
+              {medications.map((med) => (
+                <MedicationCreationCard key={med.id} medication={med} />
               ))}
             </View>
           )}
         </View>
       </ScrollView>
+      <View className="absolute bottom-10 right-10">
+        <Button
+          className="rounded-full h-14 w-14 items-center justify-center"
+          onPress={() => router.push("/addNewMedication/main")}
+        >
+          <Plus size={24} color="white" />
+        </Button>
+      </View>
     </SafeAreaView>
   );
 };
