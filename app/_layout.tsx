@@ -25,6 +25,7 @@ import {
   Poppins_800ExtraBold,
   useFonts,
 } from "@expo-google-fonts/poppins";
+import { checkAndResetStreakIfNeeded } from "~/src/utils/streakResetOnLaunch";
 
 // ==== react native reusables theme setup ====
 const LIGHT_THEME: Theme = {
@@ -60,6 +61,7 @@ export default function RootLayout() {
   const { colorScheme, setColorScheme, isDarkColorScheme } = useColorScheme();
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
 
+  // Default functionality included from project start
   React.useEffect(() => {
     (async () => {
       const theme = await AsyncStorage.getItem("theme");
@@ -84,6 +86,12 @@ export default function RootLayout() {
     })();
   }, []);
 
+  // Check if we should reset the streak on app launch
+  React.useEffect(() => {
+    checkAndResetStreakIfNeeded();
+  }, []);
+
+  // Ensure font and color is loaded
   React.useEffect(() => {
     if (fontsLoaded && isColorSchemeLoaded) {
       SplashScreen.hideAsync();
