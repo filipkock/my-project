@@ -1,4 +1,10 @@
-import React, { useRef, useState, useCallback, useEffect, useMemo } from "react";
+import React, {
+  useRef,
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+} from "react";
 import {
   View,
   FlatList,
@@ -30,8 +36,6 @@ import { cn } from "~/lib/utils";
 import * as Haptics from "expo-haptics";
 
 const DAY_PILL_WIDTH = 50;
-const DAY_PILL_HEIGHT = 60;
-const WINDOW_WIDTH = Dimensions.get("window").width;
 const DAYS_BEFORE = 14; // 2 weeks before
 const DAYS_AFTER = 42; // 6 weeks ahead
 const TOTAL_DAYS = DAYS_BEFORE + DAYS_AFTER + 1; // +1 for today
@@ -41,50 +45,50 @@ interface HorizontalDayScrollerProps {
   onSelectDate: (date: string) => void;
 }
 
-const DayPill = React.memo(({ 
-  day, 
-  isSelected, 
-  isToday, 
-  onPress 
-}: { 
-  day: DayInfo; 
-  isSelected: boolean; 
-  isToday: boolean; 
-  onPress: () => void;
-}) => {
-  const getPillStyles = () => {
-    return cn(
-      "w-[50px] h-[60px] rounded-[20px] mx-1 items-center justify-center p-2",
-      isSelected && "bg-black dark:bg-white",
-      isToday && !isSelected && "bg-transparent border-2 border-black dark:border-white",
-      !isSelected && !isToday && "bg-transparent border border-border"
-    );
-  };
+const DayPill = React.memo(
+  ({
+    day,
+    isSelected,
+    isToday,
+    onPress,
+  }: {
+    day: DayInfo;
+    isSelected: boolean;
+    isToday: boolean;
+    onPress: () => void;
+  }) => {
+    const getPillStyles = () => {
+      return cn(
+        "w-[50px] h-[60px] rounded-[1000px] mx-1 items-center justify-center p-2",
+        isSelected && "bg-black dark:bg-white",
+        isToday &&
+          !isSelected &&
+          "bg-transparent border-2 border-gray-200 dark:border-white",
+        !isSelected && !isToday && "bg-transparent"
+      );
+    };
 
-  const getTextStyles = (isDayName = false) => {
-    return cn(
-      isDayName ? "text-xs mb-1" : "text-base font-semibold",
-      isSelected && "text-white dark:text-black",
-      isToday && !isSelected && "text-black dark:text-white",
-      !isSelected && !isToday && "text-muted-foreground"
-    );
-  };
+    const getTextStyles = (isDayName = false) => {
+      return cn(
+        isDayName ? "text-xs mb-1" : "text-base font-semibold",
+        isSelected && "text-white dark:text-black",
+        isToday && !isSelected && "text-black dark:text-white",
+        !isSelected && !isToday && "text-muted-foreground"
+      );
+    };
 
-  return (
-    <TouchableOpacity
-      className={getPillStyles()}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <Text className={getTextStyles(true)}>
-        {day.day}
-      </Text>
-      <Text className={getTextStyles()}>
-        {day.dateNum}
-      </Text>
-    </TouchableOpacity>
-  );
-});
+    return (
+      <TouchableOpacity
+        className={getPillStyles()}
+        onPress={onPress}
+        activeOpacity={0.7}
+      >
+        <Text className={getTextStyles(true)}>{day.day}</Text>
+        <Text className={getTextStyles()}>{day.dateNum}</Text>
+      </TouchableOpacity>
+    );
+  }
+);
 
 export default function HorizontalDayScroller({
   selectedDate,
@@ -136,7 +140,9 @@ export default function HorizontalDayScroller({
   const isTodaySelected = selectedDate === getTodayString();
 
   useEffect(() => {
-    todayButtonOpacity.value = withTiming(isTodaySelected ? 0 : 1, { duration: 200 });
+    todayButtonOpacity.value = withTiming(isTodaySelected ? 0 : 1, {
+      duration: 200,
+    });
     todayButtonScale.value = withSpring(isTodaySelected ? 0.8 : 1);
   }, [isTodaySelected]);
 
@@ -149,45 +155,51 @@ export default function HorizontalDayScroller({
     return moment(date).format("D MMMM");
   };
 
-  const handleDayPress = useCallback((day: DayInfo) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    onSelectDate(day.date);
-  }, [onSelectDate]);
+  const handleDayPress = useCallback(
+    (day: DayInfo) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      onSelectDate(day.date);
+    },
+    [onSelectDate]
+  );
 
-  const renderDay = useCallback(({ item: day }: { item: DayInfo }) => {
-    const isSelected = day.date === selectedDate;
-    const isToday = day.date === getTodayString();
+  const renderDay = useCallback(
+    ({ item: day }: { item: DayInfo }) => {
+      const isSelected = day.date === selectedDate;
+      const isToday = day.date === getTodayString();
 
-    return (
-      <DayPill
-        day={day}
-        isSelected={isSelected}
-        isToday={isToday}
-        onPress={() => handleDayPress(day)}
-      />
-    );
-  }, [selectedDate, handleDayPress]);
+      return (
+        <DayPill
+          day={day}
+          isSelected={isSelected}
+          isToday={isToday}
+          onPress={() => handleDayPress(day)}
+        />
+      );
+    },
+    [selectedDate, handleDayPress]
+  );
 
-  const getItemLayout = useCallback((_: any, index: number) => ({
-    length: DAY_PILL_WIDTH,
-    offset: DAY_PILL_WIDTH * index,
-    index,
-  }), []);
+  const getItemLayout = useCallback(
+    (_: any, index: number) => ({
+      length: DAY_PILL_WIDTH,
+      offset: DAY_PILL_WIDTH * index,
+      index,
+    }),
+    []
+  );
 
   const keyExtractor = useCallback((item: DayInfo) => item.date, []);
 
   return (
-    <View className="py-2 pb-8">
-      <View className="flex-row items-center justify-between px-4 mb-3">
+    <View>
+      <View className="flex-row items-center justify-between px-4 pb-3">
         <View className="flex-1 items-center">
           <Text className="text-xl font-semibold text-foreground">
             {formatSelectedDate(selectedDate)}
           </Text>
         </View>
-        <Animated.View 
-          style={[todayButtonStyle]}
-          className="absolute right-4"
-        >
+        <Animated.View style={[todayButtonStyle]} className="absolute right-4">
           <Button
             variant="outline"
             size="sm"
@@ -205,7 +217,7 @@ export default function HorizontalDayScroller({
         renderItem={renderDay}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 8, marginBottom: 16 }}
+        contentContainerStyle={{ paddingHorizontal: 8, marginBottom: 12 }}
         decelerationRate="fast"
         snapToInterval={DAY_PILL_WIDTH}
         snapToAlignment="center"
@@ -225,4 +237,4 @@ export default function HorizontalDayScroller({
       />
     </View>
   );
-} 
+}

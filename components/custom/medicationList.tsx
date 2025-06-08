@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, SafeAreaView } from "react-native";
+import { View, SafeAreaView, ScrollView } from "react-native";
 import { getFromStorage } from "~/src/services/storage";
 import {
   collection,
@@ -249,12 +249,16 @@ export default function MedicationList({
           selectedDate={selectedDate}
           onSelectDate={handleDayPress}
         />
-        <MedicationListForDay
-          items={items}
-          loading={loading}
-          onMedicationUpdate={handleMedicationUpdate}
-          openDateTimePicker={openDateTimePicker}
-        />
+        <View style={{ flex: 1 }}>
+          <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
+            <MedicationListForDay
+              items={items}
+              loading={loading}
+              onMedicationUpdate={handleMedicationUpdate}
+              openDateTimePicker={openDateTimePicker}
+            />
+          </ScrollView>
+        </View>
       </View>
     </SafeAreaView>
   );
