@@ -228,7 +228,7 @@ export default function MedicationList({
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1 }} className="relative">
         <StreakDisplay streak={streak} />
         <DateTimePickerModal
           visible={dateTimePickerVisible}
