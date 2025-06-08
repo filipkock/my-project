@@ -1,5 +1,6 @@
 // utils/streakResetOnLaunch.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 import {
   collection,
   getDocs,
@@ -40,6 +41,17 @@ export const checkAndResetStreakIfNeeded = async (): Promise<void> => {
     const userinfo = await getFromStorage("userDetails");
     if (!userinfo) return;
     const uid = userinfo.uid;
+
+    const streakRef = doc(db, "userStreaks", uid);
+    const streakSnap = await getDoc(streakRef);
+    const streakData = streakSnap.exists() ? streakSnap.data() : null;
+    const currentStreak = streakData?.streak ?? 0;
+
+    if (currentStreak === 0) {
+      console.log("Streak is already 0. Skipping check.");
+      return;
+    }
+
     const metaRef = doc(db, "userStreakMeta", uid);
     const metaSnap = await getDoc(metaRef);
     if (metaSnap.exists()) {
@@ -78,6 +90,7 @@ export const checkAndResetStreakIfNeeded = async (): Promise<void> => {
       await AsyncStorage.setItem(LAST_CHECK_KEY, todayStr);
       await setDoc(metaRef, { lastStreakCheck: todayStr }, { merge: true });
       console.log("Streak reset because nothing was logged yesterday.");
+      router.replace("/(app)/(tabs)/(home)/(progress)/StreakResetNotice");
       return;
     }
 
@@ -98,6 +111,7 @@ export const checkAndResetStreakIfNeeded = async (): Promise<void> => {
         console.log(
           `Streak reset due to missed day ${cursor.format("YYYY-MM-DD")}`
         );
+        router.replace("/(app)/(tabs)/(home)/(progress)/StreakResetNotice");
         break;
       }
       cursor = cursor.add(1, "day");
