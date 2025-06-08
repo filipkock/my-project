@@ -159,7 +159,7 @@ export default function MedicationDetails() {
         const totalToday = reminders.length;
         if (totalToday > 1) {
           router.push({
-            pathname: "/(app)/(tabs)/(home)/DailyProgress",
+            pathname: "/(app)/(tabs)/(home)/(progress)/DailyProgress",
             params: {
               taken: String(takenToday),
               total: String(totalToday),

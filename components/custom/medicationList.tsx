@@ -13,7 +13,7 @@ import {
 import moment from "moment";
 import { db } from "~/config/firebase";
 import type { Medication } from "~/src/types/medication";
-import { getStreakFromFirestore, updateStreak, recalculateStreakFromFirestore } from "~/src/utils/streak";
+import { getStreakFromFirestore } from "~/src/utils/streak";
 import HorizontalDayScroller from "../calendar/HorizontalDayScroller";
 import MedicationListForDay from "./MedicationListForDay";
 import DateTimePickerModal from "./DateTimePickerModal";
@@ -26,14 +26,22 @@ interface MedicationListProps {
   onMedicationUpdate: (medication: Medication) => void;
 }
 
-export default function MedicationList({ medications, onMedicationUpdate }: MedicationListProps) {
+export default function MedicationList({
+  medications,
+  onMedicationUpdate,
+}: MedicationListProps) {
   const router = useRouter();
   const params = useLocalSearchParams();
   const [items, setItems] = useState<Medication[]>([]);
-  const [selectedDate, setSelectedDate] = useState(moment().format("YYYY-MM-DD"));
+  const [selectedDate, setSelectedDate] = useState(
+    moment().format("YYYY-MM-DD")
+  );
   const [dateTimePickerVisible, setDateTimePickerVisible] = useState(false);
-  const [dateTimePickerValue, setDateTimePickerValue] = useState<Date>(new Date());
-  const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
+  const [dateTimePickerValue, setDateTimePickerValue] = useState<Date>(
+    new Date()
+  );
+  const [selectedMedication, setSelectedMedication] =
+    useState<Medication | null>(null);
   const [loading, setLoading] = useState(false);
   const [streak, setStreak] = useState(0);
 
@@ -70,11 +78,13 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
   // Listen for medication updates from the details page
   useEffect(() => {
     const handleMedicationUpdate = (medication: Medication) => {
-      setItems(prev => prev.map(item => 
-        item.reminderDocID === medication.reminderDocID
-          ? { ...item, ...medication }
-          : { ...item }
-      ));
+      setItems((prev) =>
+        prev.map((item) =>
+          item.reminderDocID === medication.reminderDocID
+            ? { ...item, ...medication }
+            : { ...item }
+        )
+      );
     };
 
     // Check for medication updates in params
@@ -120,11 +130,15 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
 
       if (medIdSet.size === 0) return;
 
-      const medicationFetchPromises = Array.from(medIdSet).map(async (medId) => {
-        const medDocRef = doc(db, "medication", medId);
-        const medDocSnapshot = await getDoc(medDocRef);
-        return medDocSnapshot.exists() ? { medId, ...medDocSnapshot.data() } : null;
-      });
+      const medicationFetchPromises = Array.from(medIdSet).map(
+        async (medId) => {
+          const medDocRef = doc(db, "medication", medId);
+          const medDocSnapshot = await getDoc(medDocRef);
+          return medDocSnapshot.exists()
+            ? { medId, ...medDocSnapshot.data() }
+            : null;
+        }
+      );
 
       const medicationsArray = await Promise.all(medicationFetchPromises);
       const medicationsMap: { [key: string]: any } = {};
@@ -153,8 +167,8 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
       // Sort items by reminder time
       const sortedItems = rawItems.sort((a, b) => {
         // Ensure times are in HH:mm format
-        const timeA = a.reminderTime.padStart(5, '0');
-        const timeB = b.reminderTime.padStart(5, '0');
+        const timeA = a.reminderTime.padStart(5, "0");
+        const timeB = b.reminderTime.padStart(5, "0");
         return timeA.localeCompare(timeB);
       });
 
@@ -172,7 +186,10 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
     await fetchMedicationListForDay(dateString);
   };
 
-  const openDateTimePicker = (medication: Medication, initialDate: Date): Promise<Date | null> => {
+  const openDateTimePicker = (
+    medication: Medication,
+    initialDate: Date
+  ): Promise<Date | null> => {
     return new Promise((resolve) => {
       setSelectedMedication(medication);
       setDateTimePickerValue(initialDate);
@@ -188,13 +205,15 @@ export default function MedicationList({ medications, onMedicationUpdate }: Medi
     try {
       // First update the parent component's state
       onMedicationUpdate(medication);
-      
+
       // Update local state with deep cloning
-      setItems(prev => prev.map(item => 
-        item.reminderDocID === medication.reminderDocID
-          ? { ...item, ...medication }
-          : { ...item }
-      ));
+      setItems((prev) =>
+        prev.map((item) =>
+          item.reminderDocID === medication.reminderDocID
+            ? { ...item, ...medication }
+            : { ...item }
+        )
+      );
 
       // Update streak state reactively
       const userinfo = await getFromStorage("userDetails");

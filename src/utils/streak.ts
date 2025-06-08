@@ -114,7 +114,7 @@ export const updateStreak = async (
       today.getFullYear() === selectedDate.getFullYear();
     if (onTime && totalToday > 1 && selectedIsToday) {
       router.push({
-        pathname: "/(app)/(tabs)/(home)/DailyProgress",
+        pathname: "/(app)/(tabs)/(home)/(progress)/DailyProgress",
         params: {
           taken: String(takenToday),
           total: String(totalToday),
