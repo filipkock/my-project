@@ -6,13 +6,21 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import moment from "moment";
 import type { Medication } from "~/src/types/medication";
-import { Timestamp, collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import {
+  Timestamp,
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  getDocs,
+} from "firebase/firestore";
 import { db } from "~/config/firebase";
-import { 
-  getScheduledDate, 
-  handleTakeMedication, 
+import {
+  getScheduledDate,
+  handleTakeMedication,
   handleUntakeMedication,
-  markMedicationAsTaken
+  markMedicationAsTaken,
 } from "~/src/utils/medication";
 import { updateStreak, decrementStreak } from "~/src/utils/streak";
 import { getFromStorage } from "~/src/services/storage";
@@ -23,6 +31,9 @@ interface ReminderData {
   takenTime: Timestamp;
   medId: string;
   status: string;
+  onTime?: boolean;
+  uid?: string;
+  date?: Timestamp;
 }
 
 interface LastTakenReminder {
@@ -36,7 +47,7 @@ export default function MedicationDetails() {
     const parsed = JSON.parse(params.medication as string);
     return {
       ...parsed,
-      date: new Timestamp(parsed.date.seconds, parsed.date.nanoseconds)
+      date: new Timestamp(parsed.date.seconds, parsed.date.nanoseconds),
     };
   });
   const [lastTakenInfo, setLastTakenInfo] = useState<string | null>(null);
@@ -57,7 +68,9 @@ export default function MedicationDetails() {
         const lastTaken = snapshot.docs[0].data() as ReminderData;
         const takenTime = lastTaken.takenTime.toDate();
         setLastTakenInfo(
-          `Last taken on ${moment(takenTime).format("MMMM D, YYYY")} at ${moment(takenTime).format("HH:mm")}`
+          `Last taken on ${moment(takenTime).format(
+            "MMMM D, YYYY"
+          )} at ${moment(takenTime).format("HH:mm")}`
         );
       } else {
         setLastTakenInfo(null);
@@ -92,23 +105,57 @@ export default function MedicationDetails() {
     }
   }, [localMed]);
 
+  const handleSuccessfulIntake = useCallback(
+    async (takenTime: Date, onTime: boolean) => {
+      const updatedMedication = {
+        ...localMed,
+        status: "taken",
+        takenTime: Timestamp.fromDate(takenTime),
+        onTime,
+      };
+      setLocalMed(updatedMedication);
+      await fetchLastTakenReminder();
+      router.setParams({ medication: JSON.stringify(updatedMedication) });
+
+      const userinfo = await getFromStorage("userDetails");
+      if (userinfo) {
+        const today = new Date();
+        const start = new Date(today.setHours(0, 0, 0, 0));
+        const end = new Date(today.setHours(23, 59, 59, 999));
+        const q = query(
+          collection(db, "reminders"),
+          where("uid", "==", userinfo.uid),
+          where("date", ">=", Timestamp.fromDate(start)),
+          where("date", "<=", Timestamp.fromDate(end))
+        );
+        const docs = await getDocs(q);
+        const reminders = docs.docs.map((d) => d.data() as ReminderData);
+        const takenToday = reminders.filter((r) => r.onTime).length;
+        const totalToday = reminders.length;
+        if (totalToday > 1) {
+          router.push({
+            pathname: "/(app)/(tabs)/(home)/DailyProgress",
+            params: {
+              taken: String(takenToday),
+              total: String(totalToday),
+            },
+          });
+        }
+      }
+    },
+    [localMed, fetchLastTakenReminder, router]
+  );
+
   const handleTakeOnTime = async () => {
     const scheduledTime = getScheduledDate(localMed);
     await markMedicationAsTaken(localMed, scheduledTime, true, {
-      onSuccess: async (takenTime, onTime) => {
-        const updatedMedication = {
-          ...localMed,
-          status: "taken",
-          takenTime: Timestamp.fromDate(takenTime),
-          onTime
-        };
-        setLocalMed(updatedMedication);
-        await fetchLastTakenReminder();
-        router.setParams({ medication: JSON.stringify(updatedMedication) });
-      },
+      onSuccess: handleSuccessfulIntake,
       onError: (error) => {
         console.error("Error marking medication as taken:", error);
-        Alert.alert("Error", "Failed to mark medication as taken. Please try again.");
+        Alert.alert(
+          "Error",
+          "Failed to mark medication as taken. Please try again."
+        );
       },
       openDateTimePicker: async () => null,
       showTakeMedicationSheet: () => {},
@@ -118,20 +165,13 @@ export default function MedicationDetails() {
   const handleTakeNow = async () => {
     const now = new Date();
     await markMedicationAsTaken(localMed, now, false, {
-      onSuccess: async (takenTime, onTime) => {
-        const updatedMedication = {
-          ...localMed,
-          status: "taken",
-          takenTime: Timestamp.fromDate(takenTime),
-          onTime
-        };
-        setLocalMed(updatedMedication);
-        await fetchLastTakenReminder();
-        router.setParams({ medication: JSON.stringify(updatedMedication) });
-      },
+      onSuccess: handleSuccessfulIntake,
       onError: (error) => {
         console.error("Error marking medication as taken:", error);
-        Alert.alert("Error", "Failed to mark medication as taken. Please try again.");
+        Alert.alert(
+          "Error",
+          "Failed to mark medication as taken. Please try again."
+        );
       },
       openDateTimePicker: async () => null,
       showTakeMedicationSheet: () => {},
@@ -140,22 +180,16 @@ export default function MedicationDetails() {
 
   const handleSetTime = async (date: Date) => {
     const scheduledTime = getScheduledDate(localMed);
-    const isOnTime = Math.abs(date.getTime() - scheduledTime.getTime()) <= 60 * 60 * 1000; // Within 1 hour
+    const isOnTime =
+      Math.abs(date.getTime() - scheduledTime.getTime()) <= 60 * 60 * 1000; // Within 1 hour
     await markMedicationAsTaken(localMed, date, isOnTime, {
-      onSuccess: async (takenTime, onTime) => {
-        const updatedMedication = {
-          ...localMed,
-          status: "taken",
-          takenTime: Timestamp.fromDate(takenTime),
-          onTime
-        };
-        setLocalMed(updatedMedication);
-        await fetchLastTakenReminder();
-        router.setParams({ medication: JSON.stringify(updatedMedication) });
-      },
+      onSuccess: handleSuccessfulIntake,
       onError: (error) => {
         console.error("Error marking medication as taken:", error);
-        Alert.alert("Error", "Failed to mark medication as taken. Please try again.");
+        Alert.alert(
+          "Error",
+          "Failed to mark medication as taken. Please try again."
+        );
       },
       openDateTimePicker: async () => null,
       showTakeMedicationSheet: () => {},
@@ -170,7 +204,7 @@ export default function MedicationDetails() {
           ...localMed,
           status: "pending",
           takenTime: null,
-          onTime: null
+          onTime: null,
         };
         setLocalMed(updatedMedication);
         await fetchLastTakenReminder();
@@ -195,13 +229,16 @@ export default function MedicationDetails() {
 
   const formatScheduledTime = useCallback(() => {
     const scheduledTime = getScheduledDate(localMed);
-    const isToday = moment(scheduledTime).isSame(new Date(), 'day');
+    const isToday = moment(scheduledTime).isSame(new Date(), "day");
     const timeStr = moment(scheduledTime).format("HH:mm");
-    return `Scheduled for ${timeStr}, ${isToday ? "today" : moment(scheduledTime).format("MMMM D")}`;
+    return `Scheduled for ${timeStr}, ${
+      isToday ? "today" : moment(scheduledTime).format("MMMM D")
+    }`;
   }, [localMed]);
 
   const formatTakenTime = useCallback(() => {
-    if (!localMed.takenTime || !(localMed.takenTime instanceof Timestamp)) return null;
+    if (!localMed.takenTime || !(localMed.takenTime instanceof Timestamp))
+      return null;
     const takenTime = localMed.takenTime.toDate();
     return `Taken at ${moment(takenTime).format("HH:mm")}`;
   }, [localMed]);
@@ -213,7 +250,7 @@ export default function MedicationDetails() {
           <Badge variant="default" className="self-start">
             <Text className="text-xs font-medium">{calculateStatus()}</Text>
           </Badge>
-          
+
           <Text className="text-3xl font-bold">{localMed.medicationName}</Text>
 
           <View className="flex-row items-center space-x-3">
@@ -230,26 +267,36 @@ export default function MedicationDetails() {
 
           {formatTakenTime() && (
             <View className="flex-row items-center space-x-3">
-              <Text className="text-base text-muted-foreground">{formatTakenTime()}</Text>
+              <Text className="text-base text-muted-foreground">
+                {formatTakenTime()}
+              </Text>
             </View>
           )}
 
           {lastTakenInfo && localMed.status !== "taken" && (
             <View className="flex-row items-center space-x-3">
-              <Text className="text-base text-muted-foreground">{lastTakenInfo}</Text>
+              <Text className="text-base text-muted-foreground">
+                {lastTakenInfo}
+              </Text>
             </View>
           )}
         </View>
       </ScrollView>
 
       <View className="p-4 border-t border-border bg-background">
-        <Button 
+        <Button
           onPress={handleMedicationAction}
           className="w-full"
           variant={localMed.status === "taken" ? "outline" : "default"}
         >
-          <Text className={localMed.status === "taken" ? "text-foreground" : "text-white"}>
-            {localMed.status === "taken" ? "Undo Medication" : "Take Medication"}
+          <Text
+            className={
+              localMed.status === "taken" ? "text-foreground" : "text-white"
+            }
+          >
+            {localMed.status === "taken"
+              ? "Undo Medication"
+              : "Take Medication"}
           </Text>
         </Button>
       </View>
