@@ -20,7 +20,7 @@ const TabsLayout = () => {
         }}
       ></Tabs.Screen>
       <Tabs.Screen
-        name="(medications)/index"
+        name="(medications)"
         options={{
           headerShown: false,
         }}
