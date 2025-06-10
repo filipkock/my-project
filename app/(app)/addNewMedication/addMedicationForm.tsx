@@ -191,7 +191,7 @@ const AddMedicationForm = ({
           customIntervalValue: customInterval,
           specificDaysOfWeek: formData.specificDaysOfWeek,
         }
-      ).filter((d) => toDate(d).getTime() > now.getTime());
+      );
       if (defaultValues?.id) {
         // Update existing medication
         const medicationRef = doc(db, "medication", defaultValues.id);
@@ -256,15 +256,18 @@ const AddMedicationForm = ({
               notificationId: null,
             });
 
-            await scheduleMedicationReminder({
-              id: reminderDocRef.id,
-              uid: userinfo.uid,
-              date: reminderDate,
-              time: formData.reminderTime,
-              whenToTake: formData.whenToTake,
-              medId: defaultValues.id!,
-              notificationId: null,
-            });
+            // Only schedule notification if future
+            if (toDate(reminderDate).getTime() > now.getTime()) {
+              await scheduleMedicationReminder({
+                id: reminderDocRef.id,
+                uid: userinfo.uid,
+                date: reminderDate,
+                time: formData.reminderTime,
+                whenToTake: formData.whenToTake,
+                medId: defaultValues.id!,
+                notificationId: null,
+              });
+            }
           });
 
         await Promise.all([...deletePromises, ...newReminderPromises]);
@@ -300,13 +303,9 @@ const AddMedicationForm = ({
         });
 
         // 4️⃣ Save Each Reminder in Firestore & Schedule Notification
-        const now = new Date();
-        const remindersFiltered = reminders.filter(
-          (d) => toDate(d).getTime() > now.getTime()
-        );
         const remindersCollectionRef = collection(db, "reminders");
 
-        const reminderWrites = remindersFiltered.map(async (reminderDate) => {
+        const reminderWrites = reminders.map(async (reminderDate) => {
           // Add userEmail and uid for new reminders (consistency)
           if (!userinfo?.email || !userinfo?.uid) {
             throw new Error("Missing user information for reminder creation");
@@ -322,15 +321,18 @@ const AddMedicationForm = ({
             notificationId: null,
           });
 
-          await scheduleMedicationReminder({
-            id: reminderDocRef.id, // Firestore document ID
-            uid: userinfo.uid,
-            date: reminderDate,
-            time: formData.reminderTime,
-            whenToTake: formData.whenToTake,
-            medId: medicationRef.id,
-            notificationId: null,
-          });
+          // Only schedule notification if future
+          if (toDate(reminderDate).getTime() > now.getTime()) {
+            await scheduleMedicationReminder({
+              id: reminderDocRef.id, // Firestore document ID
+              uid: userinfo.uid,
+              date: reminderDate,
+              time: formData.reminderTime,
+              whenToTake: formData.whenToTake,
+              medId: medicationRef.id,
+              notificationId: null,
+            });
+          }
         });
 
         await Promise.all(reminderWrites);
