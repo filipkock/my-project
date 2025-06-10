@@ -16,6 +16,15 @@ interface Reminder {
 export async function scheduleMedicationReminder(reminder: Reminder) {
   const scheduledDate = await getDateTimeFromReminder(reminder);
 
+  const now = new Date();
+  if (scheduledDate <= now) {
+    console.warn(
+      "Skipping scheduling: scheduledDate is in the past.",
+      scheduledDate
+    );
+    return;
+  }
+
   // If there's already a notificationId stored, cancel it (avoid duplicates)
   if (reminder.notificationId) {
     try {

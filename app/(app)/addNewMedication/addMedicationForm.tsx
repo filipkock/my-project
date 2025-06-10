@@ -272,16 +272,37 @@ const AddMedicationForm = ({
 
         await Promise.all([...deletePromises, ...newReminderPromises]);
 
-        // Update existing reminders with new time/whenToTake
+        // Update existing reminders with new time/whenToTake and reschedule notifications
         const updateExistingPromises = [];
         for (const [dateIso, docId] of existingRemindersMap.entries()) {
           if (validRemindersSet.has(dateIso)) {
+            const reminderRef = doc(db, "reminders", docId);
+            const updatedReminder = {
+              time: formData.reminderTime,
+              whenToTake: formData.whenToTake,
+            };
             updateExistingPromises.push(
-              updateDoc(doc(db, "reminders", docId), {
-                time: formData.reminderTime,
-                whenToTake: formData.whenToTake,
-              })
+              updateDoc(reminderRef, updatedReminder)
             );
+
+            // Fetch and re-schedule notification
+            const reminderData = reminderSnapshot.docs
+              .find((d) => d.id === docId)
+              ?.data();
+            if (reminderData) {
+              const reminderToSchedule = {
+                ...reminderData,
+                ...updatedReminder,
+                id: docId,
+                uid: reminderData.uid,
+                date: reminderData.date,
+                medId: reminderData.medId,
+                notificationId: reminderData.notificationId ?? null,
+              };
+              updateExistingPromises.push(
+                scheduleMedicationReminder(reminderToSchedule)
+              );
+            }
           }
         }
         await Promise.all(updateExistingPromises);
