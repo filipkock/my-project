@@ -10,7 +10,7 @@ import { Text } from "~/components/ui/text";
 import { db } from "~/config/firebase";
 import { Plus } from "~/lib/icons/plus";
 import { getFromStorage } from "~/src/services/storage";
-import MedicationCreationCard from "~/components/custom/medCreation/MedicationCreationCard";
+import MedicationDetailsCard from "~/components/custom/medicationDetails/MedicationDetailsCard";
 
 interface Medication {
   id: string;
@@ -68,7 +68,7 @@ const Index = () => {
           ) : (
             <View className="w-full flex-1 gap-4">
               {medications.map((med) => (
-                <MedicationCreationCard key={med.id} medication={med} />
+                <MedicationDetailsCard key={med.id} medication={med} />
               ))}
             </View>
           )}

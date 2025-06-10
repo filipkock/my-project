@@ -17,7 +17,7 @@ interface MedicationCardProps {
   medication: Medication;
 }
 
-const MedicationCreationCard: React.FC<MedicationCardProps> = ({
+const MedicationDetailsCard: React.FC<MedicationCardProps> = ({
   medication,
 }) => {
   const router = useRouter();
@@ -47,4 +47,4 @@ const MedicationCreationCard: React.FC<MedicationCardProps> = ({
   );
 };
 
-export default MedicationCreationCard;
+export default MedicationDetailsCard;
