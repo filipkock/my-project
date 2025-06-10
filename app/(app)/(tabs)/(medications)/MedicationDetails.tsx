@@ -65,6 +65,18 @@ export default function MedicationDetails() {
           <Text>Back to Medications</Text>
         </Button>
       </View>
+      <View className="mt-3">
+        <Button
+          onPress={() =>
+            router.push({
+              pathname: "/(app)/(tabs)/(medications)/EditMedication",
+              params: { medication: JSON.stringify(parsedMedication) },
+            })
+          }
+        >
+          <Text>Edit Medication</Text>
+        </Button>
+      </View>
     </View>
   );
 }
