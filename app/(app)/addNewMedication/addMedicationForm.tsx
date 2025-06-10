@@ -2,13 +2,7 @@ import React from "react";
 import { View, Alert, ActivityIndicator, TouchableOpacity } from "react-native";
 import { Text } from "~/components/ui/text";
 import { Input } from "~/components/ui/input";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "~/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import {
   TypeList,
   WhenToTakeList,
@@ -21,12 +15,10 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
 import { Button } from "~/components/ui/button";
-import { router } from "expo-router";
 import DatePicker from "react-native-date-picker";
 import {} from "react-native";
 import { getFromStorage } from "~/src/services/storage";
@@ -53,8 +45,21 @@ import {
   timeStringToDate,
 } from "~/src/services/reminderSchedule";
 import { useState } from "react";
-import { Modal, Pressable } from "react-native";
+import { Pressable } from "react-native";
 import { scheduleMedicationReminder } from "~/src/utils/scheduleMedicationReminder"; // Assuming you have this function
+
+// Helper function to log reminder changes
+const logReminderChange = (
+  type: "created" | "deleted" | "updated",
+  date: Date,
+  id?: string
+) => {
+  const prefix = type === "created" ? "➕" : type === "deleted" ? "🗑️" : "🔄";
+  const idPart = id ? ` (id: ${id})` : "";
+  console.log(
+    `${prefix} ${type.toUpperCase()} reminder: ${date.toISOString()}${idPart}`
+  );
+};
 
 // FORM DATA TYPE
 // ------------------------------------------------
@@ -146,8 +151,27 @@ const AddMedicationForm = ({
 
   // STORE IN FIRESTORE
   // ------------------------------------------------
+  /**
+   * Save Medication Reminder
+   * -------------------------
+   * This function handles both creating a new medication reminder
+   * and updating an existing one if `defaultValues.id` is provided.
+   *
+   * Steps:
+   * 1. Validate form fields.
+   * 2. Parse user info from local storage.
+   * 3. Generate reminder dates based on intake interval and settings.
+   * 4. If updating:
+   *    - Update medication document.
+   *    - Fetch and reconcile reminders (delete outdated, create new, update existing).
+   * 5. If creating:
+   *    - Create medication document.
+   *    - Create associated reminders.
+   * 6. Schedule notifications for future reminders.
+   * 7. Display success message or error alert.
+   */
   const saveMedicationReminder = async () => {
-    // Basic validation
+    // Step 1: Validate required fields
     const {
       medicationName,
       medicationType,
@@ -173,10 +197,10 @@ const AddMedicationForm = ({
     setLoading(true);
 
     try {
-      // 1. Create or Update Medication Document
+      // Step 2: Retrieve user information from local storage
       const userinfo = await getFromStorage("userDetails");
 
-      // 2. Generate Reminder Dates
+      // Step 3: Generate reminder dates
       const customInterval =
         parseInt(formData.customIntervalValue || "1", 10) || 1;
       // Ensure startDate and endDate are Date objects
@@ -192,6 +216,7 @@ const AddMedicationForm = ({
           specificDaysOfWeek: formData.specificDaysOfWeek,
         }
       );
+      // Step 4: Update existing medication and associated reminders
       if (defaultValues?.id) {
         // Update existing medication
         const medicationRef = doc(db, "medication", defaultValues.id);
@@ -234,7 +259,11 @@ const AddMedicationForm = ({
         const deletePromises = [];
         for (const [dateIso, docId] of existingRemindersMap.entries()) {
           if (!validRemindersSet.has(dateIso)) {
-            deletePromises.push(deleteDoc(doc(db, "reminders", docId)));
+            deletePromises.push(
+              deleteDoc(doc(db, "reminders", docId)).then(() => {
+                logReminderChange("deleted", toDate(dateIso), docId);
+              })
+            );
           }
         }
 
@@ -256,7 +285,7 @@ const AddMedicationForm = ({
               notificationId: null,
             });
 
-            // Only schedule notification if future
+            // Step 6: Schedule notifications for valid future reminders
             if (toDate(reminderDate).getTime() > now.getTime()) {
               await scheduleMedicationReminder({
                 id: reminderDocRef.id,
@@ -268,6 +297,11 @@ const AddMedicationForm = ({
                 notificationId: null,
               });
             }
+            logReminderChange(
+              "created",
+              toDate(reminderDate),
+              reminderDocRef.id
+            );
           });
 
         await Promise.all([...deletePromises, ...newReminderPromises]);
@@ -282,10 +316,22 @@ const AddMedicationForm = ({
               whenToTake: formData.whenToTake,
             };
             updateExistingPromises.push(
-              updateDoc(reminderRef, updatedReminder)
+              updateDoc(reminderRef, updatedReminder).then(() => {
+                // Find the reminderData for log
+                const reminderData = reminderSnapshot.docs
+                  .find((d) => d.id === docId)
+                  ?.data();
+                if (reminderData) {
+                  logReminderChange(
+                    "updated",
+                    toDate(reminderData.date),
+                    docId
+                  );
+                }
+              })
             );
 
-            // Fetch and re-schedule notification
+            // Step 6: Schedule notifications for valid future reminders
             const reminderData = reminderSnapshot.docs
               .find((d) => d.id === docId)
               ?.data();
@@ -307,7 +353,7 @@ const AddMedicationForm = ({
         }
         await Promise.all(updateExistingPromises);
       } else {
-        // Add new medication (existing logic)
+        // Step 5: Create new medication and associated reminders
         const medicationRef = await addDoc(collection(db, "medication"), {
           medicationName,
           medicationType,
@@ -342,7 +388,7 @@ const AddMedicationForm = ({
             notificationId: null,
           });
 
-          // Only schedule notification if future
+          // Step 6: Schedule notifications for valid future reminders
           if (toDate(reminderDate).getTime() > now.getTime()) {
             await scheduleMedicationReminder({
               id: reminderDocRef.id, // Firestore document ID
@@ -354,11 +400,12 @@ const AddMedicationForm = ({
               notificationId: null,
             });
           }
+          logReminderChange("created", toDate(reminderDate), reminderDocRef.id);
         });
 
         await Promise.all(reminderWrites);
 
-        // 4. Show Success Message & Navigate Back
+        // Step 7: Show success message and trigger callback
         Alert.alert("Success!", "Medication reminder was created", [
           {
             text: "Ok",
