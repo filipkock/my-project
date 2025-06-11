@@ -448,7 +448,12 @@ const EditMedicationForm = ({
                     await Notifications.cancelScheduledNotificationAsync(
                       data.notificationId
                     );
-                  } catch {}
+                  } catch {
+                    console.error(
+                      "Failed to cancel notification for reminder",
+                      docSnap.id
+                    );
+                  }
                 }
                 await deleteDoc(docSnap.ref);
               });
