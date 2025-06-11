@@ -48,6 +48,7 @@ import { useState } from "react";
 import { Pressable } from "react-native";
 import { scheduleMedicationReminder } from "~/src/utils/scheduleMedicationReminder";
 import type { FormData } from "~/src/types/medication";
+import * as Notifications from "expo-notifications";
 
 // Helper function to log reminder changes
 const logReminderChange = (
@@ -63,7 +64,7 @@ const logReminderChange = (
 };
 
 // Accept props: defaultValues, onSuccess, onCancel
-const AddMedicationForm = ({
+const EditMedicationForm = ({
   defaultValues,
   onSuccess = () => {},
   onCancel,
@@ -409,6 +410,70 @@ const AddMedicationForm = ({
     }
   };
 
+  /**
+   * Delete Medication & Reminders
+   * ------------------------------
+   * 1. Ask for confirmation.
+   * 2. Delete all reminders linked to this medication.
+   * 3. Cancel any scheduled notifications (if notificationId exists).
+   * 4. Delete the medication document.
+   * 5. Call onSuccess callback.
+   */
+  const deleteMedicationReminder = async () => {
+    if (!defaultValues?.id) return; // Nothing to delete
+
+    Alert.alert(
+      "Delete medication",
+      "Are you sure you want to delete this medication and all its reminders?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setLoading(true);
+              const medId = defaultValues.id;
+
+              // 1. Fetch all reminders for this medication
+              const snapshot = await getDocs(
+                query(collection(db, "reminders"), where("medId", "==", medId))
+              );
+
+              // 2. Cancel notifications & delete reminder docs
+              const deletePromises = snapshot.docs.map(async (docSnap) => {
+                const data = docSnap.data();
+                if (data.notificationId) {
+                  try {
+                    await Notifications.cancelScheduledNotificationAsync(
+                      data.notificationId
+                    );
+                  } catch {}
+                }
+                await deleteDoc(docSnap.ref);
+              });
+
+              // 3. Delete the medication document itself
+              if (typeof medId === "string") {
+                deletePromises.push(deleteDoc(doc(db, "medication", medId)));
+              }
+
+              await Promise.all(deletePromises);
+
+              Alert.alert("Deleted", "Medication and reminders removed.");
+              onSuccess();
+            } catch (err) {
+              console.error(err);
+              Alert.alert("Error", "Could not delete medication.");
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View className="w-full">
       <Card className="w-full rounded-2xl max-w-sm">
@@ -668,6 +733,16 @@ const AddMedicationForm = ({
                 <Text>Save medication reminder</Text>
               )}
             </Button>
+            <Button
+              className="max-w-sm bg-red-600"
+              onPress={deleteMedicationReminder}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Text>Delete medication</Text>
+              )}
+            </Button>
           </View>
         </CardContent>
       </Card>
@@ -675,4 +750,4 @@ const AddMedicationForm = ({
   );
 };
 
-export default AddMedicationForm;
+export default EditMedicationForm;

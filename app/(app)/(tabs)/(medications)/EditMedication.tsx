@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
-import AddMedicationForm from "~/app/(app)/addNewMedication/addMedicationForm";
+import EditMedicationForm from "~/app/(app)/addNewMedication/EditMedicationForm";
 import { Text } from "~/components/ui/text";
 
 const EditMedicationScreen = () => {
@@ -44,7 +44,7 @@ const EditMedicationScreen = () => {
 
   return (
     <View className="flex-1 p-6">
-      <AddMedicationForm
+      <EditMedicationForm
         defaultValues={medicationState}
         onSuccess={handleSuccess}
         onCancel={() => router.back()}
