@@ -46,7 +46,8 @@ import {
 } from "~/src/services/reminderSchedule";
 import { useState } from "react";
 import { Pressable } from "react-native";
-import { scheduleMedicationReminder } from "~/src/utils/scheduleMedicationReminder"; // Assuming you have this function
+import { scheduleMedicationReminder } from "~/src/utils/scheduleMedicationReminder";
+import type { FormData } from "~/src/types/medication";
 
 // Helper function to log reminder changes
 const logReminderChange = (
@@ -60,21 +61,6 @@ const logReminderChange = (
     `${prefix} ${type.toUpperCase()} reminder: ${date.toISOString()}${idPart}`
   );
 };
-
-// FORM DATA TYPE
-// ------------------------------------------------
-export interface FormData {
-  medicationName: string | undefined;
-  medicationType: string | undefined;
-  whenToTake: string | undefined;
-  intakeInterval: string;
-  startDate: Date | undefined;
-  endDate: Date | undefined;
-  reminderTime: string | undefined;
-  customIntervalValue?: string; // numeric string for "X"
-  specificDaysOfWeek: number[]; // used for "Specific days weekly"
-  reminderDates?: Date[];
-}
 
 // Accept props: defaultValues, onSuccess, onCancel
 const AddMedicationForm = ({
@@ -261,7 +247,7 @@ const AddMedicationForm = ({
           if (!validRemindersSet.has(dateIso)) {
             deletePromises.push(
               deleteDoc(doc(db, "reminders", docId)).then(() => {
-                logReminderChange("deleted", toDate(dateIso), docId);
+                logReminderChange("deleted", toDate(new Date(dateIso)), docId);
               })
             );
           }
