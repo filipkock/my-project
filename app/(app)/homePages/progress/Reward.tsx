@@ -12,8 +12,8 @@ import { getFromStorage } from "~/src/services/storage";
 import { format } from "date-fns";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "~/config/firebase";
-// cardImages must be React SVG components, not image paths or require() results
 import { cardImages } from "~/src/constants/cardMap";
+import { useVideoPlayer, VideoView } from "expo-video";
 
 type UserCards = {
   uid: string;
@@ -23,6 +23,26 @@ type UserCards = {
 
 export default function Reward() {
   const router = useRouter();
+
+  // Video player logic for pack opening animation
+  const [videoFinished, setVideoFinished] = useState(false);
+
+  const player = useVideoPlayer(
+    require("~/assets/animations/card_reveal.mp4"),
+    (player) => {
+      player.play();
+      player.muted = true;
+      // Remove setOnPlaybackStatusUpdate, handle status in VideoView below
+    }
+  );
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setVideoFinished(true);
+    }, 2450); // 2 seconds for the video duration
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const [cardId, setCardId] = useState<number | null>(null);
   const [loadingCard, setLoadingCard] = useState(true);
@@ -97,14 +117,25 @@ export default function Reward() {
     <SafeAreaView className="flex-1">
       <View className="flex-1 items-center p-6">
         <View className="flex-1 justify-center items-center gap-4">
-          <Text className="text-2xl font-semibold text-center text-gray-900 mb-4">
+          <Text className="text-2xl font-semibold text-center text-gray-900 ">
             You earned a new card!
           </Text>
-          {loadingCard ? (
-            <Text className="text-gray-500">Loading your card...</Text>
+          {!videoFinished ? (
+            <VideoView
+              style={{ width: 400, height: 400 }}
+              player={player}
+              allowsFullscreen={false}
+              allowsPictureInPicture={false}
+              nativeControls={false}
+            />
           ) : (
-            <View className="mb-6">
-              {CardImageComponent ? (
+            <View
+              style={{ width: 400, height: 400 }}
+              className="justify-center items-center"
+            >
+              {loadingCard ? (
+                <Text className="text-gray-500">Loading your card...</Text>
+              ) : CardImageComponent ? (
                 <CardImageComponent width={200} height={200} />
               ) : (
                 <Text>No card component found</Text>

@@ -8,7 +8,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { getFromStorage } from "~/src/services/storage";
 import { getStreakFromFirestore } from "~/src/utils/streak";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { useEvent } from "expo";
 import { FireIcon } from "react-native-heroicons/solid";
 
 export default function DailyProgress() {
@@ -44,10 +43,6 @@ export default function DailyProgress() {
     }
   );
 
-  const { isPlaying } = useEvent(player, "playingChange", {
-    isPlaying: player.playing,
-  });
-
   return (
     <SafeAreaView className="flex-1">
       <View className="flex-1 items-center p-6">
@@ -68,6 +63,7 @@ export default function DailyProgress() {
             player={player}
             allowsFullscreen={false}
             allowsPictureInPicture={false}
+            nativeControls={false}
           />
         </View>
 
