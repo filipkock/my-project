@@ -7,7 +7,8 @@ import { useTheme } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getFromStorage } from "~/src/services/storage";
 import { getStreakFromFirestore } from "~/src/utils/streak";
-import { Video, ResizeMode } from "expo-av";
+import { useVideoPlayer, VideoView } from "expo-video";
+import { useEvent } from "expo";
 import { FireIcon } from "react-native-heroicons/solid";
 
 export default function DailyProgress() {
@@ -35,6 +36,18 @@ export default function DailyProgress() {
     fetchStreak();
   }, [takenCount, totalCount]);
 
+  const player = useVideoPlayer(
+    require("~/assets/animations/poka_celebrate.mp4"),
+    (player) => {
+      player.play();
+      player.muted = true;
+    }
+  );
+
+  const { isPlaying } = useEvent(player, "playingChange", {
+    isPlaying: player.playing,
+  });
+
   return (
     <SafeAreaView className="flex-1">
       <View className="flex-1 items-center p-6">
@@ -50,13 +63,11 @@ export default function DailyProgress() {
               <FireIcon size={24} color="black" />
             </View>
           )}
-
-          <Video
-            source={require("~/assets/animations/poka_celebrate.mp4")}
+          <VideoView
             style={{ width: 400, height: 400 }}
-            isMuted
-            shouldPlay
-            resizeMode={ResizeMode.CONTAIN}
+            player={player}
+            allowsFullscreen={false}
+            allowsPictureInPicture={false}
           />
         </View>
 
