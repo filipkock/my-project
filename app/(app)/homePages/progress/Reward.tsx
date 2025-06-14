@@ -3,16 +3,23 @@
 // It assigns a new random card if one hasn't been granted for today.
 
 import React, { useEffect, useState } from "react";
-import { View } from "react-native";
+import { View, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text } from "~/components/ui/text";
 import { Button } from "~/components/ui/button";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getFromStorage } from "~/src/services/storage";
 import { format } from "date-fns";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "~/config/firebase";
+// cardImages must be React SVG components, not image paths or require() results
+import { cardImages } from "~/src/constants/cardMap";
+
+type UserCards = {
+  uid: string;
+  cards: { [cardId: number]: number };
+  lastRewardedDate: string;
+};
 
 export default function Reward() {
   const router = useRouter();
@@ -35,8 +42,8 @@ export default function Reward() {
         const ref = doc(db, "userCards", user.uid);
         const snap = await getDoc(ref);
 
-        let userCards = snap.exists()
-          ? snap.data()
+        let userCards: UserCards = snap.exists()
+          ? (snap.data() as UserCards)
           : { uid: user.uid, cards: {}, lastRewardedDate: "" };
         // Skip if a card has already been granted today
         if (userCards?.lastRewardedDate === today) {
@@ -46,8 +53,8 @@ export default function Reward() {
           return;
         }
 
-        // Pick a new card ID between 1–10
-        const newCardId = Math.floor(Math.random() * 10) + 1;
+        // Pick a new card ID between 1–X
+        const newCardId = Math.floor(Math.random() * 2) + 1;
 
         // Update card count or initialize if first time
         if (userCards.cards[newCardId]) {
@@ -81,28 +88,33 @@ export default function Reward() {
     router.replace("/(app)/(tabs)/(home)");
   };
 
+  const CardImageComponent =
+    cardId !== null && cardImages.hasOwnProperty(cardId)
+      ? cardImages[cardId]
+      : null;
+
   return (
-    <SafeAreaView className="flex-1 bg-white justify-center items-center p-6">
-      <View className="items-center">
-        <Text className="text-4xl font-bold text-primary mb-4">🎉</Text>
-        <Text className="text-2xl font-semibold text-center text-gray-900 mb-2">
-          You earned a reward!
-        </Text>
-        <Text className="text-base text-center text-gray-600 mb-8">
-          Great job staying on track with your medication! Keep it up to earn
-          even more rewards.
-        </Text>
-        {loadingCard ? (
-          <Text className="text-gray-500">Loading your card...</Text>
-        ) : cardId !== null ? (
-          <Text className="text-lg font-semibold text-center mb-4">
-            🎴 You unlocked card #{cardId}
+    <SafeAreaView className="flex-1">
+      <View className="flex-1 items-center p-6">
+        <View className="flex-1 justify-center items-center gap-4">
+          <Text className="text-2xl font-semibold text-center text-gray-900 mb-4">
+            You earned a new card!
           </Text>
-        ) : (
-          <Text className="text-red-500">Failed to load reward</Text>
-        )}
-        <Button onPress={handleGoHome}>
-          <Text className="text-white font-medium">Back to Home</Text>
+          {loadingCard ? (
+            <Text className="text-gray-500">Loading your card...</Text>
+          ) : (
+            <View className="mb-6">
+              {CardImageComponent ? (
+                <CardImageComponent width={200} height={200} />
+              ) : (
+                <Text>No card component found</Text>
+              )}
+            </View>
+          )}
+        </View>
+
+        <Button className="w-full" onPress={handleGoHome} size="lg">
+          <Text className="text-white font-medium">CONTINUE</Text>
         </Button>
       </View>
     </SafeAreaView>
