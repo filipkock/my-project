@@ -313,7 +313,7 @@ export default function MedicationDetails() {
           )}
         </View>
 
-        <View className="p-8">
+        <View>
           {localMed.status === "taken" && (
             <Button
               onPress={() => setShowUndoModal(true)}

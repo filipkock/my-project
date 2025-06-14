@@ -1,3 +1,4 @@
+import LottieView from "lottie-react-native";
 import { User } from "firebase/auth";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import React from "react";
@@ -20,6 +21,7 @@ interface Medication {
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [medications, setMedications] = useState<Medication[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getMedicationsForUser();
@@ -31,6 +33,7 @@ const Index = () => {
     if (!user?.uid) return;
     setUser(user);
 
+    setLoading(true);
     try {
       const medicationQuery = query(
         collection(db, "medication"),
@@ -46,8 +49,23 @@ const Index = () => {
       setMedications(medicationsArray);
     } catch (error) {
       console.error("Error fetching medications:", error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <LottieView
+          source={require("~/assets/animations/loading.json")}
+          style={{ width: 250, height: 250 }}
+          autoPlay
+          loop
+        />
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-secondary/30">
