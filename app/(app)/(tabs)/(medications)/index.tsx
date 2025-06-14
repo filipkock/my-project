@@ -1,14 +1,10 @@
-import { router } from "expo-router";
 import { User } from "firebase/auth";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import React from "react";
 import { useEffect, useState } from "react";
 import { SafeAreaView, ScrollView, View } from "react-native";
-import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Text } from "~/components/ui/text";
 import { db } from "~/config/firebase";
-import { Plus } from "~/lib/icons/plus";
 import { getFromStorage } from "~/src/services/storage";
 import MedicationDetailsCard from "~/components/custom/medicationDetails/MedicationDetailsCard";
 
@@ -74,14 +70,7 @@ const Index = () => {
           )}
         </View>
       </ScrollView>
-      <View className="absolute bottom-10 right-10">
-        <Button
-          className="rounded-full h-14 w-14 items-center justify-center"
-          onPress={() => router.push("/addNewMedication/step1")}
-        >
-          <Plus size={24} color="white" />
-        </Button>
-      </View>
+      <View className="absolute bottom-10 right-10"></View>
     </SafeAreaView>
   );
 };

@@ -14,7 +14,7 @@ import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 import { router } from "expo-router";
 import { useState, useRef } from "react";
-import { ChevronLeft } from "~/lib/icons/ChevronLeft";
+import { XMarkIcon } from "react-native-heroicons/solid";
 import { ChevronRight } from "~/lib/icons/ChevronRight";
 import { medicationSuggestions } from "~/src/constants/medicationSuggestions";
 
@@ -69,7 +69,7 @@ export default function Step1() {
       <SafeAreaView>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View className="p-8">
-            <ChevronLeft
+            <XMarkIcon
               size={32}
               color="black"
               onPress={() => router.push("/(app)/(tabs)/(medications)")}
@@ -156,7 +156,7 @@ export default function Step1() {
               className="py-3 flex-row justify-between items-center border-b border-gray-200"
             >
               <Text>{item}</Text>
-              <ChevronRight size={20} />
+              <ChevronRight size={20} color="black" />
             </TouchableOpacity>
           )}
         />
