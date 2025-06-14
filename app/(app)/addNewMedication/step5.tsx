@@ -1,53 +1,98 @@
-// app/(app)/addNewMedication/step5.tsx
-import { View } from "react-native";
+import {
+  View,
+  SafeAreaView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Animated,
+  Platform,
+  UIManager,
+} from "react-native";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { router, useLocalSearchParams } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 
-export default function Step5() {
+export default function Step5StartDate() {
   const { medicationName, medicationType, whenToTake, interval } =
     useLocalSearchParams();
   const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+
+  const questionOpacity = useRef(new Animated.Value(1)).current;
+  const questionHeight = useRef(new Animated.Value(60)).current;
+
+  if (
+    Platform.OS === "android" &&
+    UIManager.setLayoutAnimationEnabledExperimental
+  ) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
 
   return (
-    <View className="p-6">
-      <Text className="mb-2 font-semibold">Start date</Text>
-      <DateTimePicker
-        value={startDate}
-        mode="date"
-        display="default"
-        onChange={(event, date) => date && setStartDate(date)}
-      />
+    <View className="flex-1">
+      <SafeAreaView>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <View className="p-8">
+            <ChevronLeft
+              size={32}
+              color="black"
+              onPress={() => router.back()}
+            />
+            <Animated.View
+              style={{
+                opacity: questionOpacity,
+                height: questionHeight,
+                overflow: "hidden",
+              }}
+            >
+              <Text className="text-2xl font-semibold mt-10">
+                When do you start this medication?
+              </Text>
+            </Animated.View>
+          </View>
+        </TouchableWithoutFeedback>
+      </SafeAreaView>
 
-      <Text className="mb-2 font-semibold mt-4">End date</Text>
-      <DateTimePicker
-        value={endDate}
-        mode="date"
-        display="default"
-        onChange={(event, date) => date && setEndDate(date)}
-      />
-
-      <Button
-        className="mt-4"
-        onPress={() =>
-          router.push({
-            pathname: "/addNewMedication/step6",
-            params: {
-              medicationName,
-              medicationType,
-              whenToTake,
-              interval,
-              startDate: startDate.toISOString(),
-              endDate: endDate.toISOString(),
-            },
-          })
-        }
+      <View
+        className="flex-1 bg-white p-8 shadow-sm"
+        style={{
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          backgroundColor: "white",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.05,
+          shadowRadius: 12,
+          elevation: 8,
+        }}
       >
-        <Text>Next</Text>
-      </Button>
+        <Text className="mb-2 font-semibold">Start date</Text>
+        <DateTimePicker
+          value={startDate}
+          mode="date"
+          display="spinner"
+          onChange={(event, date) => date && setStartDate(date)}
+        />
+
+        <Button
+          className="mt-6"
+          onPress={() =>
+            router.push({
+              pathname: "/addNewMedication/step6",
+              params: {
+                medicationName,
+                medicationType,
+                whenToTake,
+                interval,
+                startDate: startDate.toISOString(),
+              },
+            })
+          }
+        >
+          <Text>Next</Text>
+        </Button>
+      </View>
     </View>
   );
 }

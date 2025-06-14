@@ -1,55 +1,89 @@
-// app/(app)/addNewMedication/step3.tsx
-import { View } from "react-native";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
+  View,
+  Platform,
+  UIManager,
+  SafeAreaView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  TouchableOpacity,
+} from "react-native";
+import { SelectContent, SelectGroup, SelectItem } from "~/components/ui/select";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { WhenToTakeList } from "~/src/constants/addMedicationOptions";
+import { ChevronLeft } from "~/lib/icons/ChevronLeft";
+import { ChevronRight } from "~/lib/icons/ChevronRight";
 
 export default function Step3() {
   const { medicationName, medicationType } = useLocalSearchParams();
   const [whenToTake, setWhenToTake] = useState("");
 
-  return (
-    <View className="p-6">
-      <Select onValueChange={(option) => setWhenToTake(option?.value ?? "")}>
-        <SelectTrigger>
-          <SelectValue placeholder="When to take" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            {WhenToTakeList.map((item) => (
-              <SelectItem key={item} value={item} label={item}>
-                {item}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+  const handleSelect = (option: string) => {
+    setWhenToTake(option);
+    Keyboard.dismiss();
+    router.push({
+      pathname: "/addNewMedication/step4",
+      params: {
+        medicationName,
+        medicationType,
+        whenToTake: option,
+      },
+    });
+  };
 
-      <Button
-        className="mt-4"
-        onPress={() =>
-          router.push({
-            pathname: "/addNewMedication/step4",
-            params: {
-              medicationName,
-              medicationType,
-              whenToTake,
-            },
-          })
-        }
+  return (
+    <View className="flex-1">
+      <SafeAreaView>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <View className="p-8">
+            <ChevronLeft
+              size={32}
+              color="black"
+              onPress={() => router.back()}
+            />
+            <View style={{ overflow: "hidden" }}>
+              <Text className="text-2xl font-semibold mt-10">
+                When do you take it?
+              </Text>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </SafeAreaView>
+
+      <View
+        className="flex-1 bg-white p-8 shadow-sm"
+        style={{
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          backgroundColor: "white",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.05,
+          shadowRadius: 12,
+          elevation: 8,
+        }}
       >
-        <Text>Next</Text>
-      </Button>
+        <View className="mt-2">
+          {WhenToTakeList.map((item) => (
+            <TouchableOpacity
+              key={item}
+              onPress={() => handleSelect(item)}
+              style={{
+                paddingVertical: 14,
+                borderBottomWidth: 1,
+                borderBottomColor: "#eee",
+                flexDirection: "row",
+                justifyContent: "space-between",
+              }}
+            >
+              <Text>{item}</Text>
+              <ChevronRight size={20} />
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
     </View>
   );
 }
