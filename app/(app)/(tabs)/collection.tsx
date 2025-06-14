@@ -2,7 +2,7 @@ import React from "react";
 import { View, SafeAreaView } from "react-native";
 import { Text } from "~/components/ui/text";
 
-const about = () => {
+const collection = () => {
   return (
     <SafeAreaView className="flex-1 p-8">
       <View className="flex-1 w-full p-10">
@@ -14,4 +14,4 @@ const about = () => {
   );
 };
 
-export default about;
+export default collection;

@@ -24,7 +24,7 @@ const TabsLayout = () => {
           tabBarItemStyle:
             route.name === "(medications)"
               ? { marginRight: 42 }
-              : route.name === "about"
+              : route.name === "collection"
               ? { marginLeft: 42 }
               : {},
         })}
@@ -53,7 +53,7 @@ const TabsLayout = () => {
         />
 
         <Tabs.Screen
-          name="about"
+          name="collection"
           options={{
             headerShown: false,
             tabBarIcon: ({ color, size }) => (
