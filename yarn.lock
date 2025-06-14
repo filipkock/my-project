@@ -2192,7 +2192,7 @@
 
 "@react-native-community/datetimepicker@^8.4.1":
   version "8.4.1"
-  resolved "https://registry.yarnpkg.com/@react-native-community/datetimepicker/-/datetimepicker-8.4.1.tgz#a798c237f01ae96658d5c93292fc2955dad04a83"
+  resolved "https://registry.npmjs.org/@react-native-community/datetimepicker/-/datetimepicker-8.4.1.tgz"
   integrity sha512-DrK+CUS5fZnz8dhzBezirkzQTcNDdaXer3oDLh0z4nc2tbdIdnzwvXCvi8IEOIvleoc9L95xS5tKUl0/Xv71Mg==
   dependencies:
     invariant "^2.2.4"
@@ -4203,6 +4203,11 @@ expo-asset@~11.0.5:
     invariant "^2.2.4"
     md5-file "^3.2.3"
 
+expo-av@~15.0.2:
+  version "15.0.2"
+  resolved "https://registry.yarnpkg.com/expo-av/-/expo-av-15.0.2.tgz#65bb08658a7fe3a67aa47da614abbfae9adb684e"
+  integrity sha512-AHIHXdqLgK1dfHZF0JzX3YSVySGMrWn9QtPzaVjw54FAzvXfMt4sIoq4qRL/9XWCP9+ICcCs/u3EcvmxQjrfcA==
+
 expo-constants@^17.0.8, expo-constants@~17.0.5, expo-constants@~17.0.8:
   version "17.0.8"
   resolved "https://registry.npmjs.org/expo-constants/-/expo-constants-17.0.8.tgz"
@@ -4267,7 +4272,7 @@ expo-font@~13.0.4:
 
 expo-haptics@~14.0.1:
   version "14.0.1"
-  resolved "https://registry.yarnpkg.com/expo-haptics/-/expo-haptics-14.0.1.tgz#ff4ead605e33f1917e615c9328af7ac1c34892dc"
+  resolved "https://registry.npmjs.org/expo-haptics/-/expo-haptics-14.0.1.tgz"
   integrity sha512-V81FZ7xRUfqM6uSI6FA1KnZ+QpEKnISqafob/xEfcx1ymwhm4V3snuLWWFjmAz+XaZQTqlYa8z3QbqEXz7G63w==
 
 expo-json-utils@~0.14.0:
@@ -5989,6 +5994,11 @@ loose-envify@^1.0.0, loose-envify@^1.1.0, loose-envify@^1.4.0:
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
 
+lottie-react-native@7.1.0:
+  version "7.1.0"
+  resolved "https://registry.yarnpkg.com/lottie-react-native/-/lottie-react-native-7.1.0.tgz#705d1f7603b7a1b3d0cf0b4bb9a193d0dba4efa4"
+  integrity sha512-73jtQySxRZ8KTTSKf6CtcpCt8tpOCw4NRiCST4HTYgXlycxIihIp89jRcK8rS/QiBKl5bzyixMzpVmd4mYVH5Q==
+
 lru-cache@6.0.0:
   version "6.0.0"
   resolved "https://registry.npmjs.org/lru-cache/-/lru-cache-6.0.0.tgz"
@@ -7150,7 +7160,7 @@ react-native-calendars@^1.1308.1:
 
 react-native-circular-progress@^1.4.1:
   version "1.4.1"
-  resolved "https://registry.yarnpkg.com/react-native-circular-progress/-/react-native-circular-progress-1.4.1.tgz#46d94e73e5973bb415937b912ba56ce1947f66b7"
+  resolved "https://registry.npmjs.org/react-native-circular-progress/-/react-native-circular-progress-1.4.1.tgz"
   integrity sha512-HEzvI0WPuWvsCgWE3Ff2HBTMgAEQB2GvTFw0KHyD/t1STAlDDRiolu0mEGhVvihKR3jJu3v3V4qzvSklY/7XzQ==
   dependencies:
     prop-types "^15.8.1"
@@ -7183,7 +7193,7 @@ react-native-helmet-async@2.0.4:
 
 react-native-heroicons@^4.0.0:
   version "4.0.0"
-  resolved "https://registry.yarnpkg.com/react-native-heroicons/-/react-native-heroicons-4.0.0.tgz#413e0c2925359945fc5aa634417144a2f7fdd29b"
+  resolved "https://registry.npmjs.org/react-native-heroicons/-/react-native-heroicons-4.0.0.tgz"
   integrity sha512-RY3XhAr0aQxLtWUkIUifTUBYC3tOspe0pMTHTATpQYyg6Uw7PYO5qmHYFul9w8tvYAB43WDRZ+yomdVmMQ2Jqw==
 
 react-native-is-edge-to-edge@^1.1.6:
@@ -7193,7 +7203,7 @@ react-native-is-edge-to-edge@^1.1.6:
 
 react-native-modal-datetime-picker@^18.0.0:
   version "18.0.0"
-  resolved "https://registry.yarnpkg.com/react-native-modal-datetime-picker/-/react-native-modal-datetime-picker-18.0.0.tgz#0555b2c9ab34318629a251f250de68a0e3b3980d"
+  resolved "https://registry.npmjs.org/react-native-modal-datetime-picker/-/react-native-modal-datetime-picker-18.0.0.tgz"
   integrity sha512-0jdvhhraZQlRACwr7pM6vmZ2kxgzJ4CpnmV6J3TVA6MrXMXK6Zo/upRBKkRp0+fTOiKuNblzesA2U59rYo6SGA==
   dependencies:
     prop-types "^15.7.2"
