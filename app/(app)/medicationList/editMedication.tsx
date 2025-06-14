@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { SafeAreaView, View } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
-import EditMedicationForm from "~/app/(app)/medicationList/EditMedicationForm";
+import EditMedicationForm from "~/app/(app)/medicationList/editMedicationForm";
 import { Text } from "~/components/ui/text";
 import LottieView from "lottie-react-native";
 import { ChevronLeftIcon } from "react-native-heroicons/solid";
@@ -34,8 +34,13 @@ const EditMedicationScreen = () => {
 
   return (
     <SafeAreaView className="flex-1">
-      <View className="p-6">
-        <ChevronLeftIcon size={32} color="black" onPress={handlePress} />
+      <View className="p-8">
+        <ChevronLeftIcon
+          size={32}
+          color="black"
+          onPress={handlePress}
+          className="mb-14"
+        />
 
         {loading ? (
           <View className="flex-1 justify-center items-center">

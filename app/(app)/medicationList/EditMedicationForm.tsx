@@ -64,7 +64,7 @@ const logReminderChange = (
 };
 
 // Accept props: defaultValues, onSuccess, onCancel
-const EditMedicationForm = ({
+const editMedicationForm = ({
   defaultValues,
   onSuccess = () => {},
   onCancel,
@@ -480,7 +480,7 @@ const EditMedicationForm = ({
   };
 
   return (
-    <View className="w-full">
+    <View className="w-full mt-6">
       <View className="w-full flex-col gap-6 px-4">
         {/* Medication name */}
         <View className="space-y-1">
@@ -765,4 +765,4 @@ const EditMedicationForm = ({
   );
 };
 
-export default EditMedicationForm;
+export default editMedicationForm;

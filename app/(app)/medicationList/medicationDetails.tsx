@@ -2,8 +2,8 @@ import { SafeAreaView, View } from "react-native";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text } from "~/components/ui/text";
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
+import { Label } from "~/components/ui/label";
 import { ChevronLeftIcon } from "react-native-heroicons/solid";
 
 interface Medication {
@@ -49,25 +49,40 @@ export default function MedicationDetails() {
 
   return (
     <SafeAreaView className="flex-1">
-      <View className="flex-1 p-6">
+      <View className="flex-1 p-8">
         <ChevronLeftIcon
           size={32}
           color="black"
           onPress={() => handlePress()}
         />
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>{parsedMedication.medicationName}</CardTitle>
-          </CardHeader>
-          <CardContent className="gap-2">
-            <Text>Type: {parsedMedication.medicationType}</Text>
-            <Text>Interval: {parsedMedication.intakeInterval}</Text>
-            <Text>Time: {parsedMedication.time}</Text>
-            <Text>When to take: {parsedMedication.whenToTake}</Text>
-          </CardContent>
-        </Card>
 
-        <View className="mt-3">
+        <View className="mt-14 flex-1 p-8 gap-3">
+          <Text className="text-4xl font-bold mb-4 uppercase">
+            {parsedMedication.medicationName}
+          </Text>
+
+          <View>
+            <Label className="text-gray-500 mb-1">Type</Label>
+            <Text className="text-lg">{parsedMedication.medicationType}</Text>
+          </View>
+
+          <View>
+            <Label className="text-gray-500 mb-1">Interval</Label>
+            <Text className="text-lg">{parsedMedication.intakeInterval}</Text>
+          </View>
+
+          <View>
+            <Label className="text-gray-500 mb-1">Time</Label>
+            <Text className="text-lg">{parsedMedication.time}</Text>
+          </View>
+
+          <View>
+            <Label className="text-gray-500 mb-1">When to take</Label>
+            <Text className="text-lg">{parsedMedication.whenToTake}</Text>
+          </View>
+        </View>
+
+        <View>
           <Button
             onPress={() =>
               router.push({
