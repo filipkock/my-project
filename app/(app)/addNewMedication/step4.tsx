@@ -10,7 +10,6 @@ import {
   SafeAreaView,
 } from "react-native";
 import { useEffect, useRef, useState } from "react";
-import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
@@ -25,9 +24,6 @@ const IntervalList = [
 
 export default function Step4() {
   const { medicationName, medicationType, whenToTake } = useLocalSearchParams();
-  const [isInputFocused, setIsInputFocused] = useState(false);
-  const questionOpacity = useRef(new Animated.Value(1)).current;
-  const questionHeight = useRef(new Animated.Value(60)).current;
 
   useEffect(() => {
     if (

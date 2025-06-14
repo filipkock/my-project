@@ -48,7 +48,7 @@ export default function MedicationDetails() {
 
   return (
     <View className="flex-1 p-6">
-      <Card className="w-full rounded-2xl">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>{parsedMedication.medicationName}</CardTitle>
         </CardHeader>

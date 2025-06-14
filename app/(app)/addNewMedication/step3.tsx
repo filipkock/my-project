@@ -1,14 +1,10 @@
 import {
   View,
-  Platform,
-  UIManager,
   SafeAreaView,
   TouchableWithoutFeedback,
   Keyboard,
   TouchableOpacity,
 } from "react-native";
-import { SelectContent, SelectGroup, SelectItem } from "~/components/ui/select";
-import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";

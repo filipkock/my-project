@@ -7,7 +7,7 @@ const AddNewMedicationLayout = () => {
         name="step1"
         options={{
           headerShown: false,
-          animation: "fade",
+          animation: "none",
         }}
       ></Stack.Screen>
       <Stack.Screen
