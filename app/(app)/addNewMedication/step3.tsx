@@ -43,11 +43,9 @@ export default function Step3() {
               color="black"
               onPress={() => router.back()}
             />
-            <View style={{ overflow: "hidden" }}>
-              <Text className="text-2xl font-semibold mt-10">
-                When do you take it?
-              </Text>
-            </View>
+            <Text className="text-2xl font-semibold mt-10">
+              When do you take it?
+            </Text>
           </View>
         </TouchableWithoutFeedback>
       </SafeAreaView>

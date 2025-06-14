@@ -7,6 +7,7 @@ import {
   UIManager,
   Keyboard,
   TouchableWithoutFeedback,
+  SafeAreaView,
 } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
@@ -52,36 +53,20 @@ export default function Step4() {
 
   return (
     <View className="flex-1">
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View className="p-8">
-          <ChevronLeft
-            size={32}
-            color="black"
-            onPress={() =>
-              router.push({
-                pathname: "/addNewMedication/step3",
-                params: {
-                  medicationName,
-                  medicationType,
-                  whenToTake,
-                },
-              })
-            }
-          />
-          <Animated.View
-            style={{
-              opacity: questionOpacity,
-              height: questionHeight,
-              overflow: "hidden",
-            }}
-          >
+      <SafeAreaView>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <View className="p-8">
+            <ChevronLeft
+              size={32}
+              color="black"
+              onPress={() => router.back()}
+            />
             <Text className="text-2xl font-semibold mt-10">
               How often do you take it?
             </Text>
-          </Animated.View>
-        </View>
-      </TouchableWithoutFeedback>
-
+          </View>
+        </TouchableWithoutFeedback>
+      </SafeAreaView>
       <View
         className="flex-1 bg-white p-8 shadow-sm"
         style={{

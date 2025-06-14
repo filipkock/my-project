@@ -77,7 +77,7 @@ const Index = () => {
       <View className="absolute bottom-10 right-10">
         <Button
           className="rounded-full h-14 w-14 items-center justify-center"
-          onPress={() => router.push("/addNewMedication/main")}
+          onPress={() => router.push("/addNewMedication/step1")}
         >
           <Plus size={24} color="white" />
         </Button>
