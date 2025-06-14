@@ -38,7 +38,7 @@ const MedicationDetailsCard: React.FC<MedicationCardProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Text className=" text-gray-600">
+          <Text className="text-gray-600">
             {medication.intakeInterval} - {medication.time}
           </Text>
         </CardContent>

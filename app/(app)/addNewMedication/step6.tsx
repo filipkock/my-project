@@ -67,13 +67,15 @@ export default function Step6EndDate() {
           elevation: 8,
         }}
       >
-        <Text className="mb-2 font-semibold">End date</Text>
-        <DateTimePicker
-          value={endDate}
-          mode="date"
-          display="spinner"
-          onChange={(event, date) => date && setEndDate(date)}
-        />
+        <View className="flex-1">
+          <Text className="mb-2 font-semibold">End date</Text>
+          <DateTimePicker
+            value={endDate}
+            mode="date"
+            display="spinner"
+            onChange={(event, date) => date && setEndDate(date)}
+          />
+        </View>
 
         <Button
           className="mt-6"

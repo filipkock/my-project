@@ -1,6 +1,12 @@
-// app/(app)/addNewMedication/step6.tsx
-import { View } from "react-native";
+import {
+  View,
+  SafeAreaView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ActivityIndicator,
+} from "react-native";
 import { Text } from "~/components/ui/text";
+import { Label } from "~/components/ui/label";
 import { Button } from "~/components/ui/button";
 import { useLocalSearchParams, router } from "expo-router";
 import { doc, setDoc } from "firebase/firestore";
@@ -17,8 +23,11 @@ import { getFromStorage } from "~/src/services/storage";
 import { db } from "~/config/firebase";
 import { getAuth } from "firebase/auth";
 import type { FormData } from "~/src/types/medication";
+import { ChevronLeft } from "~/lib/icons/ChevronLeft";
+import { useState } from "react";
 
 export default function ConfirmStep() {
+  const [isSaving, setIsSaving] = useState(false);
   const {
     medicationName,
     medicationType,
@@ -44,12 +53,14 @@ export default function ConfirmStep() {
   };
 
   const handleSave = async () => {
+    setIsSaving(true);
     if (!uid) return;
 
     try {
       const userinfo = await getFromStorage("userDetails");
       if (!userinfo?.uid || !userinfo?.email) {
         Alert.alert("User not found", "Please sign in again.");
+        setIsSaving(false);
         return;
       }
 
@@ -115,25 +126,85 @@ export default function ConfirmStep() {
           onPress: () => router.replace("/(app)/(tabs)/(medications)"),
         },
       ]);
+      setIsSaving(false);
     } catch (e) {
       console.error(e);
       Alert.alert("Error", "Failed to save medication.");
+      setIsSaving(false);
     }
   };
 
   return (
-    <View className="p-6">
-      <Text className="font-bold text-lg mb-2">Confirm Medication</Text>
-      <Text>Name: {medicationName}</Text>
-      <Text>Type: {medicationType}</Text>
-      <Text>When: {whenToTake}</Text>
-      <Text>Interval: {interval}</Text>
-      <Text>Start: {new Date(startDate as string).toLocaleDateString()}</Text>
-      <Text>End: {formData.endDate?.toLocaleDateString()}</Text>
+    <View className="flex-1">
+      <SafeAreaView>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <View className="p-8">
+            <ChevronLeft
+              size={32}
+              color="black"
+              onPress={() => router.back()}
+            />
+            <Text className="text-2xl font-semibold mt-10">Summary</Text>
+          </View>
+        </TouchableWithoutFeedback>
+      </SafeAreaView>
 
-      <Button className="mt-4" onPress={handleSave}>
-        <Text>Save Medication</Text>
-      </Button>
+      <View
+        className="flex-1 bg-white p-8 shadow-sm"
+        style={{
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          backgroundColor: "white",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.05,
+          shadowRadius: 12,
+          elevation: 8,
+        }}
+      >
+        <View className="flex-1 gap-3">
+          <View>
+            <Label className="text-gray-500 mb-1">Medication</Label>
+            <Text className="text-lg">{medicationName}</Text>
+          </View>
+
+          <View>
+            <Label className="text-gray-500 mb-1">Type</Label>
+            <Text className="text-lg">{medicationType}</Text>
+          </View>
+
+          <View>
+            <Label className="text-gray-500 mb-1">When</Label>
+            <Text className="text-lg">{whenToTake}</Text>
+          </View>
+
+          <View>
+            <Label className="text-gray-500 mb-1">Interval</Label>
+            <Text className="text-lg">{interval}</Text>
+          </View>
+
+          <View>
+            <Label className="text-gray-500 mb-1">Start</Label>
+            <Text className="text-lg">
+              {new Date(startDate as string).toLocaleDateString()}
+            </Text>
+          </View>
+
+          <View>
+            <Label className="text-gray-500 mb-1">End</Label>
+            <Text className="text-lg">
+              {formData.endDate?.toLocaleDateString()}
+            </Text>
+          </View>
+        </View>
+        <Button className="mt-4" onPress={handleSave} disabled={isSaving}>
+          {isSaving ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Text>Save Medication</Text>
+          )}
+        </Button>
+      </View>
     </View>
   );
 }

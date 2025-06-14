@@ -67,13 +67,15 @@ export default function Step5StartDate() {
           elevation: 8,
         }}
       >
-        <Text className="mb-2 font-semibold">Start date</Text>
-        <DateTimePicker
-          value={startDate}
-          mode="date"
-          display="spinner"
-          onChange={(event, date) => date && setStartDate(date)}
-        />
+        <View className="flex-1">
+          <Text className="mb-2 font-semibold">Start date</Text>
+          <DateTimePicker
+            value={startDate}
+            mode="date"
+            display="spinner"
+            onChange={(event, date) => date && setStartDate(date)}
+          />
+        </View>
 
         <Button
           className="mt-6"
