@@ -3,6 +3,7 @@ import { View, ScrollView, Alert } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Text } from "~/components/ui/text";
 import { Badge } from "~/components/ui/badge";
+import { Label } from "~/components/ui/label";
 import { Button } from "~/components/ui/button";
 import moment from "moment";
 import type { Medication } from "~/src/types/medication";
@@ -20,16 +21,15 @@ import {
 import { db } from "~/config/firebase";
 import {
   getScheduledDate,
-  handleTakeMedication,
   handleUntakeMedication,
   markMedicationAsTaken,
 } from "~/src/utils/medicationActions";
-import { updateStreak } from "~/src/utils/streak";
-import { getFromStorage } from "~/src/services/storage";
 import UndoMedicationModal from "~/components/custom/UndoMedicationModal";
 import TakeMedicationSheet from "~/components/custom/TakeMedicationSheet";
 import { useSelectedDate } from "~/src/context/SelectedDateContext";
 import BottomSheet from "~/components/custom/BottomSheet";
+import { ChevronLeftIcon } from "react-native-heroicons/solid";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface ReminderData {
   takenTime: Timestamp;
@@ -250,156 +250,172 @@ export default function MedicationDetails() {
     return `Taken at ${moment(takenTime).format("HH:mm")}`;
   }, [localMed]);
 
+  const handlePress = useCallback(() => {
+    router.push({
+      pathname: "/(app)/(tabs)/(home)",
+    });
+  }, [router]);
+
   return (
-    <View className="flex-1 bg-background">
-      <ScrollView className="flex-1">
-        <View className="p-10 space-y-6">
+    <SafeAreaView className="flex-1">
+      <View className="flex-1 p-8">
+        <ChevronLeftIcon
+          size={32}
+          color="black"
+          onPress={handlePress}
+          className="mb-14"
+        />
+        <View className="mt-14 flex-1 p-8 gap-3">
           <Badge variant="default" className="self-start">
             <Text className="text-xs font-medium">{calculateStatus()}</Text>
           </Badge>
 
-          <Text className="text-3xl font-bold">{localMed.medicationName}</Text>
+          <Text className="text-4xl font-bold mb-4 uppercase">
+            {localMed.medicationName}
+          </Text>
 
-          <View className="flex-row items-center space-x-3">
-            {/* Add relevant icons here later */}
-            <Text className="text-base">{formatScheduledTime()}</Text>
+          <View>
+            <Label className="text-gray-500 mb-1">Time</Label>
+            <Text className="text-lg">{formatScheduledTime()}</Text>
           </View>
 
-          <View className="flex-row items-center space-x-3">
-            <Text className="text-base">
+          <View>
+            <Label className="text-gray-500 mb-1">Dosage</Label>
+            <Text className="text-lg">
               Take {localMed.dosageAmount || 1} {localMed.dosageUnit || "pill"}
               {localMed.dosageStrength ? `, ${localMed.dosageStrength}` : ""}
             </Text>
           </View>
 
           {formatTakenTime() && (
-            <View className="flex-row items-center space-x-3">
-              <Text className="text-base text-muted-foreground">
+            <View>
+              <Label className="text-gray-500 mb-1">Taken</Label>
+              <Text className="text-lg text-muted-foreground">
                 {formatTakenTime()}
               </Text>
             </View>
           )}
 
           {localMed.status === "skipped" && (
-            <View className="flex-row items-center space-x-3">
-              <Text className="text-base text-muted-foreground">
+            <View>
+              <Label className="text-gray-500 mb-1">Status</Label>
+              <Text className="text-lg text-muted-foreground">
                 This medication was marked as skipped.
               </Text>
             </View>
           )}
 
           {lastTakenInfo && localMed.status !== "taken" && (
-            <View className="flex-row items-center space-x-3">
-              <Text className="text-base text-muted-foreground">
-                {lastTakenInfo}
-              </Text>
+            <View>
+              <Label className="text-gray-500 mb-1">Last Taken</Label>
+              <Text className="text-lg">{lastTakenInfo}</Text>
             </View>
           )}
         </View>
-      </ScrollView>
 
-      <View className="p-4 border-t border-border bg-background">
-        {localMed.status === "taken" && (
-          <Button
-            onPress={() => setShowUndoModal(true)}
-            className="w-full"
-            variant="outline"
-          >
-            <Text className="text-foreground">Undo Medication</Text>
-          </Button>
-        )}
-
-        {localMed.status === "skipped" && (
-          <Button
-            onPress={async () => {
-              setIsTakeSheetVisible(true);
-            }}
-            className="w-full"
-            variant="default"
-          >
-            <Text className="text-white">Mark as Taken</Text>
-          </Button>
-        )}
-
-        {localMed.status === "pending" && (
-          <>
+        <View className="p-8">
+          {localMed.status === "taken" && (
             <Button
-              onPress={handleMedicationAction}
+              onPress={() => setShowUndoModal(true)}
+              className="w-full"
+              variant="outline"
+            >
+              <Text className="text-foreground">Undo Medication</Text>
+            </Button>
+          )}
+
+          {localMed.status === "skipped" && (
+            <Button
+              onPress={async () => {
+                setIsTakeSheetVisible(true);
+              }}
               className="w-full"
               variant="default"
             >
-              <Text className="text-white">Take Medication</Text>
+              <Text className="text-white">Mark as Taken</Text>
             </Button>
-            <View className="mt-2">
-              <Button
-                onPress={async () => {
-                  const updatedMedication = {
-                    ...localMed,
-                    status: "skipped",
-                    takenTime: null,
-                    onTime: false,
-                  };
-                  setLocalMed(updatedMedication);
-                  router.setParams({
-                    medication: JSON.stringify(updatedMedication),
-                  });
+          )}
 
-                  // Update Firestore
-                  if (localMed.reminderDocID) {
-                    const reminderRef = doc(
-                      db,
-                      "reminders",
-                      localMed.reminderDocID
-                    );
-                    await updateDoc(reminderRef, {
+          {localMed.status === "pending" && (
+            <>
+              <Button
+                onPress={handleMedicationAction}
+                className="w-full"
+                variant="default"
+              >
+                <Text className="text-white">Take Medication</Text>
+              </Button>
+              <View className="mt-2">
+                <Button
+                  onPress={async () => {
+                    const updatedMedication = {
+                      ...localMed,
                       status: "skipped",
                       takenTime: null,
                       onTime: false,
+                    };
+                    setLocalMed(updatedMedication);
+                    router.setParams({
+                      medication: JSON.stringify(updatedMedication),
                     });
-                  }
 
-                  setShowSkippedInfo(true);
-                }}
-                className="w-full"
-                variant="outline"
-              >
-                <Text className="text-foreground">Skip Medication</Text>
-              </Button>
-            </View>
-          </>
-        )}
-      </View>
+                    // Update Firestore
+                    if (localMed.reminderDocID) {
+                      const reminderRef = doc(
+                        db,
+                        "reminders",
+                        localMed.reminderDocID
+                      );
+                      await updateDoc(reminderRef, {
+                        status: "skipped",
+                        takenTime: null,
+                        onTime: false,
+                      });
+                    }
 
-      <UndoMedicationModal
-        visible={showUndoModal}
-        onConfirm={handleUndoConfirm}
-        onCancel={() => setShowUndoModal(false)}
-      />
-
-      <TakeMedicationSheet
-        visible={isTakeSheetVisible}
-        onDismiss={() => setIsTakeSheetVisible(false)}
-        medication={localMed}
-        onTakeOnTime={handleTakeOnTime}
-        onTakeNow={handleTakeNow}
-        onSetTime={handleSetTime}
-      />
-
-      <BottomSheet
-        visible={showSkippedInfo}
-        onClose={() => setShowSkippedInfo(false)}
-        title="Heads up!"
-      >
-        <View className="px-6 space-y-4">
-          <Text className="text-base text-center text-gray-800">
-            Skipped! This medication won’t affect your streak or rewards.
-          </Text>
-          <Text className="text-sm text-center text-gray-500">
-            Just make sure to log all your other medications today to keep your
-            streak going strong.
-          </Text>
+                    setShowSkippedInfo(true);
+                  }}
+                  className="w-full"
+                  variant="outline"
+                >
+                  <Text className="text-foreground">Skip Medication</Text>
+                </Button>
+              </View>
+            </>
+          )}
         </View>
-      </BottomSheet>
-    </View>
+
+        <UndoMedicationModal
+          visible={showUndoModal}
+          onConfirm={handleUndoConfirm}
+          onCancel={() => setShowUndoModal(false)}
+        />
+
+        <TakeMedicationSheet
+          visible={isTakeSheetVisible}
+          onDismiss={() => setIsTakeSheetVisible(false)}
+          medication={localMed}
+          onTakeOnTime={handleTakeOnTime}
+          onTakeNow={handleTakeNow}
+          onSetTime={handleSetTime}
+        />
+
+        <BottomSheet
+          visible={showSkippedInfo}
+          onClose={() => setShowSkippedInfo(false)}
+          title="Heads up!"
+        >
+          <View className="px-6 space-y-4">
+            <Text className="text-base text-center text-gray-800">
+              Skipped! This medication won’t affect your streak or rewards.
+            </Text>
+            <Text className="text-sm text-center text-gray-500">
+              Just make sure to log all your other medications today to keep
+              your streak going strong.
+            </Text>
+          </View>
+        </BottomSheet>
+      </View>
+    </SafeAreaView>
   );
 }

@@ -123,7 +123,7 @@ export const updateStreak = async (
     /* 4️⃣ Trigger DailyProgress after any dose is marked as taken */
     if (isToday && takenCount > 0) {
       router.replace({
-        pathname: "/(app)/(tabs)/(home)/(progress)/DailyProgress",
+        pathname: "/(app)/homePages/progress/DailyProgress",
         params: {
           taken: String(takenCount),
           total: String(totalToday),

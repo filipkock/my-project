@@ -170,7 +170,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
 
   const handleCardPress = () => {
     router.push({
-      pathname: "/(app)/(tabs)/(home)/details/details",
+      pathname: "/(app)/homePages/details",
       params: { medication: JSON.stringify(medication) },
     });
   };
@@ -202,7 +202,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
       <Card
         className={`relative w-full flex flex-row items-center p-6 gap-4 ${
           medication.status === "taken" || medication.status === "skipped"
-            ? "opacity-70 bg-transparent"
+            ? "opacity-60"
             : ""
         }`}
       >

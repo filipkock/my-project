@@ -95,9 +95,7 @@ export default function DailyProgress() {
             </Animated.Text>
             <Button
               className="mt-4"
-              onPress={() =>
-                router.replace("/(app)/(tabs)/(home)/(progress)/Reward")
-              }
+              onPress={() => router.replace("/(app)/homePages/progress/Reward")}
             >
               <Text>🎁 Claim Your Reward</Text>
             </Button>

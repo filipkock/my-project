@@ -105,6 +105,7 @@ export default function Step1() {
         <Input
           placeholder="Enter medication name"
           value={medicationName}
+          className="border border-gray-300"
           onFocus={() => {
             Animated.parallel([
               Animated.timing(questionOpacity, {

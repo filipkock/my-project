@@ -26,6 +26,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/poppins";
 import { checkAndResetStreakIfNeeded } from "~/src/utils/streakResetOnLaunch";
+import { SelectedDateProvider } from "~/src/context/SelectedDateContext";
 
 // ==== react native reusables theme setup ====
 const LIGHT_THEME: Theme = {
@@ -115,8 +116,10 @@ export default function RootLayout() {
     <AuthProvider>
       <NotificationProvider>
         <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-          <Slot></Slot>
-          <PortalHost />
+          <SelectedDateProvider>
+            <Slot></Slot>
+            <PortalHost />
+          </SelectedDateProvider>
         </ThemeProvider>
       </NotificationProvider>
     </AuthProvider>

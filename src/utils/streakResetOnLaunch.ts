@@ -90,7 +90,7 @@ export const checkAndResetStreakIfNeeded = async (): Promise<void> => {
       await AsyncStorage.setItem(LAST_CHECK_KEY, todayStr);
       await setDoc(metaRef, { lastStreakCheck: todayStr }, { merge: true });
       console.log("Streak reset because nothing was logged yesterday.");
-      router.replace("/(app)/(tabs)/(home)/(progress)/StreakResetNotice");
+      router.replace("/(app)/homePages/progress/StreakResetNotice");
       return;
     }
 
@@ -111,7 +111,7 @@ export const checkAndResetStreakIfNeeded = async (): Promise<void> => {
         console.log(
           `Streak reset due to missed day ${cursor.format("YYYY-MM-DD")}`
         );
-        router.replace("/(app)/(tabs)/(home)/(progress)/StreakResetNotice");
+        router.replace("/(app)/homePages/progress/StreakResetNotice");
         break;
       }
       cursor = cursor.add(1, "day");
