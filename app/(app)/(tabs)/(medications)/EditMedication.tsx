@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { View, ActivityIndicator } from "react-native";
+import { View } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import EditMedicationForm from "~/app/(app)/addNewMedication/EditMedicationForm";
 import { Text } from "~/components/ui/text";
-
+import LottieView from "lottie-react-native";
 const EditMedicationScreen = () => {
   const { medication } = useLocalSearchParams<{ medication: string }>();
   const [medicationState, setMedication] = useState<any | null>(null);
@@ -29,7 +29,12 @@ const EditMedicationScreen = () => {
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" />
+        <LottieView
+          source={require("~/assets/animations/loading.json")}
+          style={{ width: 250, height: 250 }}
+          autoPlay
+          loop
+        />
       </View>
     );
   }

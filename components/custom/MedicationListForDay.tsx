@@ -1,9 +1,9 @@
 import React from "react";
-import { View, ActivityIndicator } from "react-native";
+import { View } from "react-native";
 import { Text } from "~/components/ui/text";
 import MedicationCard from "./medicationCard";
 import type { Medication } from "~/src/types/medication";
-
+import LottieView from "lottie-react-native";
 interface MedicationListForDayProps {
   items: Medication[];
   loading: boolean;
@@ -22,8 +22,13 @@ export default function MedicationListForDay({
 }: MedicationListForDayProps) {
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center p-4">
-        <ActivityIndicator size="large" />
+      <View className="flex-1 justify-center items-center">
+        <LottieView
+          source={require("~/assets/animations/loading.json")}
+          style={{ width: 250, height: 250 }}
+          autoPlay
+          loop
+        />
       </View>
     );
   }
