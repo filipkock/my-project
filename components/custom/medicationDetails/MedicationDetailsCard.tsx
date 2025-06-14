@@ -24,7 +24,7 @@ const MedicationDetailsCard: React.FC<MedicationCardProps> = ({
 
   const handlePress = () => {
     router.push({
-      pathname: "/(app)/(tabs)/(medications)/MedicationDetails",
+      pathname: "/medicationList/medicationDetails",
       params: { medication: JSON.stringify(medication) },
     });
   };

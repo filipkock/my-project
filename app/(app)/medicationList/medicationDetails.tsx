@@ -1,9 +1,10 @@
-import { View } from "react-native";
+import { SafeAreaView, View } from "react-native";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text } from "~/components/ui/text";
 import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
+import { ChevronLeftIcon } from "react-native-heroicons/solid";
 
 interface Medication {
   id: string;
@@ -47,36 +48,38 @@ export default function MedicationDetails() {
   };
 
   return (
-    <View className="flex-1 p-6">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>{parsedMedication.medicationName}</CardTitle>
-        </CardHeader>
-        <CardContent className="gap-2">
-          <Text>Type: {parsedMedication.medicationType}</Text>
-          <Text>Interval: {parsedMedication.intakeInterval}</Text>
-          <Text>Time: {parsedMedication.time}</Text>
-          <Text>When to take: {parsedMedication.whenToTake}</Text>
-        </CardContent>
-      </Card>
+    <SafeAreaView className="flex-1">
+      <View className="flex-1 p-6">
+        <ChevronLeftIcon
+          size={32}
+          color="black"
+          onPress={() => handlePress()}
+        />
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>{parsedMedication.medicationName}</CardTitle>
+          </CardHeader>
+          <CardContent className="gap-2">
+            <Text>Type: {parsedMedication.medicationType}</Text>
+            <Text>Interval: {parsedMedication.intakeInterval}</Text>
+            <Text>Time: {parsedMedication.time}</Text>
+            <Text>When to take: {parsedMedication.whenToTake}</Text>
+          </CardContent>
+        </Card>
 
-      <View className="mt-6">
-        <Button onPress={() => handlePress()}>
-          <Text>Back to Medications</Text>
-        </Button>
+        <View className="mt-3">
+          <Button
+            onPress={() =>
+              router.push({
+                pathname: "/medicationList/editMedication",
+                params: { medication: JSON.stringify(parsedMedication) },
+              })
+            }
+          >
+            <Text>Edit Medication</Text>
+          </Button>
+        </View>
       </View>
-      <View className="mt-3">
-        <Button
-          onPress={() =>
-            router.push({
-              pathname: "/(app)/(tabs)/(medications)/EditMedication",
-              params: { medication: JSON.stringify(parsedMedication) },
-            })
-          }
-        >
-          <Text>Edit Medication</Text>
-        </Button>
-      </View>
-    </View>
+    </SafeAreaView>
   );
 }

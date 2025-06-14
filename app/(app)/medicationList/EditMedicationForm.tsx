@@ -1,8 +1,8 @@
 import React from "react";
 import { View, Alert, ActivityIndicator, TouchableOpacity } from "react-native";
 import { Text } from "~/components/ui/text";
+import { Label } from "~/components/ui/label";
 import { Input } from "~/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import {
   TypeList,
   WhenToTakeList,
@@ -481,276 +481,286 @@ const EditMedicationForm = ({
 
   return (
     <View className="w-full">
-      <Card className="w-full rounded-2xl max-w-sm">
-        <CardHeader>
-          <CardTitle> Add new medication </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <View className="w-full flex-col gap-6">
-            {/* Medication name */}
-            <Input
-              placeholder="Enter medication name"
-              value={formData?.medicationName}
-              onChangeText={(value) =>
-                onHandleInputChange("medicationName", value)
-              }
-            />
+      <View className="w-full flex-col gap-6 px-4">
+        {/* Medication name */}
+        <View className="space-y-1">
+          <Label>Medication name</Label>
+          <Input
+            placeholder="Enter medication name"
+            value={formData?.medicationName}
+            onChangeText={(value) =>
+              onHandleInputChange("medicationName", value)
+            }
+          />
+        </View>
 
-            {/* Medication type */}
-            <Select
-              value={
-                formData.medicationType
-                  ? {
-                      label: formData.medicationType,
-                      value: formData.medicationType,
-                    }
-                  : undefined
-              }
-              onValueChange={(option) =>
-                onHandleInputChange("medicationType", option?.value)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue
-                  className="text-foreground text-sm native:text-lg"
-                  placeholder="Select a medication type"
-                />
-              </SelectTrigger>
-              <SelectContent
-                insets={contentInsets}
-                style={{ width: triggerWidth }}
-              >
-                <SelectGroup>
-                  {/* Render SelectItem dynamically from the list */}
-                  {TypeList.map((item, index) => (
-                    <SelectItem key={index} label={item} value={item}>
-                      {item}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-
-            {/* When to take */}
-            <Select
-              defaultValue={
-                formData.whenToTake
-                  ? { label: formData.whenToTake, value: formData.whenToTake }
-                  : undefined
-              }
-              onValueChange={(option) =>
-                onHandleInputChange("whenToTake", option?.value)
-              }
-            >
-              <SelectTrigger
-                className="w-full"
-                onLayout={(e) => {
-                  const { width } = e.nativeEvent.layout;
-                  setTriggerWidth(width);
-                }}
-              >
-                <SelectValue
-                  className="text-foreground text-sm native:text-lg"
-                  placeholder="When to take"
-                />
-              </SelectTrigger>
-              <SelectContent
-                insets={contentInsets}
-                style={{ width: triggerWidth }}
-              >
-                <SelectGroup>
-                  {/* Render SelectItem dynamically from the list */}
-                  {WhenToTakeList.map((item, index) => (
-                    <SelectItem key={index} label={item} value={item}>
-                      {item}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-
-            {/* Frequency / Interval */}
-            <Select
-              value={
-                formData.intakeInterval
-                  ? {
-                      label: formData.intakeInterval,
-                      value: formData.intakeInterval,
-                    }
-                  : undefined
-              }
-              onValueChange={(option) =>
-                onHandleInputChange("intakeInterval", option?.value)
-              }
-            >
-              <SelectTrigger
-                className="w-full"
-                onLayout={(e) => {
-                  const { width } = e.nativeEvent.layout;
-                  setTriggerWidth(width);
-                }}
-              >
-                <SelectValue
-                  className="text-foreground text-sm native:text-lg"
-                  placeholder="Select frequency/interval"
-                />
-              </SelectTrigger>
-              <SelectContent
-                insets={contentInsets}
-                style={{ width: triggerWidth }}
-              >
-                <SelectGroup>
-                  {intervalToTakeList.map((item, index) => (
-                    <SelectItem key={index} label={item} value={item}>
-                      {item}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-
-            {/* Conditionally show fields based on interval */}
-            {formData.intakeInterval === "Specific days weekly" && (
-              <View>
-                <Text className="font-semibold">
-                  Select weekly days (tap to toggle):
-                </Text>
-                <View className="flex-row flex-wrap mt-2">
-                  {dayLabels.map((label, idx) => {
-                    const selected = formData.specificDaysOfWeek.includes(idx);
-                    return (
-                      <TouchableOpacity
-                        key={idx}
-                        style={{
-                          marginRight: 8,
-                          marginBottom: 8,
-                          padding: 8,
-                          borderWidth: 1,
-                          borderColor: selected ? "green" : "gray",
-                          borderRadius: 4,
-                        }}
-                        onPress={() => toggleDaySelection(idx)}
-                      >
-                        <Text
-                          style={{
-                            color: selected ? "green" : "black",
-                          }}
-                        >
-                          {label}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-            )}
-
-            {["every X days", "every X weeks", "every X months"].includes(
-              formData.intakeInterval
-            ) && (
-              <View>
-                <Text className="font-semibold">
-                  Enter X (number of days/weeks/months):
-                </Text>
-                <Input
-                  keyboardType="numeric"
-                  value={formData.customIntervalValue?.toString()}
-                  onChangeText={(val) =>
-                    onHandleInputChange("customIntervalValue", val)
+        {/* Medication type */}
+        <View className="space-y-1">
+          <Label>Medication type</Label>
+          <Select
+            value={
+              formData.medicationType
+                ? {
+                    label: formData.medicationType,
+                    value: formData.medicationType,
                   }
-                />
-              </View>
-            )}
-
-            {/* Start Date Picker */}
-            <Text>Start Date</Text>
-            <Pressable onPress={() => setShowStartDatePicker(true)}>
-              <Text>
-                {formData?.startDate?.toDateString() || "Select start date"}
-              </Text>
-            </Pressable>
-
-            <DatePicker
-              modal
-              open={showStartDatePicker}
-              date={formData?.startDate ?? new Date()}
-              mode="date"
-              onConfirm={(selectedDate) => {
-                setShowStartDatePicker(false);
-                onHandleInputChange("startDate", selectedDate);
-              }}
-              onCancel={() => setShowStartDatePicker(false)}
-            />
-
-            {/* End Date Picker */}
-            <Text>End Date</Text>
-            <Pressable onPress={() => setShowEndDatePicker(true)}>
-              <Text>
-                {formData?.endDate?.toDateString() || "Select end date"}
-              </Text>
-            </Pressable>
-
-            <DatePicker
-              modal
-              open={showEndDatePicker}
-              date={formData?.endDate ?? new Date()}
-              mode="date"
-              onConfirm={(selectedDate) => {
-                setShowEndDatePicker(false);
-                onHandleInputChange("endDate", selectedDate);
-              }}
-              onCancel={() => setShowEndDatePicker(false)}
-            />
-
-            {/* Reminder Time Picker */}
-            <Text>Reminder Time</Text>
-            <Pressable onPress={() => setShowTimePicker(true)}>
-              <Text>{formData?.reminderTime || "Select time"}</Text>
-            </Pressable>
-
-            <DatePicker
-              modal
-              open={showTimePicker}
-              date={
-                formData?.reminderTime
-                  ? timeStringToDate(formData.reminderTime)
-                  : new Date()
-              }
-              mode="time"
-              onConfirm={(selectedDate) => {
-                setShowTimePicker(false);
-                const timeOnly = formatTime(selectedDate);
-                onHandleInputChange("reminderTime", timeOnly);
-              }}
-              onCancel={() => setShowTimePicker(false)}
-            />
-
-            <Button
-              className="max-w-sm"
-              onPress={() => saveMedicationReminder()}
+                : undefined
+            }
+            onValueChange={(option) =>
+              onHandleInputChange("medicationType", option?.value)
+            }
+          >
+            <SelectTrigger>
+              <SelectValue
+                className="text-foreground text-sm native:text-lg"
+                placeholder="Select a medication type"
+              />
+            </SelectTrigger>
+            <SelectContent
+              insets={contentInsets}
+              style={{ width: triggerWidth }}
             >
-              {loading ? (
-                <ActivityIndicator
-                  size={"small"}
-                  color={"white"}
-                ></ActivityIndicator>
-              ) : (
-                <Text>Save medication reminder</Text>
-              )}
-            </Button>
-            <Button
-              className="max-w-sm bg-red-600"
-              onPress={deleteMedicationReminder}
+              <SelectGroup>
+                {TypeList.map((item, index) => (
+                  <SelectItem key={index} label={item} value={item}>
+                    {item}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </View>
+
+        {/* When to take */}
+        <View className="space-y-1">
+          <Label>When to take</Label>
+          <Select
+            defaultValue={
+              formData.whenToTake
+                ? { label: formData.whenToTake, value: formData.whenToTake }
+                : undefined
+            }
+            onValueChange={(option) =>
+              onHandleInputChange("whenToTake", option?.value)
+            }
+          >
+            <SelectTrigger
+              className="w-full"
+              onLayout={(e) => {
+                const { width } = e.nativeEvent.layout;
+                setTriggerWidth(width);
+              }}
             >
-              {loading ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : (
-                <Text>Delete medication</Text>
-              )}
-            </Button>
+              <SelectValue
+                className="text-foreground text-sm native:text-lg"
+                placeholder="When to take"
+              />
+            </SelectTrigger>
+            <SelectContent
+              insets={contentInsets}
+              style={{ width: triggerWidth }}
+            >
+              <SelectGroup>
+                {WhenToTakeList.map((item, index) => (
+                  <SelectItem key={index} label={item} value={item}>
+                    {item}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </View>
+
+        {/* Frequency / Interval */}
+        <View className="space-y-1">
+          <Label>Frequency</Label>
+          <Select
+            value={
+              formData.intakeInterval
+                ? {
+                    label: formData.intakeInterval,
+                    value: formData.intakeInterval,
+                  }
+                : undefined
+            }
+            onValueChange={(option) =>
+              onHandleInputChange("intakeInterval", option?.value)
+            }
+          >
+            <SelectTrigger
+              className="w-full"
+              onLayout={(e) => {
+                const { width } = e.nativeEvent.layout;
+                setTriggerWidth(width);
+              }}
+            >
+              <SelectValue
+                className="text-foreground text-sm native:text-lg"
+                placeholder="Select frequency/interval"
+              />
+            </SelectTrigger>
+            <SelectContent
+              insets={contentInsets}
+              style={{ width: triggerWidth }}
+            >
+              <SelectGroup>
+                {intervalToTakeList.map((item, index) => (
+                  <SelectItem key={index} label={item} value={item}>
+                    {item}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </View>
+
+        {/* Conditionally show fields based on interval */}
+        {formData.intakeInterval === "Specific days weekly" && (
+          <View>
+            <Label>Select weekly days (tap to toggle):</Label>
+            <View className="flex-row flex-wrap mt-2">
+              {dayLabels.map((label, idx) => {
+                const selected = formData.specificDaysOfWeek.includes(idx);
+                return (
+                  <TouchableOpacity
+                    key={idx}
+                    style={{
+                      marginRight: 8,
+                      marginBottom: 8,
+                      padding: 8,
+                      borderWidth: 1,
+                      borderColor: selected ? "green" : "gray",
+                      borderRadius: 4,
+                    }}
+                    onPress={() => toggleDaySelection(idx)}
+                  >
+                    <Text
+                      style={{
+                        color: selected ? "green" : "black",
+                      }}
+                    >
+                      {label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
-        </CardContent>
-      </Card>
+        )}
+
+        {["every X days", "every X weeks", "every X months"].includes(
+          formData.intakeInterval
+        ) && (
+          <View className="space-y-1">
+            <Label>Enter X (number of days/weeks/months):</Label>
+            <Input
+              keyboardType="numeric"
+              value={formData.customIntervalValue?.toString()}
+              onChangeText={(val) =>
+                onHandleInputChange("customIntervalValue", val)
+              }
+            />
+          </View>
+        )}
+
+        {/* Start Date Picker */}
+        <View className="space-y-1">
+          <Label>Start Date</Label>
+          <Pressable
+            onPress={() => setShowStartDatePicker(true)}
+            className="py-3 px-4 rounded-full bg-white"
+          >
+            <Text className="text-base text-gray-800">
+              {formData?.startDate?.toDateString() || "Select start date"}
+            </Text>
+          </Pressable>
+        </View>
+
+        <DatePicker
+          modal
+          open={showStartDatePicker}
+          date={formData?.startDate ?? new Date()}
+          mode="date"
+          onConfirm={(selectedDate) => {
+            setShowStartDatePicker(false);
+            onHandleInputChange("startDate", selectedDate);
+          }}
+          onCancel={() => setShowStartDatePicker(false)}
+        />
+
+        {/* End Date Picker */}
+        <View className="space-y-1">
+          <Label>End Date</Label>
+          <Pressable
+            onPress={() => setShowEndDatePicker(true)}
+            className="py-3 px-4 rounded-full bg-white"
+          >
+            <Text className="text-base text-gray-800">
+              {formData?.endDate?.toDateString() || "Select end date"}
+            </Text>
+          </Pressable>
+        </View>
+
+        <DatePicker
+          modal
+          open={showEndDatePicker}
+          date={formData?.endDate ?? new Date()}
+          mode="date"
+          onConfirm={(selectedDate) => {
+            setShowEndDatePicker(false);
+            onHandleInputChange("endDate", selectedDate);
+          }}
+          onCancel={() => setShowEndDatePicker(false)}
+        />
+
+        {/* Reminder Time Picker */}
+        <View className="space-y-1">
+          <Label>Reminder Time</Label>
+          <Pressable
+            onPress={() => setShowTimePicker(true)}
+            className="py-3 px-4 rounded-full bg-white"
+          >
+            <Text className="text-base text-gray-800">
+              {formData?.reminderTime || "Select time"}
+            </Text>
+          </Pressable>
+        </View>
+
+        <DatePicker
+          modal
+          open={showTimePicker}
+          date={
+            formData?.reminderTime
+              ? timeStringToDate(formData.reminderTime)
+              : new Date()
+          }
+          mode="time"
+          onConfirm={(selectedDate) => {
+            setShowTimePicker(false);
+            const timeOnly = formatTime(selectedDate);
+            onHandleInputChange("reminderTime", timeOnly);
+          }}
+          onCancel={() => setShowTimePicker(false)}
+        />
+
+        <Button onPress={() => saveMedicationReminder()}>
+          {loading ? (
+            <ActivityIndicator
+              size={"small"}
+              color={"white"}
+            ></ActivityIndicator>
+          ) : (
+            <Text>Save medication reminder</Text>
+          )}
+        </Button>
+        <Button onPress={deleteMedicationReminder} variant={"destructive"}>
+          {loading ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Text>Delete medication</Text>
+          )}
+        </Button>
+      </View>
     </View>
   );
 };

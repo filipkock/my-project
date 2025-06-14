@@ -45,6 +45,13 @@ const AddNewMedicationLayout = () => {
           animation: "none",
         }}
       ></Stack.Screen>
+      <Stack.Screen
+        name="confirmStep"
+        options={{
+          headerShown: false,
+          animation: "none",
+        }}
+      ></Stack.Screen>
     </Stack>
   );
 };
