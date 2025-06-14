@@ -8,6 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { getFromStorage } from "~/src/services/storage";
 import { getStreakFromFirestore } from "~/src/utils/streak";
 import { Video, ResizeMode } from "expo-av";
+import { FireIcon } from "react-native-heroicons/solid";
 
 export default function DailyProgress() {
   const { taken, total } = useLocalSearchParams();
@@ -37,12 +38,19 @@ export default function DailyProgress() {
   return (
     <SafeAreaView className="flex-1">
       <View className="flex-1 items-center p-6">
-        <View className="flex-1 justify-center items-center gap-6">
+        <View className="flex-1 justify-center items-center gap-4">
           <Text className="text-2xl font-semibold text-center">
             {takenCount === totalCount
-              ? "Medication taken! All done for today!"
-              : "Medication taken! Great job!"}
+              ? "Nice work! Everything is taken!"
+              : "Taken! Great job!"}
           </Text>
+          {takenCount === totalCount && (
+            <View className="flex flex-row items-center gap-1">
+              <Text className="text-gray-600">Streak boost earned</Text>
+              <FireIcon size={24} color="black" />
+            </View>
+          )}
+
           <Video
             source={require("~/assets/animations/poka_celebrate.mp4")}
             style={{ width: 400, height: 400 }}
@@ -50,23 +58,6 @@ export default function DailyProgress() {
             shouldPlay
             resizeMode={ResizeMode.CONTAIN}
           />
-
-          {takenCount === totalCount && (
-            <>
-              <Animated.Text
-                style={{
-                  transform: [{ scale }],
-                  opacity,
-                  fontSize: 32,
-                  fontWeight: "bold",
-                  color: colors.primary,
-                  marginTop: 20,
-                }}
-              >
-                🔥 Streak +1!
-              </Animated.Text>
-            </>
-          )}
         </View>
 
         <Button
