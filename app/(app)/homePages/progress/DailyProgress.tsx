@@ -49,7 +49,7 @@ export default function DailyProgress() {
         <View className="flex-1 justify-center items-center gap-4">
           <Text className="text-2xl font-semibold text-center">
             {takenCount === totalCount
-              ? "Nice work! Everything is taken!"
+              ? "Great job! All taken today!"
               : "Taken! Great job!"}
           </Text>
           {takenCount === totalCount && (
