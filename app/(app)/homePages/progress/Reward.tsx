@@ -12,7 +12,12 @@ import { getFromStorage } from "~/src/services/storage";
 import { format } from "date-fns";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "~/config/firebase";
-import { cardImages, cardQuotes, cardNames } from "~/src/constants/cardMap";
+import {
+  cardImages,
+  cardQuotes,
+  cardNames,
+  cardCollections,
+} from "~/src/constants/cardMap";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { Badge } from "~/components/ui/badge";
 
@@ -123,20 +128,23 @@ export default function Reward() {
   return (
     <SafeAreaView className="flex-1">
       <View className="flex-1 items-center p-6">
-        <View className="flex-1 justify-center items-center gap-4">
+        <View className="flex-1 justify-center items-center gap-1">
           {videoFinished && (
-            <View className="items-center gap-2">
+            <View className="items-start gap-2">
               {cardId !== null && (
-                <>
-                  <Text className="text-2xl font-semibold text-center text-gray-900">
-                    {cardNames[cardId]}
-                  </Text>
+                <View className="flex-col items-center gap-1">
                   {isNewCard && (
-                    <Badge>
+                    <Badge className="mb-3">
                       <Text className="text-xs">NEW CARD</Text>
                     </Badge>
                   )}
-                </>
+                  <Text className="text-3xl font-semibold text-gray-900">
+                    {cardNames[cardId]}
+                  </Text>
+                  <Text className="text-sm text-gray-500">
+                    {cardCollections[cardId]} collection
+                  </Text>
+                </View>
               )}
             </View>
           )}
@@ -158,7 +166,7 @@ export default function Reward() {
               ) : CardImageComponent ? (
                 <>
                   <CardImageComponent width={200} height={200} />
-                  <Text className="text-center text-gray-600 italic mt-4">
+                  <Text className="text-center text-gray-600 italic mt-10">
                     {cardQuote}
                   </Text>
                 </>

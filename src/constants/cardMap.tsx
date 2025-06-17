@@ -130,3 +130,21 @@ export const cardQuotes: Record<number, string> = {
   14: "Grow strong like this plant. Watered with discipline (and meds). 🌱",
   15: "Crispy, toasty, and responsible. Poka approves. 🍞",
 };
+
+export const cardCollections: Record<number, string> = {
+  1: "Rage Mode",
+  2: "Love Stuff",
+  3: "Love Stuff",
+  4: "Love Stuff",
+  5: "Love Stuff",
+  6: "Love Stuff",
+  7: "Rage Mode",
+  8: "Rage Mode",
+  9: "Rage Mode",
+  10: "Rage Mode",
+  11: "Poka’s Hats",
+  12: "Poka’s Hats",
+  13: "Poka’s Hats",
+  14: "Poka’s Hats",
+  15: "Poka’s Hats",
+};
