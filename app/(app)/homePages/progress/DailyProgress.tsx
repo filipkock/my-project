@@ -65,6 +65,15 @@ export default function DailyProgress() {
             allowsPictureInPicture={false}
             nativeControls={false}
           />
+          {takenCount === totalCount ? (
+            <Text className="text-center text-gray-600 italic mt-4">
+              You’ve earned a reward. Continue to collect it!
+            </Text>
+          ) : (
+            <Text className="text-center text-gray-600 italic mt-4">
+              {`You've taken ${takenCount} of ${totalCount} today. Take them all to earn a reward!`}
+            </Text>
+          )}
         </View>
 
         <Button

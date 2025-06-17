@@ -12,8 +12,9 @@ import { getFromStorage } from "~/src/services/storage";
 import { format } from "date-fns";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "~/config/firebase";
-import { cardImages } from "~/src/constants/cardMap";
+import { cardImages, cardQuotes, cardNames } from "~/src/constants/cardMap";
 import { useVideoPlayer, VideoView } from "expo-video";
+import { Badge } from "~/components/ui/badge";
 
 type UserCards = {
   uid: string;
@@ -46,6 +47,7 @@ export default function Reward() {
 
   const [cardId, setCardId] = useState<number | null>(null);
   const [loadingCard, setLoadingCard] = useState(true);
+  const [isNewCard, setIsNewCard] = useState(false);
 
   // useEffect runs on component mount to handle reward logic
   useEffect(() => {
@@ -74,7 +76,10 @@ export default function Reward() {
         }
 
         // Pick a new card ID between 1–X
-        const newCardId = Math.floor(Math.random() * 2) + 1;
+        const newCardId = Math.floor(Math.random() * 15) + 1;
+
+        const isNew = !userCards.cards[newCardId];
+        setIsNewCard(isNew);
 
         // Update card count or initialize if first time
         if (userCards.cards[newCardId]) {
@@ -113,13 +118,28 @@ export default function Reward() {
       ? cardImages[cardId]
       : null;
 
+  const cardQuote = cardId !== null ? cardQuotes[cardId] : "";
+
   return (
     <SafeAreaView className="flex-1">
       <View className="flex-1 items-center p-6">
         <View className="flex-1 justify-center items-center gap-4">
-          <Text className="text-2xl font-semibold text-center text-gray-900 ">
-            You earned a new card!
-          </Text>
+          {videoFinished && (
+            <View className="items-center gap-2">
+              {cardId !== null && (
+                <>
+                  <Text className="text-2xl font-semibold text-center text-gray-900">
+                    {cardNames[cardId]}
+                  </Text>
+                  {isNewCard && (
+                    <Badge>
+                      <Text className="text-xs">NEW CARD</Text>
+                    </Badge>
+                  )}
+                </>
+              )}
+            </View>
+          )}
           {!videoFinished ? (
             <VideoView
               style={{ width: 400, height: 400 }}
@@ -136,7 +156,12 @@ export default function Reward() {
               {loadingCard ? (
                 <Text className="text-gray-500">Loading your card...</Text>
               ) : CardImageComponent ? (
-                <CardImageComponent width={200} height={200} />
+                <>
+                  <CardImageComponent width={200} height={200} />
+                  <Text className="text-center text-gray-600 italic mt-4">
+                    {cardQuote}
+                  </Text>
+                </>
               ) : (
                 <Text>No card component found</Text>
               )}

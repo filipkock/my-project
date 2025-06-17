@@ -1,3 +1,20 @@
+export const cardNames: Record<number, string> = {
+  1: "Knife Crisis",
+  2: "Balloon of Love",
+  3: "Gift of Guilt",
+  4: "Letter of Regret",
+  5: "Potion of Maybe",
+  6: "Rose Rage",
+  7: "Bombastic Mood",
+  8: "Fish of Fury",
+  9: "Fork of Destiny",
+  10: "Angry Sign",
+  11: "Sad Egg",
+  12: "Mushroom Mood",
+  13: "Crying Onion",
+  14: "Plant of Patience",
+  15: "Toast of Triumph",
+};
 import Baloon from "~/assets/cards/romanticCollection/baloon.svg";
 import Gift from "~/assets/cards/romanticCollection/gift.svg";
 import Letter from "~/assets/cards/romanticCollection/letter.svg";
@@ -97,19 +114,19 @@ export const cardImages: Record<
 };
 
 export const cardQuotes: Record<number, string> = {
-  1: "Take your meds... or I’ll take *drastic* action. 🔪",
+  1: "Take your meds... or Poka’s bringing the knife. 🔪",
   2: "Love floats… so do reminders. Don’t let this one pop. 🎈",
-  3: "This gift? It's self-care. Take the damn pill. 🎁",
+  3: "This gift? It's from Poka. Take the damn pill. 🎁",
   4: "You’ve got mail... and a pill to swallow. 💌",
-  5: "Romance starts with routine. Drink the potion. 💖",
+  5: "Poka says: romance starts with routine. Drink the potion. 💖",
   6: "A rose a day? No. But your meds? Definitely. 🌹",
   7: "Boom. Another day, another dose. 💣",
-  8: "I brought a fish. You bring consistency. 🐟",
+  8: "Poka brought a fish. You bring consistency. 🐟",
   9: "This fork? For dinner. But meds come first. 🍴",
   10: "SIGN: Take your meds or else. ⚠️",
-  11: "Soft on the outside, chaotic on the inside. Take your meds. 🥚",
+  11: "Soft on the outside, chaotic on the inside. Just like Poka. Take your meds. 🥚",
   12: "Even mushrooms have routines. 🍄",
   13: "I cry so you don’t have to forget your meds. 🧅",
   14: "Grow strong like this plant. Watered with discipline (and meds). 🌱",
-  15: "Crispy, toasty, and responsible. Like you, post-meds. 🍞",
+  15: "Crispy, toasty, and responsible. Poka approves. 🍞",
 };
