@@ -403,15 +403,14 @@ export default function MedicationDetails() {
         <BottomSheet
           visible={showSkippedInfo}
           onClose={() => setShowSkippedInfo(false)}
-          title="Heads up!"
+          title="Skipped!"
         >
           <View className="px-6 space-y-4">
-            <Text className="text-base text-center text-gray-800">
-              Skipped! This medication won’t affect your streak or rewards.
+            <Text className="text-2xl text-center font-bold text-gray-800 mb-3">
+              This one won't count against your streak or rewards.
             </Text>
-            <Text className="text-sm text-center text-gray-500">
-              Just make sure to log all your other medications today to keep
-              your streak going strong.
+            <Text className="text-md text-center text-gray-500">
+              Log your other meds today to keep your streak going strong! 💪
             </Text>
           </View>
         </BottomSheet>

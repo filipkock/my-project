@@ -84,8 +84,7 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
               )}
               {scheduledTime < now && !isSameDay && (
                 <Text className="text-sm text-muted-foreground mb-4">
-                  You’re logging a past medication. This won’t affect your
-                  streak or rewards, just helps keep your records up to date.
+                  Loggin a past dose won’t affect streak or rewards.
                 </Text>
               )}
             </View>
