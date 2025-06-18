@@ -1,15 +1,62 @@
 import React from "react";
-import { View, SafeAreaView } from "react-native";
+import { View, SafeAreaView, ScrollView, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 import { Text } from "~/components/ui/text";
+import {
+  cardImages,
+  cardNames,
+  cardCollections,
+} from "~/src/constants/cardMap";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { LockClosedIcon } from "react-native-heroicons/outline";
 
 const collection = () => {
+  const router = useRouter();
+  const unlockedCards = [1, 2, 3, 5, 6]; // Replace this with actual unlocked card IDs
+
+  const groupedCards = Object.entries(cardNames).reduce((acc, [id, name]) => {
+    const collection = cardCollections[parseInt(id)];
+    if (!acc[collection]) acc[collection] = [];
+    acc[collection].push({ id: parseInt(id), name });
+    return acc;
+  }, {} as Record<string, { id: number; name: string }[]>);
+
   return (
-    <SafeAreaView className="flex-1 p-8">
-      <View className="flex-1 w-full p-10">
-        <Text className="text-xl">
-          This is our little app, read more about us here
-        </Text>
-      </View>
+    <SafeAreaView className="flex-1">
+      <ScrollView contentContainerStyle={{ padding: 16 }}>
+        {Object.entries(groupedCards).map(([collectionName, cards]) => (
+          <View key={collectionName} className="mb-8">
+            <Text className="text-lg font-bold mb-4">{collectionName}</Text>
+            <View className="flex-row flex-wrap -mx-2">
+              {cards.map(({ id, name }) => {
+                const isUnlocked = unlockedCards.includes(id);
+                const CardImage = cardImages[id];
+                return (
+                  <TouchableOpacity
+                    key={id}
+                    className="w-1/2 px-2 mb-4"
+                    onPress={() => router.push(`/card/${id}`)}
+                    disabled={!isUnlocked}
+                  >
+                    <Card className="h-48">
+                      <CardHeader>
+                        <CardTitle>{name}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="items-center justify-center flex-1">
+                        {isUnlocked && CardImage ? (
+                          <CardImage width={64} height={64} />
+                        ) : (
+                          <LockClosedIcon size={32} color="#9CA3AF" />
+                        )}
+                      </CardContent>
+                    </Card>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        ))}
+      </ScrollView>
     </SafeAreaView>
   );
 };
