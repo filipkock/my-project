@@ -27,7 +27,6 @@ export default function Step4() {
   const [interval, setInterval] = useState("");
 
   const questionOpacity = useRef(new Animated.Value(1)).current;
-  const questionHeight = useRef(new Animated.Value(60)).current;
 
   if (
     Platform.OS === "android" &&
@@ -59,8 +58,6 @@ export default function Step4() {
             <Animated.View
               style={{
                 opacity: questionOpacity,
-                height: questionHeight,
-                overflow: "hidden",
               }}
             >
               <Text className="text-2xl font-semibold mt-10">

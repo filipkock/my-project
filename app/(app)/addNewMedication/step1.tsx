@@ -25,7 +25,6 @@ export default function Step1() {
   const [isInputFocused, setIsInputFocused] = useState(false);
 
   const questionOpacity = useRef(new Animated.Value(1)).current;
-  const questionHeight = useRef(new Animated.Value(60)).current;
 
   if (
     Platform.OS === "android" &&
@@ -76,17 +75,9 @@ export default function Step1() {
               onPress={() => router.back()}
               className="mb-6"
             />
-            <Animated.View
-              style={{
-                opacity: questionOpacity,
-                height: questionHeight,
-                overflow: "hidden",
-              }}
-            >
-              <Text className="text-2xl font-semibold mt-10">
-                What medication do you want to add?
-              </Text>
-            </Animated.View>
+            <Text className="text-2xl font-semibold mt-10">
+              What medication do you want to add?
+            </Text>
           </View>
         </TouchableWithoutFeedback>
       </SafeAreaView>
@@ -111,33 +102,19 @@ export default function Step1() {
             className="border border-gray-300 text-xl py-6 px-6 rounded-lg mb-4 w-full"
             style={{ minHeight: 56 }}
             onFocus={() => {
-              Animated.parallel([
-                Animated.timing(questionOpacity, {
-                  toValue: 0,
-                  duration: 200,
-                  useNativeDriver: false,
-                }),
-                Animated.timing(questionHeight, {
-                  toValue: 0,
-                  duration: 200,
-                  useNativeDriver: false,
-                }),
-              ]).start();
+              Animated.timing(questionOpacity, {
+                toValue: 0,
+                duration: 200,
+                useNativeDriver: false,
+              }).start();
               setIsInputFocused(true);
             }}
             onBlur={() => {
-              Animated.parallel([
-                Animated.timing(questionOpacity, {
-                  toValue: 1,
-                  duration: 200,
-                  useNativeDriver: false,
-                }),
-                Animated.timing(questionHeight, {
-                  toValue: 60,
-                  duration: 200,
-                  useNativeDriver: false,
-                }),
-              ]).start();
+              Animated.timing(questionOpacity, {
+                toValue: 1,
+                duration: 200,
+                useNativeDriver: false,
+              }).start();
               setIsInputFocused(false);
             }}
             onChangeText={handleInputChange}
