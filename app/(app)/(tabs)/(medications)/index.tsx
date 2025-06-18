@@ -5,6 +5,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { SafeAreaView, ScrollView, View } from "react-native";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Text } from "~/components/ui/text";
 import { db } from "~/config/firebase";
 import { getFromStorage } from "~/src/services/storage";
 import MedicationDetailsCard from "~/components/custom/medicationDetails/MedicationDetailsCard";
@@ -71,6 +72,7 @@ const Index = () => {
     <SafeAreaView className="flex-1 bg-secondary/30">
       <ScrollView>
         <View className="flex-1 w-full p-10 gap-5">
+          <Text className="text-xl font-bold mb-1">Medications</Text>
           {medications.length === 0 ? (
             <Card className="w-full rounded-2xl">
               <CardHeader>
