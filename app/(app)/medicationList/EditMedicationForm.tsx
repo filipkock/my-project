@@ -35,6 +35,7 @@ import {
   where,
 } from "firebase/firestore";
 import Toast from "react-native-toast-message";
+import { router } from "expo-router";
 
 /** Convert Firestore Timestamp | Date to a JS Date */
 const toDate = (d: Timestamp | Date): Date =>
@@ -340,6 +341,14 @@ const editMedicationForm = ({
           }
         }
         await Promise.all(updateExistingPromises);
+
+        Toast.show({
+          type: "plain",
+          text1: "Medication updated",
+          text2: "Your medication was updated successfully!",
+        });
+        router.replace("/(app)/(tabs)/(medications)");
+        return;
       } else {
         // Step 5: Create new medication and associated reminders
         const medicationRef = await addDoc(collection(db, "medication"), {
