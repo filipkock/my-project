@@ -34,6 +34,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
+import Toast from "react-native-toast-message";
 
 /** Convert Firestore Timestamp | Date to a JS Date */
 const toDate = (d: Timestamp | Date): Date =>
@@ -465,6 +466,11 @@ const editMedicationForm = ({
 
               await Promise.all(deletePromises);
 
+              Toast.show({
+                type: "plain",
+                text1: "Medication deleted",
+                text2: "Medication and reminders removed.",
+              });
               Alert.alert("Deleted", "Medication and reminders removed.");
               onSuccess();
             } catch (err) {
