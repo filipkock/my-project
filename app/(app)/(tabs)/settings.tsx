@@ -6,6 +6,8 @@ import { Button } from "~/components/ui/button";
 import { clearStorage } from "~/src/services/storage";
 import { useNotification } from "~/src/context/notificationsContext";
 import { ThemeToggle } from "~/components/ThemeToggle";
+import { Card, CardContent, CardTitle } from "~/components/ui/card";
+import { router } from "expo-router";
 
 import * as Notifications from "expo-notifications";
 
@@ -32,39 +34,118 @@ const Settings = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1 p-8 ">
-      <View className="flex-1 w-full p-10">
-        <Text className="text-xl mb-5">Settings</Text>
-        <Button variant={"default"} className="w-full" onPress={handleLogout}>
-          <Text>Logout</Text>
-        </Button>
-        <View className="w-full flex-row py-10">
-          <ThemeToggle />
+    <SafeAreaView className="flex-1">
+      <View className="flex-1 w-full p-0">
+        <Text className="text-3xl font-bold px-6 pt-8 pb-2">Settings</Text>
+        <View className="gap-6 px-4">
+          {/* Subscription Section */}
+          <Card className="bg-black mb-6">
+            <CardContent className="gap-2 p-6">
+              <CardTitle className="text-2xl text-white mb-2">
+                Subscription
+              </CardTitle>
+              <Text className="text-white text-base mb-4">
+                Unlock premium features and support the app!
+              </Text>
+              <Button
+                variant="default"
+                className="bg-white border-0"
+                onPress={() => {
+                  router.push("/subscription/subscriptionPlans");
+                }}
+              >
+                <Text className="text-black font-bold">
+                  Manage Subscription
+                </Text>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Account Section */}
+          <Card>
+            <CardContent className="gap-2 p-4">
+              <CardTitle className="text-lg mb-2">Account</CardTitle>
+              <Button
+                variant={"default"}
+                className="w-full"
+                onPress={handleLogout}
+              >
+                <Text>Logout</Text>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Appearance Section - commented out for now as animation and images to not support dark mode */}
+          {/* <Card>
+            <CardContent className="gap-2 p-4 flex-row items-center justify-between">
+              <CardTitle className="text-lg">Appearance</CardTitle>
+              <ThemeToggle />
+            </CardContent>
+          </Card> */}
+
+          {/* Notifications Section */}
+          <Card>
+            <CardContent className="gap-2 p-4">
+              <CardTitle className="text-lg mb-2">
+                Notifications - TESTING
+              </CardTitle>
+              <Button
+                variant="outline"
+                className="w-full"
+                onPress={clearAllNotifications}
+              >
+                <Text>Remove scheduled notifications</Text>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Terms & Agreements Section */}
+          <Card>
+            <CardContent className="gap-2 p-4">
+              <CardTitle className="text-lg mb-2">Legal</CardTitle>
+              <Button
+                variant="outline"
+                className="w-full"
+                onPress={() => {
+                  // TODO: Navigate to terms screen or open modal
+                  Alert.alert(
+                    "Terms & Privacy",
+                    "Open Terms & Privacy screen."
+                  );
+                }}
+              >
+                <Text>View Terms & Privacy</Text>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Feedback Section */}
+          <Card>
+            <CardContent className="gap-2 p-4">
+              <CardTitle className="text-lg mb-2">Feedback</CardTitle>
+              <Button
+                variant="outline"
+                className="w-full"
+                onPress={() => {
+                  // TODO: Open feedback screen or form
+                  Alert.alert("Feedback", "Open feedback form or screen.");
+                }}
+              >
+                <Text>Send Feedback</Text>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* App Info Section */}
+          <Card>
+            <CardContent className="gap-2 p-4">
+              <CardTitle className="text-lg mb-2">About</CardTitle>
+              <Text className="text-muted-foreground">App version 1.0.0</Text>
+              <Text className="text-muted-foreground">Made with ❤️</Text>
+            </CardContent>
+          </Card>
         </View>
       </View>
-      {/* Notification testing section */}
-      {error ? (
-        <Text className="text-red-500">Error: {error?.message}</Text>
-      ) : (
-        <View className="space-y-2">
-          <Text>Updates Demo 5</Text>
-          <Text>Expo token:</Text>
-          <Text>{expoPushToken}</Text>
-          <Text>Latest notification:</Text>
-          <Text>{notification?.request?.content?.title}</Text>
-          <Text>
-            {JSON.stringify(notification?.request?.content?.data, null, 2)}
-          </Text>
-
-          <Button
-            variant="default"
-            className="w-full"
-            onPress={clearAllNotifications}
-          >
-            <Text>Remove notifications</Text>
-          </Button>
-        </View>
-      )}
     </SafeAreaView>
   );
 };

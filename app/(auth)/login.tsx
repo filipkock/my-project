@@ -61,7 +61,7 @@ export default function Login() {
   };
 
   return (
-    <SafeAreaView className="flex-1 justify-center items-center gap-5 p-6 bg-secondary/30">
+    <SafeAreaView className="flex-1 justify-center items-center gap-5 p-6 bg-secondary/40">
       <Card className="w-full max-w-sm p-6 rounded-2xl">
         <CardHeader>
           <CardTitle>Login</CardTitle>

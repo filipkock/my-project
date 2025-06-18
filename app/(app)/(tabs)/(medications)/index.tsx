@@ -69,7 +69,7 @@ const Index = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-secondary/30">
+    <SafeAreaView className="flex-1 bg-secondary/40">
       <ScrollView>
         <View className="flex-1 w-full p-10 gap-5">
           <Text className="text-xl font-bold mb-1">Medications</Text>
