@@ -213,6 +213,11 @@ export default function ConfirmStep() {
               {formData.endDate?.toLocaleDateString()}
             </Text>
           </View>
+
+          <View>
+            <Label className="text-gray-500 mb-1">Reminder time</Label>
+            <Text className="text-lg">{formData.reminderTime}</Text>
+          </View>
         </View>
         <Button className="mt-4" onPress={handleSave} disabled={isSaving}>
           {isSaving ? (

@@ -1,7 +1,7 @@
+import React, { useState, useRef } from "react";
 import {
   View,
   SafeAreaView,
-  FlatList,
   TouchableOpacity,
   Keyboard,
   TouchableWithoutFeedback,
@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { Text } from "~/components/ui/text";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState, useRef } from "react";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 import { ChevronRight } from "~/lib/icons/ChevronRight";
 import { TypeList } from "~/src/constants/addMedicationOptions";
@@ -41,18 +40,14 @@ export default function Step2() {
 
   return (
     <View className="flex-1">
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <SafeAreaView>
+      <SafeAreaView>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View className="p-8">
             <ChevronLeft
               size={32}
               color="black"
-              onPress={() =>
-                router.push({
-                  pathname: "/addNewMedication/step1",
-                  params: { medicationName },
-                })
-              }
+              onPress={() => router.back()}
+              className="mb-6"
             />
             <Animated.View
               style={{
@@ -62,15 +57,15 @@ export default function Step2() {
               }}
             >
               <Text className="text-2xl font-semibold mt-10">
-                What type is the medication?
+                What type of medication is it?
               </Text>
             </Animated.View>
           </View>
-        </SafeAreaView>
-      </TouchableWithoutFeedback>
+        </TouchableWithoutFeedback>
+      </SafeAreaView>
 
-      <Animated.View
-        className="flex-1 bg-white p-8 shadow-sm"
+      <View
+        className="flex-1 bg-white p-8 shadow-sm justify-center items-center"
         style={{
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
@@ -82,21 +77,25 @@ export default function Step2() {
           elevation: 8,
         }}
       >
-        <FlatList
-          data={TypeList}
-          keyboardShouldPersistTaps="handled"
-          keyExtractor={(item) => item}
-          renderItem={({ item }) => (
+        <View className="flex-1 w-full justify-start items-center">
+          {TypeList.map((option) => (
             <TouchableOpacity
-              onPress={() => handleSelect(item)}
-              className="py-3 flex-row justify-between items-center border-b border-gray-200"
+              key={option}
+              onPress={() => handleSelect(option)}
+              className="py-4 flex-row justify-between items-center border-b border-gray-200 px-2 mb-2"
+              style={{
+                minHeight: 56,
+                width: "100%",
+                borderRadius: 12,
+                backgroundColor: medicationType === option ? "#f3f4f6" : "#fff",
+              }}
             >
-              <Text>{item}</Text>
-              <ChevronRight size={20} />
+              <Text className="text-lg">{option}</Text>
+              <ChevronRight size={28} color="black" />
             </TouchableOpacity>
-          )}
-        />
-      </Animated.View>
+          ))}
+        </View>
+      </View>
     </View>
   );
 }

@@ -44,6 +44,7 @@ export default function Step7ReminderTime() {
               size={32}
               color="black"
               onPress={() => router.back()}
+              className="mb-6"
             />
             <Animated.View
               style={{
@@ -61,7 +62,7 @@ export default function Step7ReminderTime() {
       </SafeAreaView>
 
       <View
-        className="flex-1 bg-white p-8 shadow-sm"
+        className="flex-1 bg-white p-8 shadow-sm justify-center items-center"
         style={{
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
@@ -73,18 +74,29 @@ export default function Step7ReminderTime() {
           elevation: 8,
         }}
       >
-        <View className="flex-1">
-          <Text className="mb-2 font-semibold">Reminder time</Text>
-          <DateTimePicker
-            value={reminderTime}
-            mode="time"
-            display="spinner"
-            onChange={(event, date) => date && setReminderTime(date)}
-          />
+        <View className="flex-1 w-full justify-center items-center">
+          <Text className="mb-10 font-semibold text-lg text-center">
+            Reminder time
+          </Text>
+          <View
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+            }}
+          >
+            <DateTimePicker
+              value={reminderTime}
+              mode="time"
+              display={Platform.OS === "ios" ? "spinner" : "clock"}
+              onChange={(event, date) => date && setReminderTime(date)}
+              style={{ width: 250, height: 120, transform: [{ scale: 1.3 }] }}
+            />
+          </View>
         </View>
 
         <Button
-          className="mt-6"
+          className="mt-6 w-full py-4"
           onPress={() =>
             router.push({
               pathname: "/addNewMedication/confirmStep",
@@ -100,7 +112,7 @@ export default function Step7ReminderTime() {
             })
           }
         >
-          <Text>Next</Text>
+          <Text className="text-lg">Next</Text>
         </Button>
       </View>
     </View>

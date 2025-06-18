@@ -46,6 +46,13 @@ const AddNewMedicationLayout = () => {
         }}
       ></Stack.Screen>
       <Stack.Screen
+        name="step7"
+        options={{
+          headerShown: false,
+          animation: "none",
+        }}
+      ></Stack.Screen>
+      <Stack.Screen
         name="confirmStep"
         options={{
           headerShown: false,

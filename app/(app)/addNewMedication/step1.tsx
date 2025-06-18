@@ -1,3 +1,4 @@
+import React, { useState, useRef } from "react";
 import {
   View,
   SafeAreaView,
@@ -13,10 +14,10 @@ import {
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 import { router } from "expo-router";
-import { useState, useRef } from "react";
 import { XMarkIcon } from "react-native-heroicons/solid";
 import { ChevronRight } from "~/lib/icons/ChevronRight";
 import { medicationSuggestions } from "~/src/constants/medicationSuggestions";
+import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 
 export default function Step1() {
   const [medicationName, setMedicationName] = useState("");
@@ -69,10 +70,11 @@ export default function Step1() {
       <SafeAreaView>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View className="p-8">
-            <XMarkIcon
+            <ChevronLeft
               size={32}
               color="black"
-              onPress={() => router.push("/(app)/(tabs)/(medications)")}
+              onPress={() => router.back()}
+              className="mb-6"
             />
             <Animated.View
               style={{
@@ -82,7 +84,7 @@ export default function Step1() {
               }}
             >
               <Text className="text-2xl font-semibold mt-10">
-                What medication are you taking?
+                What medication do you want to add?
               </Text>
             </Animated.View>
           </View>
@@ -90,7 +92,7 @@ export default function Step1() {
       </SafeAreaView>
 
       <View
-        className="flex-1 bg-white p-8 shadow-sm"
+        className="flex-1 bg-white p-8 shadow-sm justify-center items-center"
         style={{
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
@@ -102,65 +104,70 @@ export default function Step1() {
           elevation: 8,
         }}
       >
-        <Input
-          placeholder="Enter medication name"
-          value={medicationName}
-          className="border border-gray-300"
-          onFocus={() => {
-            Animated.parallel([
-              Animated.timing(questionOpacity, {
-                toValue: 0,
-                duration: 200,
-                useNativeDriver: false,
-              }),
-              Animated.timing(questionHeight, {
-                toValue: 0,
-                duration: 200,
-                useNativeDriver: false,
-              }),
-            ]).start();
-            setIsInputFocused(true);
-          }}
-          onBlur={() => {
-            Animated.parallel([
-              Animated.timing(questionOpacity, {
-                toValue: 1,
-                duration: 200,
-                useNativeDriver: false,
-              }),
-              Animated.timing(questionHeight, {
-                toValue: 60,
-                duration: 200,
-                useNativeDriver: false,
-              }),
-            ]).start();
-            setIsInputFocused(false);
-          }}
-          onChangeText={handleInputChange}
-        />
+        <View className="flex-1 w-full justify-center items-center">
+          <Input
+            placeholder="Enter medication name"
+            value={medicationName}
+            className="border border-gray-300 text-xl py-6 px-6 rounded-lg mb-4 w-full"
+            style={{ minHeight: 56 }}
+            onFocus={() => {
+              Animated.parallel([
+                Animated.timing(questionOpacity, {
+                  toValue: 0,
+                  duration: 200,
+                  useNativeDriver: false,
+                }),
+                Animated.timing(questionHeight, {
+                  toValue: 0,
+                  duration: 200,
+                  useNativeDriver: false,
+                }),
+              ]).start();
+              setIsInputFocused(true);
+            }}
+            onBlur={() => {
+              Animated.parallel([
+                Animated.timing(questionOpacity, {
+                  toValue: 1,
+                  duration: 200,
+                  useNativeDriver: false,
+                }),
+                Animated.timing(questionHeight, {
+                  toValue: 60,
+                  duration: 200,
+                  useNativeDriver: false,
+                }),
+              ]).start();
+              setIsInputFocused(false);
+            }}
+            onChangeText={handleInputChange}
+          />
 
-        {filteredOptions.length === 0 && (
-          <View className="mt-4">
-            <Text className="text-gray-500">
-              Start typing to see suggestions.
-            </Text>
-          </View>
-        )}
-
-        <FlatList
-          data={filteredOptions}
-          keyboardShouldPersistTaps="handled"
-          keyExtractor={(item) => item}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => handleSelect(item)}
-              className="py-3 flex-row justify-between items-center border-b border-gray-200"
-            >
-              <Text>{item}</Text>
-              <ChevronRight size={20} color="black" />
-            </TouchableOpacity>
+          {filteredOptions.length === 0 && (
+            <View className="mt-4">
+              <Text className="text-gray-500">
+                Start typing to see suggestions.
+              </Text>
+            </View>
           )}
-        />
+
+          <FlatList
+            data={filteredOptions}
+            keyboardShouldPersistTaps="handled"
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => handleSelect(item)}
+                className="py-4 flex-row justify-between items-center border-b border-gray-200 px-2"
+                style={{ minHeight: 56 }}
+              >
+                <Text className="text-lg">{item}</Text>
+                <ChevronRight size={28} color="black" />
+              </TouchableOpacity>
+            )}
+            style={{ width: "100%" }}
+          />
+        </View>
       </View>
     </View>
   );

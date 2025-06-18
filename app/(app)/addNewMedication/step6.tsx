@@ -1,3 +1,4 @@
+import React, { useState, useRef } from "react";
 import {
   View,
   SafeAreaView,
@@ -11,7 +12,6 @@ import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { router, useLocalSearchParams } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useState, useRef } from "react";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 
 export default function Step6EndDate() {
@@ -38,6 +38,7 @@ export default function Step6EndDate() {
               size={32}
               color="black"
               onPress={() => router.back()}
+              className="mb-6"
             />
             <Animated.View
               style={{
@@ -55,7 +56,7 @@ export default function Step6EndDate() {
       </SafeAreaView>
 
       <View
-        className="flex-1 bg-white p-8 shadow-sm"
+        className="flex-1 bg-white p-8 shadow-sm justify-center items-center"
         style={{
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
@@ -67,18 +68,29 @@ export default function Step6EndDate() {
           elevation: 8,
         }}
       >
-        <View className="flex-1">
-          <Text className="mb-2 font-semibold">End date</Text>
-          <DateTimePicker
-            value={endDate}
-            mode="date"
-            display="spinner"
-            onChange={(event, date) => date && setEndDate(date)}
-          />
+        <View className="flex-1 w-full justify-center items-center">
+          <Text className="mb-10 font-semibold text-lg text-center">
+            End date
+          </Text>
+          <View
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+            }}
+          >
+            <DateTimePicker
+              value={endDate}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "calendar"}
+              onChange={(event, date) => date && setEndDate(date)}
+              style={{ width: 250, height: 120, transform: [{ scale: 1.3 }] }}
+            />
+          </View>
         </View>
 
         <Button
-          className="mt-6"
+          className="mt-6 w-full py-4"
           onPress={() =>
             router.push({
               pathname: "/addNewMedication/step7",
@@ -93,7 +105,7 @@ export default function Step6EndDate() {
             })
           }
         >
-          <Text>Next</Text>
+          <Text className="text-lg">Next</Text>
         </Button>
       </View>
     </View>
