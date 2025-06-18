@@ -35,7 +35,12 @@ const collection = () => {
                   <TouchableOpacity
                     key={id}
                     className="w-1/2 px-2 mb-4"
-                    onPress={() => router.push(`/card/${id}`)}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/(app)/(tabs)/(collection)/details/details",
+                        params: { id: id.toString() },
+                      })
+                    }
                     disabled={!isUnlocked}
                   >
                     <Card className="h-48">

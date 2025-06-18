@@ -1,3 +1,4 @@
+import React from "react";
 import { Tabs } from "expo-router";
 import { useTheme } from "@react-navigation/native";
 import {
@@ -53,7 +54,7 @@ const TabsLayout = () => {
         />
 
         <Tabs.Screen
-          name="collection"
+          name="(collection)"
           options={{
             headerShown: false,
             tabBarIcon: ({ color, size }) => (
