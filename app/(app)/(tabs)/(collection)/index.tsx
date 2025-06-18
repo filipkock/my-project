@@ -39,7 +39,7 @@ const collection = () => {
 
   return (
     <SafeAreaView className="flex-1">
-      <ScrollView contentContainerStyle={{ padding: 16 }}>
+      <ScrollView contentContainerStyle={{ padding: 32 }}>
         <Text className="text-xl font-bold mb-4">Collection</Text>
         {Object.entries(groupedCards).map(([collectionName, cards]) => (
           <View key={collectionName} className="mb-8">

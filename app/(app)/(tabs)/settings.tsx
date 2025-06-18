@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Alert, SafeAreaView } from "react-native";
+import { View, Alert, SafeAreaView, ScrollView } from "react-native";
 import { Text } from "~/components/ui/text";
 import { useAuth } from "~/src/context/auth";
 import { Button } from "~/components/ui/button";
@@ -35,9 +35,12 @@ const Settings = () => {
 
   return (
     <SafeAreaView className="flex-1">
-      <View className="flex-1 w-full p-0">
-        <Text className="text-3xl font-bold px-6 pt-8 pb-2">Settings</Text>
-        <View className="gap-6 px-4">
+      <ScrollView
+        className="flex-1 w-full"
+        contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
+      >
+        <Text className="text-3xl font-bold px-2 pt-8 pb-2">Settings</Text>
+        <View className="gap-6">
           {/* Subscription Section */}
           <Card className="bg-black mb-6">
             <CardContent className="gap-2 p-6">
@@ -145,7 +148,7 @@ const Settings = () => {
             </CardContent>
           </Card>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
