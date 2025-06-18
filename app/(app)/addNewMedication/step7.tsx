@@ -1,0 +1,108 @@
+import React, { useState, useRef } from "react";
+import {
+  View,
+  SafeAreaView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Animated,
+  Platform,
+  UIManager,
+} from "react-native";
+import { Button } from "~/components/ui/button";
+import { Text } from "~/components/ui/text";
+import { router, useLocalSearchParams } from "expo-router";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { ChevronLeft } from "~/lib/icons/ChevronLeft";
+
+export default function Step7ReminderTime() {
+  const {
+    medicationName,
+    medicationType,
+    whenToTake,
+    interval,
+    startDate,
+    endDate,
+  } = useLocalSearchParams();
+  const [reminderTime, setReminderTime] = useState(new Date());
+
+  const questionOpacity = useRef(new Animated.Value(1)).current;
+  const questionHeight = useRef(new Animated.Value(60)).current;
+
+  if (
+    Platform.OS === "android" &&
+    UIManager.setLayoutAnimationEnabledExperimental
+  ) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
+
+  return (
+    <View className="flex-1">
+      <SafeAreaView>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <View className="p-8">
+            <ChevronLeft
+              size={32}
+              color="black"
+              onPress={() => router.back()}
+            />
+            <Animated.View
+              style={{
+                opacity: questionOpacity,
+                height: questionHeight,
+                overflow: "hidden",
+              }}
+            >
+              <Text className="text-2xl font-semibold mt-10">
+                What time should we remind you?
+              </Text>
+            </Animated.View>
+          </View>
+        </TouchableWithoutFeedback>
+      </SafeAreaView>
+
+      <View
+        className="flex-1 bg-white p-8 shadow-sm"
+        style={{
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          backgroundColor: "white",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.05,
+          shadowRadius: 12,
+          elevation: 8,
+        }}
+      >
+        <View className="flex-1">
+          <Text className="mb-2 font-semibold">Reminder time</Text>
+          <DateTimePicker
+            value={reminderTime}
+            mode="time"
+            display="spinner"
+            onChange={(event, date) => date && setReminderTime(date)}
+          />
+        </View>
+
+        <Button
+          className="mt-6"
+          onPress={() =>
+            router.push({
+              pathname: "/addNewMedication/confirmStep",
+              params: {
+                medicationName,
+                medicationType,
+                whenToTake,
+                interval,
+                startDate,
+                endDate,
+                reminderTime: reminderTime.toISOString(),
+              },
+            })
+          }
+        >
+          <Text>Next</Text>
+        </Button>
+      </View>
+    </View>
+  );
+}

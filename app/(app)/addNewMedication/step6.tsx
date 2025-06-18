@@ -81,7 +81,7 @@ export default function Step6EndDate() {
           className="mt-6"
           onPress={() =>
             router.push({
-              pathname: "/addNewMedication/confirmStep",
+              pathname: "/addNewMedication/step7",
               params: {
                 medicationName,
                 medicationType,

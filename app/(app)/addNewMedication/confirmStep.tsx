@@ -25,6 +25,8 @@ import { getAuth } from "firebase/auth";
 import type { FormData } from "~/src/types/medication";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 import { useState } from "react";
+import toastConfig from "~/src/constants/toastConfig";
+import Toast from "react-native-toast-message";
 
 export default function ConfirmStep() {
   const [isSaving, setIsSaving] = useState(false);
@@ -35,6 +37,7 @@ export default function ConfirmStep() {
     interval,
     startDate,
     endDate,
+    reminderTime,
   } = useLocalSearchParams();
   const auth = getAuth();
   const uid = auth.currentUser?.uid;
@@ -46,7 +49,12 @@ export default function ConfirmStep() {
     intakeInterval: interval as string,
     startDate: startDate ? new Date(startDate as string) : undefined,
     endDate: endDate ? new Date(endDate as string) : undefined,
-    reminderTime: "08:00",
+    reminderTime: reminderTime
+      ? new Date(reminderTime as string).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "08:00",
     customIntervalValue: "1",
     specificDaysOfWeek: [],
     reminderDates: [],
@@ -123,7 +131,16 @@ export default function ConfirmStep() {
       Alert.alert("Success", "Medication and reminders created!", [
         {
           text: "OK",
-          onPress: () => router.replace("/(app)/(tabs)/(medications)"),
+          onPress: () => {
+            router.replace("/(app)/(tabs)/(medications)");
+            setTimeout(() => {
+              Toast.show({
+                type: "plain",
+                text1: "Medication created",
+                text2: "Your medication was added successfully!",
+              });
+            }, 500);
+          },
         },
       ]);
       setIsSaving(false);

@@ -28,6 +28,7 @@ import {
 import { checkAndResetStreakIfNeeded } from "~/src/utils/streakResetOnLaunch";
 import { SelectedDateProvider } from "~/src/context/SelectedDateContext";
 import Toast from "react-native-toast-message";
+import toastConfig from "~/src/constants/toastConfig"; // <-- import your config
 
 // ==== react native reusables theme setup ====
 const LIGHT_THEME: Theme = {
@@ -120,7 +121,7 @@ export default function RootLayout() {
           <SelectedDateProvider>
             <Slot></Slot>
             <PortalHost />
-            <Toast />
+            <Toast config={toastConfig} />
           </SelectedDateProvider>
         </ThemeProvider>
       </NotificationProvider>

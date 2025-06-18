@@ -10,7 +10,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { LockClosedIcon } from "react-native-heroicons/outline";
 import Toast from "react-native-toast-message";
-import toastConfig from "~/src/constants/toastConfig";
 
 const collection = () => {
   const router = useRouter();
@@ -75,7 +74,6 @@ const collection = () => {
           </View>
         ))}
       </ScrollView>
-      <Toast config={toastConfig} />
     </SafeAreaView>
   );
 };
