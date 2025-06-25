@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { SafeAreaView, View } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
-import EditMedicationForm from "~/app/(app)/medicationList/editMedicationForm";
+import EditMedicationForm from "~/app/(app)/medicationList/EditMedicationForm";
 import { Text } from "~/components/ui/text";
 import LottieView from "lottie-react-native";
 import { ChevronLeftIcon } from "react-native-heroicons/solid";
