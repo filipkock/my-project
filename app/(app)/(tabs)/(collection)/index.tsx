@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { auth, db } from "~/config/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import React from "react";
 import { View, SafeAreaView, ScrollView, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
@@ -13,7 +16,24 @@ import Toast from "react-native-toast-message";
 
 const collection = () => {
   const router = useRouter();
-  const unlockedCards = [1, 2, 3, 5, 6]; // Replace this with actual unlocked card IDs
+  const [unlockedCards, setUnlockedCards] = useState<number[]>([]);
+
+  useEffect(() => {
+    const fetchUnlockedCards = async () => {
+      if (!auth.currentUser) return;
+
+      const userCardsRef = doc(db, "userCards", auth.currentUser.uid);
+      const userCardsSnap = await getDoc(userCardsRef);
+
+      if (userCardsSnap.exists()) {
+        const userCardsData = userCardsSnap.data();
+        const unlocked = Object.keys(userCardsData.cards || {}).map(Number);
+        setUnlockedCards(unlocked);
+      }
+    };
+
+    fetchUnlockedCards();
+  }, []);
 
   const groupedCards = Object.entries(cardNames).reduce((acc, [id, name]) => {
     const collection = cardCollections[parseInt(id)];
