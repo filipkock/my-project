@@ -1,26 +1,36 @@
 import React, { useState } from "react";
-import { SafeAreaView, Alert } from "react-native";
+import { SafeAreaView, Alert, View } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../config/firebase";
+import { signInAnonymously } from "firebase/auth";
 import { router, Link } from "expo-router";
 import { setLocalStorage } from "~/src/services/storage";
+import { getOnboardingStatus } from "~/src/utils/onboarding";
+import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 
 // Components
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const handleAnonymousLogin = async () => {
+    try {
+      const result = await signInAnonymously(auth);
+      setLocalStorage("userDetails", result.user);
+      const onboarded = await getOnboardingStatus();
+      if (onboarded) {
+        router.replace("/(app)/(tabs)/(home)");
+      } else {
+        router.replace("/(auth)/allowNotification");
+      }
+    } catch (error: any) {
+      Alert.alert("Anonymous login failed", error.message);
+    }
+  };
 
   const onHandleLogin = () => {
     const trimmedEmail = email.trim();
@@ -61,35 +71,45 @@ export default function Login() {
   };
 
   return (
-    <SafeAreaView className="flex-1 justify-center items-center gap-5 p-6 bg-secondary/40">
-      <Card className="w-full max-w-sm p-6 rounded-2xl">
-        <CardHeader>
-          <CardTitle>Login</CardTitle>
-        </CardHeader>
-        <CardContent className="gap-4">
-          <Input
-            placeholder="Input your email"
-            value={email}
-            onChangeText={setEmail}
-            className="mb-4"
+    <SafeAreaView className="flex-1 bg-secondary/40">
+      <View className="flex-1 px-8 pt-8 pb-4">
+        <View className="flex-row items-center justify-between mb-8">
+          <ChevronLeft
+            size={32}
+            color="black"
+            onPress={() => router.push("../step1")}
           />
-          <Input
-            placeholder="Input your password"
-            value={password}
-            onChangeText={setPassword}
-            className="mb-4"
-          />
-          <Button
-            className="w-full flex flex-row gap-2"
-            onPress={onHandleLogin}
+          <Text
+            className="text-sm text-muted-foreground "
+            onPress={handleAnonymousLogin}
           >
-            <Text>Login in!</Text>
+            Skip
+          </Text>
+        </View>
+        <View className="flex-1 mt-10 gap-10">
+          <Text className="text-3xl font-bold">Login to continue</Text>
+          <View className="gap-4">
+            <Input
+              placeholder="Input your email"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <Input
+              placeholder="Input your password"
+              value={password}
+              onChangeText={setPassword}
+            />
+          </View>
+        </View>
+        <View className="gap-4">
+          <Button className="w-full" onPress={onHandleLogin}>
+            <Text>Login</Text>
           </Button>
           <Link href="../signup" className="text-center underline">
             Sign up
           </Link>
-        </CardContent>
-      </Card>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }

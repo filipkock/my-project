@@ -8,9 +8,15 @@ import {
 } from "firebase/auth";
 import { auth } from "../../config/firebase";
 
+import {
+  getOnboardingStatus,
+  setOnboardingStatus,
+} from "~/src/utils/onboarding";
+
 type AuthContextType = {
   user: User | null;
   signOut: () => Promise<void>;
+  onboarded: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -30,6 +36,34 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
   const segments = useSegments();
   const [user, setUser] = useState<User | null>(null);
   const [initializing, setInitializing] = useState(true);
+  const [onboarded, setOnboarded] = useState<boolean>(false);
+
+  // Load onboarding state and handle redirect based on user status
+  useEffect(() => {
+    const checkAndRedirect = async () => {
+      if (initializing) return;
+
+      const onboardingStatus = await getOnboardingStatus();
+      setOnboarded(onboardingStatus);
+
+      const rootSegment = segments[0];
+      if (!user) {
+        if (!onboardingStatus && rootSegment !== "(auth)") {
+          console.log("Redirecting to onboarding", onboardingStatus);
+          router.replace("/(auth)/step1");
+        } else if (onboardingStatus && rootSegment !== "(auth)") {
+          console.log("Redirecting to login");
+          router.replace("/(auth)/login");
+        }
+      } else {
+        if (rootSegment !== "(app)" && onboardingStatus) {
+          console.log("Redirecting to Home");
+          router.replace("/");
+        }
+      }
+    };
+    checkAndRedirect();
+  }, [user, segments, initializing]);
 
   // Listen to Firebase auth state changes
   useEffect(() => {
@@ -40,26 +74,17 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
     return () => unsubscribe();
   }, []);
 
-  // Handle redirect based on user status
-  useEffect(() => {
-    // or a loading spinner in the future
-    if (initializing) return;
-
-    const rootSegment = segments[0];
-    if (!user && rootSegment !== "(auth)") {
-      router.replace("/(auth)/login");
-    } else if (user && rootSegment !== "(app)") {
-      router.replace("/");
-    }
-  }, [user, segments, initializing]);
-
   async function signOut() {
     await firebaseSignOut(auth);
+    // Optionally reset onboarding status, used for testing
+    await setOnboardingStatus(false);
+    setOnboarded(false);
   }
 
   const value: AuthContextType = {
     user,
     signOut,
+    onboarded,
   };
 
   return (

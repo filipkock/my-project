@@ -17,6 +17,27 @@ const LoginLayout = () => {
           animation: "none",
         }}
       ></Stack.Screen>
+      <Stack.Screen
+        name="step1"
+        options={{
+          headerShown: false,
+          animation: "none",
+        }}
+      ></Stack.Screen>
+      <Stack.Screen
+        name="allowNotification"
+        options={{
+          headerShown: false,
+          animation: "none",
+        }}
+      ></Stack.Screen>
+      <Stack.Screen
+        name="createMedication"
+        options={{
+          headerShown: false,
+          animation: "none",
+        }}
+      ></Stack.Screen>
     </Stack>
   );
 };
