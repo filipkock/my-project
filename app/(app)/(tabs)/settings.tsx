@@ -70,13 +70,21 @@ const Settings = () => {
             <CardContent className="gap-2 p-4">
               <CardTitle className="text-lg mb-2">Account</CardTitle>
               {user?.isAnonymous ? (
-                <Button
-                  variant={"default"}
-                  className="w-full"
-                  onPress={() => router.push("/(app)/settings/upgradeAccount")}
-                >
-                  <Text>Sign up</Text>
-                </Button>
+                <>
+                  <Text className="text-muted-foreground text-sm mb-4">
+                    You're currently using a guest account. Create an account to
+                    save your progress and avoid losing your data.
+                  </Text>
+                  <Button
+                    variant={"default"}
+                    className="w-full"
+                    onPress={() =>
+                      router.push("/(app)/settings/upgradeAccount")
+                    }
+                  >
+                    <Text>Sign up</Text>
+                  </Button>
+                </>
               ) : (
                 <Button
                   variant={"default"}

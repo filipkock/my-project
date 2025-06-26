@@ -66,7 +66,7 @@ export default function ConfirmStep() {
 
     try {
       const userinfo = await getFromStorage("userDetails");
-      if (!userinfo?.uid || !userinfo?.email) {
+      if (!userinfo?.uid) {
         Alert.alert("User not found", "Please sign in again.");
         setIsSaving(false);
         return;
@@ -95,7 +95,7 @@ export default function ConfirmStep() {
         specificDaysOfWeek: formData.specificDaysOfWeek,
         startDate: Timestamp.fromDate(start),
         endDate: Timestamp.fromDate(end),
-        userEmail: userinfo.email,
+        ...(userinfo.email ? { userEmail: userinfo.email } : {}),
         createdAt: serverTimestamp(),
         uid: userinfo.uid,
         time: formData.reminderTime,
@@ -109,7 +109,7 @@ export default function ConfirmStep() {
           status: "pending",
           medId: medRef.id,
           uid: userinfo.uid,
-          userEmail: userinfo.email,
+          ...(userinfo.email ? { userEmail: userinfo.email } : {}),
           notificationId: null,
         });
 
