@@ -17,7 +17,6 @@ import { router } from "expo-router";
 import { XMarkIcon } from "react-native-heroicons/solid";
 import { ChevronRight } from "~/lib/icons/ChevronRight";
 import { medicationSuggestions } from "~/src/constants/medicationSuggestions";
-import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 
 export default function Step1() {
   const [medicationName, setMedicationName] = useState("");
@@ -69,10 +68,16 @@ export default function Step1() {
       <SafeAreaView>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View className="p-8">
-            <ChevronLeft
+            <XMarkIcon
               size={32}
               color="black"
-              onPress={() => router.back()}
+              onPress={() => {
+                if (router.canGoBack()) {
+                  router.back();
+                } else {
+                  router.replace("/");
+                }
+              }}
               className="mb-6"
             />
             <Text className="text-2xl font-semibold mt-10">

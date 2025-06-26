@@ -2,6 +2,7 @@ import React from "react";
 import { View, Alert, SafeAreaView, ScrollView } from "react-native";
 import { Text } from "~/components/ui/text";
 import { useAuth } from "~/src/context/auth";
+import { User } from "firebase/auth";
 import { Button } from "~/components/ui/button";
 import { clearStorage } from "~/src/services/storage";
 import { useNotification } from "~/src/context/notificationsContext";
@@ -12,7 +13,7 @@ import { router } from "expo-router";
 import * as Notifications from "expo-notifications";
 
 const Settings = () => {
-  const { signOut } = useAuth(); // Access the signOut function from AuthProvider
+  const { user, signOut } = useAuth(); // Access the signOut function and user from AuthProvider
 
   const handleLogout = async () => {
     try {
@@ -68,13 +69,23 @@ const Settings = () => {
           <Card>
             <CardContent className="gap-2 p-4">
               <CardTitle className="text-lg mb-2">Account</CardTitle>
-              <Button
-                variant={"default"}
-                className="w-full"
-                onPress={handleLogout}
-              >
-                <Text>Logout</Text>
-              </Button>
+              {user?.isAnonymous ? (
+                <Button
+                  variant={"default"}
+                  className="w-full"
+                  onPress={() => router.push("/(app)/settings/upgradeAccount")}
+                >
+                  <Text>Sign up</Text>
+                </Button>
+              ) : (
+                <Button
+                  variant={"default"}
+                  className="w-full"
+                  onPress={handleLogout}
+                >
+                  <Text>Logout</Text>
+                </Button>
+              )}
             </CardContent>
           </Card>
 

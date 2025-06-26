@@ -49,15 +49,12 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
       const rootSegment = segments[0];
       if (!user) {
         if (!onboardingStatus && rootSegment !== "(auth)") {
-          console.log("Redirecting to onboarding", onboardingStatus);
           router.replace("/(auth)/step1");
         } else if (onboardingStatus && rootSegment !== "(auth)") {
-          console.log("Redirecting to login");
           router.replace("/(auth)/login");
         }
       } else {
         if (rootSegment !== "(app)" && onboardingStatus) {
-          console.log("Redirecting to Home");
           router.replace("/");
         }
       }
@@ -77,8 +74,8 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
   async function signOut() {
     await firebaseSignOut(auth);
     // Optionally reset onboarding status, used for testing
-    await setOnboardingStatus(false);
-    setOnboarded(false);
+    // await setOnboardingStatus(false);
+    // setOnboarded(false);
   }
 
   const value: AuthContextType = {

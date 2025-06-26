@@ -27,7 +27,7 @@ export default function CreateMedication() {
           />
           <Text
             className="text-sm text-muted-foreground "
-            onPress={handleCreateMedication}
+            onPress={() => router.replace("/(app)/(tabs)/(home)")}
           >
             Skip
           </Text>

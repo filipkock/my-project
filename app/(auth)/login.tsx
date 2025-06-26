@@ -72,7 +72,7 @@ export default function Login() {
 
   return (
     <SafeAreaView className="flex-1 bg-secondary/40">
-      <View className="flex-1 px-8 pt-8 pb-4">
+      <View className="flex-1 p-12">
         <View className="flex-row items-center justify-between mb-8">
           <ChevronLeft
             size={32}
@@ -83,7 +83,7 @@ export default function Login() {
             className="text-sm text-muted-foreground "
             onPress={handleAnonymousLogin}
           >
-            Skip
+            Continue as Guest
           </Text>
         </View>
         <View className="flex-1 mt-10 gap-10">

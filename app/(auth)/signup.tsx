@@ -94,7 +94,7 @@ export default function signup() {
             className="text-sm text-muted-foreground"
             onPress={handleAnonymousSignup}
           >
-            Skip
+            Continue as Guest
           </Text>
         </View>
         <View className="flex-1 mt-10 gap-10">
