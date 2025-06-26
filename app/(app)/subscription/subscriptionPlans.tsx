@@ -5,7 +5,7 @@ import { Card, CardContent, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { router } from "expo-router";
 import {
-  ChevronLeftIcon,
+  XMarkIcon,
   CheckCircleIcon,
   StarIcon,
   SparklesIcon,
@@ -35,7 +35,7 @@ const SubscriptionPlans = () => {
   return (
     <SafeAreaView className="flex-1 bg-secondary/40">
       <View className="flex-1 w-full p-6 ">
-        <ChevronLeftIcon size={28} color="#222" onPress={() => router.back()} />
+        <XMarkIcon size={28} color="#222" onPress={() => router.back()} />
         <Text className="text-3xl font-bold px-6 pt-8 pb-6">
           Unlock Pokas Full Potential
         </Text>
