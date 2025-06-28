@@ -1,5 +1,6 @@
 export function getDateTimeFromReminder(reminder: any): Date {
-  const datePart = reminder.date.toDate(); // Convert Firestore Timestamp to JS Date
+  const datePart =
+    reminder.date instanceof Date ? reminder.date : reminder.date.toDate();
   const [hours, minutes] = reminder.time.split(":").map(Number);
 
   // Create a new Date with the same year/month/day as 'datePart'

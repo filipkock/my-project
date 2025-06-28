@@ -5,6 +5,7 @@ import EditMedicationForm from "~/app/(app)/medicationList/EditMedicationForm";
 import { Text } from "~/components/ui/text";
 import LottieView from "lottie-react-native";
 import { ChevronLeftIcon } from "react-native-heroicons/solid";
+import { formatTime } from "~/src/services/reminderSchedule";
 
 const EditMedicationScreen = () => {
   const { medication } = useLocalSearchParams<{ medication: string }>();
@@ -18,7 +19,8 @@ const EditMedicationScreen = () => {
     setMedication({
       ...parsed,
       startDate: new Date(parsed.startDate.seconds * 1000),
-      endDate: new Date(parsed.endDate.seconds * 1000),
+      endDate: parsed.endDate ? new Date(parsed.endDate.seconds * 1000) : null,
+      reminderTime: parsed.time ?? formatTime(new Date()),
     });
 
     setLoading(false);
@@ -59,7 +61,6 @@ const EditMedicationScreen = () => {
           <EditMedicationForm
             defaultValues={medicationState}
             onSuccess={handleSuccess}
-            onCancel={() => router.back()}
           />
         )}
       </View>
