@@ -45,7 +45,6 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
 
       const onboardingStatus = await getOnboardingStatus();
       setOnboarded(onboardingStatus);
-
       const rootSegment = segments[0];
       if (!user) {
         if (!onboardingStatus && rootSegment !== "(auth)") {
@@ -55,7 +54,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
         }
       } else {
         if (rootSegment !== "(app)" && onboardingStatus) {
-          router.replace("/");
+          router.replace("/(app)/(tabs)/(home)");
         }
       }
     };
@@ -74,8 +73,8 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
   async function signOut() {
     await firebaseSignOut(auth);
     // Optionally reset onboarding status, used for testing
-    // await setOnboardingStatus(false);
-    // setOnboarded(false);
+    await setOnboardingStatus(false);
+    setOnboarded(false);
   }
 
   const value: AuthContextType = {

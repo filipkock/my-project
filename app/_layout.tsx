@@ -28,7 +28,8 @@ import {
 import { checkAndResetStreakIfNeeded } from "~/src/utils/streakResetOnLaunch";
 import { SelectedDateProvider } from "~/src/context/SelectedDateContext";
 import Toast from "react-native-toast-message";
-import toastConfig from "~/src/constants/toastConfig"; // <-- import your config
+import toastConfig from "~/src/constants/toastConfig";
+import { refreshRemindersOnLaunch } from "~/src/utils/refreshRemindersOnLaunch";
 
 // ==== react native reusables theme setup ====
 const LIGHT_THEME: Theme = {
@@ -90,8 +91,10 @@ export default function RootLayout() {
   }, []);
 
   // Check if we should reset the streak on app launch
+  // Create relevant reminders and notifications
   React.useEffect(() => {
     checkAndResetStreakIfNeeded();
+    refreshRemindersOnLaunch();
   }, []);
 
   // Ensure font and color is loaded

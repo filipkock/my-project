@@ -80,6 +80,7 @@ export default function Step6EndDate() {
               value={endDate ?? new Date()}
               mode="date"
               display={Platform.OS === "ios" ? "spinner" : "calendar"}
+              minimumDate={new Date()}
               onChange={(event, date) => setEndDate(date ?? endDate)}
               style={{ width: 250, height: 120, transform: [{ scale: 1.3 }] }}
             />

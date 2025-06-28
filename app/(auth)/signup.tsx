@@ -37,7 +37,12 @@ export default function signup() {
           });
           setLocalStorage("userDetails", user);
 
-          router.replace("/(app)/(tabs)/(home)");
+          const onboarded = await getOnboardingStatus();
+          if (onboarded) {
+            router.replace("/(app)/(tabs)/(home)");
+          } else {
+            router.replace("/(auth)/allowNotification");
+          }
         })
         .catch((error) => {
           const errorCode = error.code;

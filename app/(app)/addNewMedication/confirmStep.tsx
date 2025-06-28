@@ -75,7 +75,7 @@ export default function ConfirmStep() {
       const start = formData.startDate!;
       const now = new Date();
       const trueEndDate = formData.endDate; // can be null
-      const chunkEndDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const chunkEndDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
       const customInterval = parseInt(formData.customIntervalValue || "1", 10);
 
       const reminderDates = generateReminderDates(

@@ -36,8 +36,8 @@ import { cn } from "~/lib/utils";
 import * as Haptics from "expo-haptics";
 
 const DAY_PILL_WIDTH = 50;
-const DAYS_BEFORE = 14; // 2 weeks before
-const DAYS_AFTER = 42; // 6 weeks ahead
+const DAYS_BEFORE = 7; // 1 weeks before
+const DAYS_AFTER = 14; // 2 weeks ahead
 const TOTAL_DAYS = DAYS_BEFORE + DAYS_AFTER + 1; // +1 for today
 
 interface HorizontalDayScrollerProps {
