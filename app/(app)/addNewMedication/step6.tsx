@@ -12,7 +12,8 @@ import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { router, useLocalSearchParams } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { ChevronLeft } from "~/lib/icons/ChevronLeft";
+import { ChevronLeftIcon } from "react-native-heroicons/solid";
+import { Stepper } from "~/components/custom/Stepper";
 
 export default function Step6EndDate() {
   const {
@@ -40,12 +41,17 @@ export default function Step6EndDate() {
       <SafeAreaView>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View className="p-8">
-            <ChevronLeft
-              size={32}
-              color="black"
-              onPress={() => router.back()}
-              className="mb-6"
-            />
+            <View className="flex-row justify-between items-center">
+              <ChevronLeftIcon
+                size={32}
+                color="black"
+                onPress={() => router.back()}
+                className="mb-6"
+              />
+              <View className="flex-1 items-center -ml-8">
+                <Stepper totalSteps={7} currentStep={6} />
+              </View>
+            </View>
             <Animated.View
               style={{
                 opacity: questionOpacity,
@@ -89,7 +95,6 @@ export default function Step6EndDate() {
               display={Platform.OS === "ios" ? "spinner" : "calendar"}
               minimumDate={new Date()}
               onChange={(event, date) => setEndDate(date ?? endDate)}
-              style={{ width: 250, height: 120, transform: [{ scale: 1.3 }] }}
             />
           </View>
         </View>

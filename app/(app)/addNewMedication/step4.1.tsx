@@ -11,9 +11,10 @@ import {
 } from "react-native";
 import { Text } from "~/components/ui/text";
 import { router, useLocalSearchParams } from "expo-router";
-import { ChevronLeft } from "~/lib/icons/ChevronLeft";
+import { ChevronLeftIcon } from "react-native-heroicons/solid";
 import { ChevronRight } from "~/lib/icons/ChevronRight";
 import { Button } from "~/components/ui/button";
+import { Stepper } from "~/components/custom/Stepper";
 
 const FrequencyList = [
   "Once a day",
@@ -62,12 +63,17 @@ export default function Step4_1() {
       <SafeAreaView>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View className="p-8">
-            <ChevronLeft
-              size={32}
-              color="black"
-              onPress={() => router.back()}
-              className="mb-6"
-            />
+            <View className="flex-row justify-between items-center">
+              <ChevronLeftIcon
+                size={32}
+                color="black"
+                onPress={() => router.back()}
+                className="mb-6"
+              />
+              <View className="flex-1 items-center -ml-8">
+                <Stepper totalSteps={7} currentStep={4} />
+              </View>
+            </View>
             <Animated.View
               style={{
                 opacity: questionOpacity,

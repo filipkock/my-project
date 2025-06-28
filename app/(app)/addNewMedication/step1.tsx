@@ -17,6 +17,7 @@ import { router } from "expo-router";
 import { XMarkIcon } from "react-native-heroicons/solid";
 import { ChevronRight } from "~/lib/icons/ChevronRight";
 import { medicationSuggestions } from "~/src/constants/medicationSuggestions";
+import { Stepper } from "~/components/custom/Stepper";
 
 export default function Step1() {
   const [medicationName, setMedicationName] = useState("");
@@ -68,18 +69,23 @@ export default function Step1() {
       <SafeAreaView>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View className="p-8">
-            <XMarkIcon
-              size={32}
-              color="black"
-              onPress={() => {
-                if (router.canGoBack()) {
-                  router.back();
-                } else {
-                  router.replace("/");
-                }
-              }}
-              className="mb-6"
-            />
+            <View className="flex-row justify-between items-center">
+              <XMarkIcon
+                size={32}
+                color="black"
+                onPress={() => {
+                  if (router.canGoBack()) {
+                    router.back();
+                  } else {
+                    router.replace("/");
+                  }
+                }}
+                className="mb-6"
+              />
+              <View className="flex-1 items-center -ml-8">
+                <Stepper totalSteps={7} currentStep={1} />
+              </View>
+            </View>
             <Text className="text-2xl font-semibold mt-10">
               What medication do you want to add?
             </Text>
@@ -104,8 +110,8 @@ export default function Step1() {
           <Input
             placeholder="Enter medication name"
             value={medicationName}
-            className="border border-gray-300 text-xl py-6 px-6 rounded-lg mb-4 w-full"
-            style={{ minHeight: 56 }}
+            className="border border-gray-300 text-xl py-6 px-6 rounded-3fxl mb-4 w-full"
+            style={{ minHeight: 64 }}
             onFocus={() => {
               Animated.timing(questionOpacity, {
                 toValue: 0,

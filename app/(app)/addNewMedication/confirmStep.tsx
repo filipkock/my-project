@@ -23,10 +23,11 @@ import { getFromStorage } from "~/src/services/storage";
 import { db } from "~/config/firebase";
 import { getAuth } from "firebase/auth";
 import type { FormData } from "~/src/types/medication";
-import { ChevronLeft } from "~/lib/icons/ChevronLeft";
+import { ChevronLeftIcon } from "react-native-heroicons/solid";
 import { useState } from "react";
 import toastConfig from "~/src/constants/toastConfig";
 import Toast from "react-native-toast-message";
+import { Stepper } from "~/components/custom/Stepper";
 
 export default function ConfirmStep() {
   const [isSaving, setIsSaving] = useState(false);
@@ -182,11 +183,17 @@ export default function ConfirmStep() {
       <SafeAreaView>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View className="p-8">
-            <ChevronLeft
-              size={32}
-              color="black"
-              onPress={() => router.back()}
-            />
+            <View className="flex-row justify-between items-center">
+              <ChevronLeftIcon
+                size={32}
+                color="black"
+                onPress={() => router.back()}
+                className="mb-6"
+              />
+              <View className="flex-1 items-center -ml-8">
+                <Stepper totalSteps={7} currentStep={7} />
+              </View>
+            </View>
             <Text className="text-2xl font-semibold mt-10">Summary</Text>
           </View>
         </TouchableWithoutFeedback>

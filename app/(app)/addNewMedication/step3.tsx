@@ -12,8 +12,9 @@ import {
 import { Text } from "~/components/ui/text";
 import { router, useLocalSearchParams } from "expo-router";
 import { WhenToTakeList } from "~/src/constants/addMedicationOptions";
-import { ChevronLeft } from "~/lib/icons/ChevronLeft";
+import { ChevronLeftIcon } from "react-native-heroicons/solid";
 import { ChevronRight } from "~/lib/icons/ChevronRight";
+import { Stepper } from "~/components/custom/Stepper";
 
 export default function Step3() {
   const { medicationName, medicationType } = useLocalSearchParams();
@@ -42,12 +43,17 @@ export default function Step3() {
       <SafeAreaView>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View className="p-8">
-            <ChevronLeft
-              size={32}
-              color="black"
-              onPress={() => router.back()}
-              className="mb-6"
-            />
+            <View className="flex-row justify-between items-center">
+              <ChevronLeftIcon
+                size={32}
+                color="black"
+                onPress={() => router.back()}
+                className="mb-6"
+              />
+              <View className="flex-1 items-center -ml-8">
+                <Stepper totalSteps={7} currentStep={3} />
+              </View>
+            </View>
             <Animated.View
               style={{
                 opacity: questionOpacity,
