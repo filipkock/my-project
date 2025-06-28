@@ -45,7 +45,7 @@ const collection = () => {
   const handleCardPress = (id: number, isUnlocked: boolean) => {
     if (isUnlocked) {
       router.push({
-        pathname: "/(app)/(tabs)/(collection)/details/details",
+        pathname: "/(app)/collectionDetails/details",
         params: { id: id.toString() },
       });
     } else {
