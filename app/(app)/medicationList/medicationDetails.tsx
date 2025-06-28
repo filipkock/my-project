@@ -11,7 +11,7 @@ interface Medication {
   medicationName: string;
   medicationType: string;
   intakeInterval: string;
-  time: string;
+  reminderTimes: string[];
   whenToTake: string;
 }
 
@@ -72,8 +72,10 @@ export default function MedicationDetails() {
           </View>
 
           <View>
-            <Label className="text-gray-500 mb-1">Time</Label>
-            <Text className="text-lg">{parsedMedication.time}</Text>
+            <Label className="text-gray-500 mb-1">Times</Label>
+            <Text className="text-lg">
+              {parsedMedication.reminderTimes?.join(", ")}
+            </Text>
           </View>
 
           <View>

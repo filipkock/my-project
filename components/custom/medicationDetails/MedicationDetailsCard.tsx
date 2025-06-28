@@ -9,7 +9,7 @@ interface Medication {
   medicationName: string;
   medicationType: string;
   intakeInterval: string;
-  time: string;
+  reminderTimes: string[];
   whenToTake: string;
 }
 
@@ -39,7 +39,7 @@ const MedicationDetailsCard: React.FC<MedicationCardProps> = ({
         </CardHeader>
         <CardContent>
           <Text className="text-gray-600">
-            {medication.intakeInterval} - {medication.time}
+            {medication.intakeInterval} - {medication.reminderTimes?.join(", ")}
           </Text>
         </CardContent>
       </Card>

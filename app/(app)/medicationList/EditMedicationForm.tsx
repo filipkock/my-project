@@ -73,7 +73,7 @@ export default function EditMedicationForm({
   const [loading, setLoading] = useState(false);
   const [showStart, setShowStart] = useState(false);
   const [showEnd, setShowEnd] = useState(false);
-  const [showTime, setShowTime] = useState(false);
+  const [showTime, setShowTime] = useState<number | false>(false);
 
   /* ───────────── Form state ───────────── */
   const init = defaultValues ?? {};
@@ -84,7 +84,7 @@ export default function EditMedicationForm({
     intakeInterval: init.intakeInterval ?? "",
     startDate: init.startDate ? new Date(init.startDate) : undefined,
     endDate: init.endDate ? new Date(init.endDate) : undefined,
-    reminderTime: init.reminderTime ?? formatTime(new Date()),
+    reminderTimes: init.reminderTimes ?? [formatTime(new Date())],
     customIntervalValue: init.customIntervalValue ?? "",
     specificDaysOfWeek: init.specificDaysOfWeek ?? [],
   });
@@ -141,7 +141,7 @@ export default function EditMedicationForm({
         specificDaysOfWeek: formData.specificDaysOfWeek,
         startDate: Timestamp.fromDate(startDate ?? new Date()),
         endDate: endDate ? Timestamp.fromDate(endDate) : null,
-        time: formData.reminderTime,
+        reminderTimes: formData.reminderTimes,
         updatedAt: serverTimestamp(),
         uid: user.uid,
         userEmail: user.email,
@@ -149,20 +149,32 @@ export default function EditMedicationForm({
       });
 
       // 1. Generate desired dates in window
-      const desired = generateReminderDates(
-        startDate ?? new Date(),
-        windowEnd,
-        intakeInterval,
-        {
-          customIntervalValue: parseInt(
-            formData.customIntervalValue || "1",
-            10
-          ),
-          specificDaysOfWeek: formData.specificDaysOfWeek,
+      // For each reminderTime, generate dates and pair with time
+      const reminderTimes = formData.reminderTimes || [];
+      const desiredPairs: { date: Date; time: string }[] = [];
+      for (const reminderTime of reminderTimes) {
+        const dates = generateReminderDates(
+          startDate ?? new Date(),
+          windowEnd,
+          intakeInterval,
+          {
+            customIntervalValue: parseInt(
+              formData.customIntervalValue || "1",
+              10
+            ),
+            specificDaysOfWeek: formData.specificDaysOfWeek,
+          }
+        ).filter((d) => toDate(d) >= windowStart);
+        for (const d of dates) {
+          desiredPairs.push({ date: toDate(d), time: reminderTime });
         }
-      ).filter((d) => toDate(d) >= windowStart);
-
-      const desiredSet = new Set(desired.map((d) => toDate(d).toISOString()));
+      }
+      // Use ISO date+time as unique key
+      const desiredSet = new Set(
+        desiredPairs.map(
+          ({ date, time }) => date.toISOString().slice(0, 10) + "|" + time
+        )
+      );
 
       // 2. Fetch existing reminders in window
       const snap = await getDocs(
@@ -174,35 +186,38 @@ export default function EditMedicationForm({
         )
       );
 
-      const exists = new Map<string, string>(); // iso -> docId
-      snap.forEach((d) =>
-        exists.set(toDate(d.data().date).toISOString(), d.id)
-      );
+      // Map of "YYYY-MM-DD|hh:mm" -> docId
+      const exists = new Map<string, string>();
+      snap.forEach((d) => {
+        const data = d.data();
+        const dateStr = toDate(data.date).toISOString().slice(0, 10);
+        const timeStr = data.time;
+        exists.set(dateStr + "|" + timeStr, d.id);
+      });
 
       // 3. Delete outdated
       await Promise.all(
         Array.from(exists.entries())
-          .filter(([iso]) => !desiredSet.has(iso))
+          .filter(([key]) => !desiredSet.has(key))
           .map(([_, id]) => deleteDoc(doc(db, "reminders", id)))
       );
 
       // 3b.  UPDATE + RESCHEDULE EXISTING REMINDERS (same date, but when data changed)
       await Promise.all(
         Array.from(exists.entries())
-          .filter(([iso]) => desiredSet.has(iso)) // still a valid date
-          .map(async ([iso, id]) => {
+          .filter(([key]) => desiredSet.has(key)) // still a valid date|time
+          .map(async ([key, id]) => {
             const reminderRef = doc(db, "reminders", id);
             const snapDoc = await getDoc(reminderRef);
             const data = snapDoc.data();
-
+            // Extract correct time from key
+            const [dateStr, timeStr] = key.split("|");
             const needsReschedule =
-              data &&
-              (data.time !== formData.reminderTime ||
-                data.whenToTake !== whenToTake);
+              data && (data.time !== timeStr || data.whenToTake !== whenToTake);
 
             // Always update Firestore fields
             await updateDoc(reminderRef, {
-              time: formData.reminderTime,
+              time: timeStr,
               whenToTake,
               updatedAt: serverTimestamp(),
             });
@@ -214,15 +229,14 @@ export default function EditMedicationForm({
                   data.notificationId
                 );
               }
-
               await scheduleMedicationReminder({
                 id,
                 uid: user.uid,
-                date: new Date(iso),
-                time: formData.reminderTime,
+                date: new Date(dateStr),
+                time: timeStr,
                 whenToTake,
                 medId,
-                notificationId: null, // scheduleMedicationReminder will write back
+                notificationId: null,
               });
             }
           })
@@ -230,12 +244,15 @@ export default function EditMedicationForm({
 
       // 4. Create missing & schedule future
       await Promise.all(
-        desired
-          .filter((d) => !exists.has(toDate(d).toISOString()))
-          .map(async (d) => {
+        desiredPairs
+          .filter(
+            ({ date, time }) =>
+              !exists.has(date.toISOString().slice(0, 10) + "|" + time)
+          )
+          .map(async ({ date, time }) => {
             const ref = await addDoc(collection(db, "reminders"), {
-              date: Timestamp.fromDate(toDate(d)),
-              time: formData.reminderTime,
+              date: Timestamp.fromDate(date),
+              time,
               whenToTake,
               status: "pending",
               medId,
@@ -243,12 +260,12 @@ export default function EditMedicationForm({
               userEmail: user.email,
               notificationId: null,
             });
-            if (toDate(d) > now) {
+            if (date > now) {
               await scheduleMedicationReminder({
                 id: ref.id,
                 uid: user.uid,
-                date: d,
-                time: formData.reminderTime,
+                date,
+                time,
                 whenToTake,
                 medId,
                 notificationId: null,
@@ -441,24 +458,63 @@ export default function EditMedicationForm({
         onCancel={() => setShowEnd(false)}
       />
 
-      <Label>Reminder time</Label>
-      <Pressable
-        onPress={() => setShowTime(true)}
-        className="py-2 px-4 bg-white rounded-3xl mb-4"
-      >
-        <Text>{formData.reminderTime}</Text>
-      </Pressable>
-      <DatePicker
-        modal
-        open={showTime}
-        date={timeStringToDate(formData.reminderTime ?? formatTime(new Date()))}
-        mode="time"
-        onConfirm={(d) => {
-          setShowTime(false);
-          handle("reminderTime", formatTime(d));
+      <Label>Reminder times</Label>
+      {(formData.reminderTimes || []).map((reminderTime, idx) => (
+        <View key={idx} className="flex-row items-center mb-2">
+          <Pressable
+            onPress={() => {
+              setShowTime(idx + 1); // showTime is index+1 (0 = not shown)
+            }}
+            className="py-2 px-4 bg-white rounded-3xl flex-1"
+          >
+            <Text>{reminderTime}</Text>
+          </Pressable>
+          {formData.reminderTimes.length > 1 && (
+            <TouchableOpacity
+              onPress={() => {
+                setFormData((prev) => ({
+                  ...prev,
+                  reminderTimes: prev.reminderTimes.filter((_, i) => i !== idx),
+                }));
+              }}
+              style={{ marginLeft: 8 }}
+            >
+              <Text style={{ color: "red" }}>Remove</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      ))}
+      <Button
+        onPress={() => {
+          setFormData((prev) => ({
+            ...prev,
+            reminderTimes: [...prev.reminderTimes, formatTime(new Date())],
+          }));
         }}
-        onCancel={() => setShowTime(false)}
-      />
+        variant="outline"
+        className="mb-4"
+      >
+        <Text>Add time</Text>
+      </Button>
+      {/* Show DatePicker for each time */}
+      {(formData.reminderTimes || []).map((reminderTime, idx) => (
+        <DatePicker
+          key={idx}
+          modal
+          open={showTime === idx + 1}
+          date={timeStringToDate(reminderTime)}
+          mode="time"
+          onConfirm={(d) => {
+            setShowTime(false);
+            setFormData((prev) => {
+              const arr = [...prev.reminderTimes];
+              arr[idx] = formatTime(d);
+              return { ...prev, reminderTimes: arr };
+            });
+          }}
+          onCancel={() => setShowTime(false)}
+        />
+      ))}
 
       {/* Action buttons */}
       <Button onPress={save} disabled={loading} className="mb-4">
