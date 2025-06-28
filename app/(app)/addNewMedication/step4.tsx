@@ -55,7 +55,7 @@ export default function Step4() {
       setShowDaySelector(true);
     } else {
       router.push({
-        pathname: "/addNewMedication/step5",
+        pathname: "/addNewMedication/step4.1",
         params: {
           medicationName,
           medicationType,

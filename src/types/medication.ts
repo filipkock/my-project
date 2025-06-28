@@ -28,7 +28,7 @@ export interface FormData {
   intakeInterval: string;
   startDate: Date | undefined;
   endDate: Date | undefined;
-  reminderTime: string | undefined;
+  reminderTimes: string[];
   customIntervalValue?: string; // numeric string for "X"
   specificDaysOfWeek: number[]; // used for "Specific days weekly"
   reminderDates?: Date[];

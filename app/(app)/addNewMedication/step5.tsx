@@ -21,6 +21,7 @@ export default function Step5StartDate() {
     whenToTake,
     interval,
     specificDaysOfWeek,
+    timesPerDay,
   } = useLocalSearchParams();
   const [startDate, setStartDate] = useState(new Date());
 
@@ -101,6 +102,7 @@ export default function Step5StartDate() {
                 whenToTake,
                 interval,
                 specificDaysOfWeek,
+                timesPerDay,
                 startDate: startDate.toISOString(),
               },
             })

@@ -38,7 +38,7 @@ export default function ConfirmStep() {
     specificDaysOfWeek,
     startDate,
     endDate,
-    reminderTime,
+    reminderTimes,
   } = useLocalSearchParams();
 
   const auth = getAuth();
@@ -49,20 +49,30 @@ export default function ConfirmStep() {
       ? specificDaysOfWeek.split(",").map(Number)
       : [];
 
+  const parsedReminderTimes =
+    typeof reminderTimes === "string" && reminderTimes.length > 0
+      ? JSON.parse(reminderTimes as string)
+      : ["08:00"];
+
+  // Format reminder times to "hh:mm"
+  const formatTime = (time: string) => {
+    const [h, m] = time.split(":").map(Number);
+    const hh = h.toString().padStart(2, "0");
+    const mm = m.toString().padStart(2, "0");
+    return `${hh}:${mm}`;
+  };
+
+  const formattedReminderTimes = parsedReminderTimes.map(formatTime);
+
   const formData: FormData = {
     medicationName: medicationName as string,
     medicationType: medicationType as string,
     whenToTake: whenToTake as string,
     intakeInterval: interval as string,
-    specificDaysOfWeek: parsedSpecificDays, // ✅ here
+    specificDaysOfWeek: parsedSpecificDays,
     startDate: startDate ? new Date(startDate as string) : undefined,
     endDate: endDate ? new Date(endDate as string) : undefined,
-    reminderTime: reminderTime
-      ? new Date(reminderTime as string).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      : "08:00",
+    reminderTimes: formattedReminderTimes,
     customIntervalValue: "1",
     reminderDates: [],
   };
@@ -108,38 +118,46 @@ export default function ConfirmStep() {
         ...(userinfo.email ? { userEmail: userinfo.email } : {}),
         createdAt: serverTimestamp(),
         uid: userinfo.uid,
-        time: formData.reminderTime,
+        reminderTimes: formData.reminderTimes,
       });
 
-      const reminderWrites = reminderDates.map(async (date) => {
-        const docRef = await addDoc(collection(db, "reminders"), {
-          date,
-          time: formData.reminderTime,
-          whenToTake: formData.whenToTake,
-          status: "pending",
-          medId: medRef.id,
-          uid: userinfo.uid,
-          ...(userinfo.email ? { userEmail: userinfo.email } : {}),
-          notificationId: null,
-        });
-
-        // ✅ Only schedule if within 14 days
-        const now = new Date();
-        const twoWeeksFromNow = new Date(
-          now.getTime() + 14 * 24 * 60 * 60 * 1000
-        );
-        if (date.toDate() > now && date.toDate() < twoWeeksFromNow) {
-          await scheduleMedicationReminder({
-            id: docRef.id,
-            uid: userinfo.uid,
+      const reminderWrites = reminderDates.flatMap((date) =>
+        formData.reminderTimes.map(async (time) => {
+          const formattedTime = formatTime(time);
+          const docRef = await addDoc(collection(db, "reminders"), {
             date,
-            time: formData.reminderTime,
+            time: formattedTime,
             whenToTake: formData.whenToTake,
+            status: "pending",
             medId: medRef.id,
+            uid: userinfo.uid,
+            ...(userinfo.email ? { userEmail: userinfo.email } : {}),
             notificationId: null,
           });
-        }
-      });
+
+          // ✅ Only schedule if within 14 days
+          const now = new Date();
+          const twoWeeksFromNow = new Date(
+            now.getTime() + 14 * 24 * 60 * 60 * 1000
+          );
+          // Combine date and time string to create a full Date object for scheduling check
+          const [hours, minutes] = formattedTime.split(":").map(Number);
+          const fullDateTime = new Date(date.toDate());
+          fullDateTime.setHours(hours, minutes, 0, 0);
+
+          if (fullDateTime > now && fullDateTime < twoWeeksFromNow) {
+            await scheduleMedicationReminder({
+              id: docRef.id,
+              uid: userinfo.uid,
+              date,
+              time: formattedTime,
+              whenToTake: formData.whenToTake,
+              medId: medRef.id,
+              notificationId: null,
+            });
+          }
+        })
+      );
 
       await Promise.all(reminderWrites);
 
@@ -232,8 +250,8 @@ export default function ConfirmStep() {
           </View>
 
           <View>
-            <Label className="text-gray-500 mb-1">Reminder time</Label>
-            <Text className="text-lg">{formData.reminderTime}</Text>
+            <Label className="text-gray-500 mb-1">Reminder times</Label>
+            <Text className="text-lg">{formData.reminderTimes.join(", ")}</Text>
           </View>
         </View>
         <Button className="mt-4" onPress={handleSave} disabled={isSaving}>

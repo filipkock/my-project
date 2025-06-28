@@ -21,6 +21,7 @@ export default function Step6EndDate() {
     whenToTake,
     interval,
     specificDaysOfWeek,
+    timesPerDay,
     startDate,
   } = useLocalSearchParams();
   const [endDate, setEndDate] = useState<Date | null>(new Date());
@@ -105,6 +106,7 @@ export default function Step6EndDate() {
                 whenToTake,
                 interval,
                 specificDaysOfWeek,
+                timesPerDay,
                 startDate,
                 endDate: "",
               },
@@ -125,6 +127,7 @@ export default function Step6EndDate() {
                 whenToTake,
                 interval,
                 specificDaysOfWeek,
+                timesPerDay,
                 startDate,
                 ...(endDate
                   ? { endDate: endDate.toISOString() }

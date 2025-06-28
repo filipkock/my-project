@@ -21,10 +21,17 @@ export default function Step7ReminderTime() {
     whenToTake,
     interval,
     specificDaysOfWeek,
+    timesPerDay,
     startDate,
     endDate,
   } = useLocalSearchParams();
-  const [reminderTime, setReminderTime] = useState(new Date());
+  const times = parseInt(timesPerDay as string, 10) || 1;
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [reminderTimes, setReminderTimes] = useState<Date[]>(
+    Array(times)
+      .fill(null)
+      .map(() => new Date())
+  );
 
   const questionOpacity = useRef(new Animated.Value(1)).current;
 
@@ -52,7 +59,7 @@ export default function Step7ReminderTime() {
               }}
             >
               <Text className="text-2xl font-semibold mt-10">
-                What time should we remind you?
+                What times should we remind you?
               </Text>
             </Animated.View>
           </View>
@@ -73,21 +80,21 @@ export default function Step7ReminderTime() {
         }}
       >
         <View className="flex-1 w-full justify-center items-center">
-          <Text className="mb-10 font-semibold text-lg text-center">
-            Reminder time
-          </Text>
-          <View
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              width: "100%",
-            }}
-          >
+          <View className="mb-8 items-center w-full">
+            <Text className="mb-4 font-semibold text-lg text-center">
+              Dose number {currentIndex + 1}
+            </Text>
             <DateTimePicker
-              value={reminderTime}
+              value={reminderTimes[currentIndex] ?? new Date()}
               mode="time"
               display={Platform.OS === "ios" ? "spinner" : "clock"}
-              onChange={(event, date) => date && setReminderTime(date)}
+              onChange={(event, date) => {
+                if (date) {
+                  const updated = [...reminderTimes];
+                  updated[currentIndex] = date;
+                  setReminderTimes(updated);
+                }
+              }}
               style={{ width: 250, height: 120, transform: [{ scale: 1.3 }] }}
             />
           </View>
@@ -95,21 +102,38 @@ export default function Step7ReminderTime() {
 
         <Button
           className="mt-6 w-full py-4"
-          onPress={() =>
-            router.push({
-              pathname: "/addNewMedication/confirmStep",
-              params: {
-                medicationName,
-                medicationType,
-                whenToTake,
-                interval,
-                specificDaysOfWeek,
-                startDate,
-                endDate,
-                reminderTime: reminderTime.toISOString(),
-              },
-            })
-          }
+          onPress={() => {
+            const selected = reminderTimes[currentIndex] ?? new Date();
+            const updated = [...reminderTimes];
+            updated[currentIndex] = selected;
+            setReminderTimes(updated);
+
+            if (currentIndex < times - 1) {
+              setCurrentIndex((prev) => prev + 1);
+            } else {
+              router.push({
+                pathname: "/addNewMedication/confirmStep",
+                params: {
+                  medicationName,
+                  medicationType,
+                  whenToTake,
+                  interval,
+                  specificDaysOfWeek,
+                  timesPerDay,
+                  startDate,
+                  endDate,
+                  reminderTimes: JSON.stringify(
+                    reminderTimes.map(
+                      (t) =>
+                        t.getHours().toString().padStart(2, "0") +
+                        ":" +
+                        t.getMinutes().toString().padStart(2, "0")
+                    )
+                  ),
+                },
+              });
+            }
+          }}
         >
           <Text className="text-lg">Next</Text>
         </Button>
