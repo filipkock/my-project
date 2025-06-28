@@ -15,8 +15,14 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 
 export default function Step6EndDate() {
-  const { medicationName, medicationType, whenToTake, interval, startDate } =
-    useLocalSearchParams();
+  const {
+    medicationName,
+    medicationType,
+    whenToTake,
+    interval,
+    specificDaysOfWeek,
+    startDate,
+  } = useLocalSearchParams();
   const [endDate, setEndDate] = useState<Date | null>(new Date());
 
   const questionOpacity = useRef(new Animated.Value(1)).current;
@@ -98,6 +104,7 @@ export default function Step6EndDate() {
                 medicationType,
                 whenToTake,
                 interval,
+                specificDaysOfWeek,
                 startDate,
                 endDate: "",
               },
@@ -117,6 +124,7 @@ export default function Step6EndDate() {
                 medicationType,
                 whenToTake,
                 interval,
+                specificDaysOfWeek,
                 startDate,
                 ...(endDate
                   ? { endDate: endDate.toISOString() }

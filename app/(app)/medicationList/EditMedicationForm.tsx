@@ -38,7 +38,6 @@ import {
   TypeList,
   WhenToTakeList,
   intervalToTakeList,
-  dayLabels,
 } from "~/src/constants/addMedicationOptions";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -52,6 +51,7 @@ import {
   SelectGroup,
   SelectItem,
 } from "~/components/ui/select";
+import { DaySelector } from "~/components/custom/DaySelector";
 
 import type { FormData } from "~/src/types/medication";
 
@@ -317,7 +317,7 @@ export default function EditMedicationForm({
     list: string[];
     field: keyof FormData;
   }) => (
-    <View className="space-y-1">
+    <View className="mb-4 space-y-1">
       <Label>{label}</Label>
       <Select
         value={
@@ -348,38 +348,12 @@ export default function EditMedicationForm({
     </View>
   );
 
-  const DayButtons = () => (
-    <View>
-      <Label>Select weekly days (tap):</Label>
-      <View className="flex-row flex-wrap mt-2">
-        {dayLabels.map((lbl, i) => {
-          const sel = formData.specificDaysOfWeek.includes(i);
-          return (
-            <TouchableOpacity
-              key={i}
-              style={{
-                marginRight: 8,
-                marginBottom: 8,
-                padding: 8,
-                borderWidth: 1,
-                borderColor: sel ? "green" : "gray",
-                borderRadius: 4,
-              }}
-              onPress={() => toggleDay(i)}
-            >
-              <Text style={{ color: sel ? "green" : "black" }}>{lbl}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    </View>
-  );
-
   return (
-    <View className="p-4">
+    <View className="p-6">
       {/* Name */}
       <Label>Medication name</Label>
       <Input
+        className="mb-4"
         placeholder="Name"
         value={formData.medicationName}
         onChangeText={(v) => handle("medicationName", v)}
@@ -403,7 +377,12 @@ export default function EditMedicationForm({
       />
 
       {/* Interval-specific extra UI */}
-      {formData.intakeInterval === "Specific days weekly" && <DayButtons />}
+      {formData.intakeInterval === "Specific days weekly" && (
+        <DaySelector
+          selectedDays={formData.specificDaysOfWeek}
+          onToggleDay={toggleDay}
+        />
+      )}
 
       {/* Custom interval numeric */}
       {["every X days", "every X weeks", "every X months"].includes(
@@ -421,7 +400,10 @@ export default function EditMedicationForm({
 
       {/* Start / End / Time pickers */}
       <Label>Start date</Label>
-      <Pressable onPress={() => setShowStart(true)} className="py-2 bg-white">
+      <Pressable
+        onPress={() => setShowStart(true)}
+        className="py-2 px-4 bg-white rounded-3xl mb-4"
+      >
         <Text>
           {formData.startDate
             ? formData.startDate.toDateString()
@@ -441,7 +423,10 @@ export default function EditMedicationForm({
       />
 
       <Label>End date</Label>
-      <Pressable onPress={() => setShowEnd(true)} className="py-2 bg-white">
+      <Pressable
+        onPress={() => setShowEnd(true)}
+        className="py-2 px-4 bg-white rounded-3xl mb-4"
+      >
         <Text>{formData.endDate?.toDateString() || "No end date"}</Text>
       </Pressable>
       <DatePicker
@@ -457,7 +442,10 @@ export default function EditMedicationForm({
       />
 
       <Label>Reminder time</Label>
-      <Pressable onPress={() => setShowTime(true)} className="py-2 bg-white">
+      <Pressable
+        onPress={() => setShowTime(true)}
+        className="py-2 px-4 bg-white rounded-3xl mb-4"
+      >
         <Text>{formData.reminderTime}</Text>
       </Pressable>
       <DatePicker
@@ -473,7 +461,7 @@ export default function EditMedicationForm({
       />
 
       {/* Action buttons */}
-      <Button onPress={save} disabled={loading}>
+      <Button onPress={save} disabled={loading} className="mb-4">
         {loading ? <ActivityIndicator color="#fff" /> : <Text>Save</Text>}
       </Button>
       <Button onPress={remove} variant="destructive" disabled={loading}>

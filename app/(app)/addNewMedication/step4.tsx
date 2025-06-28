@@ -14,17 +14,22 @@ import { Text } from "~/components/ui/text";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 import { ChevronRight } from "~/lib/icons/ChevronRight";
+import { Button } from "~/components/ui/button";
+import { DaySelector } from "~/components/custom/DaySelector";
 
 const IntervalList = [
   "Every day",
   "Every other day",
   "Every 3 days",
-  "Specific days of the week",
+  "Specific days weekly",
 ];
 
 export default function Step4() {
   const { medicationName, medicationType, whenToTake } = useLocalSearchParams();
   const [interval, setInterval] = useState("");
+  // Add specificDays and showDaySelector state hooks
+  const [specificDays, setSpecificDays] = useState<number[]>([]);
+  const [showDaySelector, setShowDaySelector] = useState(false);
 
   const questionOpacity = useRef(new Animated.Value(1)).current;
 
@@ -35,13 +40,30 @@ export default function Step4() {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
 
+  const toggleDay = (dayIndex: number) => {
+    setSpecificDays((prev) =>
+      prev.includes(dayIndex)
+        ? prev.filter((d) => d !== dayIndex)
+        : [...prev, dayIndex]
+    );
+  };
+
   const handleSelect = (option: string) => {
     setInterval(option);
     Keyboard.dismiss();
-    router.push({
-      pathname: "/addNewMedication/step5",
-      params: { medicationName, medicationType, whenToTake, interval: option },
-    });
+    if (option === "Specific days weekly") {
+      setShowDaySelector(true);
+    } else {
+      router.push({
+        pathname: "/addNewMedication/step5",
+        params: {
+          medicationName,
+          medicationType,
+          whenToTake,
+          interval: option,
+        },
+      });
+    }
   };
 
   return (
@@ -98,6 +120,34 @@ export default function Step4() {
               <ChevronRight size={28} color="black" />
             </TouchableOpacity>
           ))}
+          {/* Show day selector and Next button if needed */}
+          {showDaySelector && (
+            <>
+              <DaySelector
+                selectedDays={specificDays}
+                onToggleDay={toggleDay}
+              />
+              <Button
+                className="mt-auto w-full"
+                onPress={() => {
+                  router.push({
+                    pathname: "/addNewMedication/step5",
+                    params: {
+                      medicationName,
+                      medicationType,
+                      whenToTake,
+                      interval,
+                      specificDaysOfWeek: specificDays.join(","),
+                    },
+                  });
+                }}
+              >
+                <Text className="text-white text-center font-semibold ">
+                  Next
+                </Text>
+              </Button>
+            </>
+          )}
         </View>
       </View>
     </View>

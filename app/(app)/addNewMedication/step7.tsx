@@ -20,6 +20,7 @@ export default function Step7ReminderTime() {
     medicationType,
     whenToTake,
     interval,
+    specificDaysOfWeek,
     startDate,
     endDate,
   } = useLocalSearchParams();
@@ -102,6 +103,7 @@ export default function Step7ReminderTime() {
                 medicationType,
                 whenToTake,
                 interval,
+                specificDaysOfWeek,
                 startDate,
                 endDate,
                 reminderTime: reminderTime.toISOString(),

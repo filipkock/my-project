@@ -35,18 +35,26 @@ export default function ConfirmStep() {
     medicationType,
     whenToTake,
     interval,
+    specificDaysOfWeek,
     startDate,
     endDate,
     reminderTime,
   } = useLocalSearchParams();
+
   const auth = getAuth();
   const uid = auth.currentUser?.uid;
+
+  const parsedSpecificDays =
+    typeof specificDaysOfWeek === "string" && specificDaysOfWeek.length > 0
+      ? specificDaysOfWeek.split(",").map(Number)
+      : [];
 
   const formData: FormData = {
     medicationName: medicationName as string,
     medicationType: medicationType as string,
     whenToTake: whenToTake as string,
     intakeInterval: interval as string,
+    specificDaysOfWeek: parsedSpecificDays, // ✅ here
     startDate: startDate ? new Date(startDate as string) : undefined,
     endDate: endDate ? new Date(endDate as string) : undefined,
     reminderTime: reminderTime
@@ -56,7 +64,6 @@ export default function ConfirmStep() {
         })
       : "08:00",
     customIntervalValue: "1",
-    specificDaysOfWeek: [],
     reminderDates: [],
   };
 

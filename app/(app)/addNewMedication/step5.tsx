@@ -15,8 +15,13 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 
 export default function Step5StartDate() {
-  const { medicationName, medicationType, whenToTake, interval } =
-    useLocalSearchParams();
+  const {
+    medicationName,
+    medicationType,
+    whenToTake,
+    interval,
+    specificDaysOfWeek,
+  } = useLocalSearchParams();
   const [startDate, setStartDate] = useState(new Date());
 
   const questionOpacity = useRef(new Animated.Value(1)).current;
@@ -95,6 +100,7 @@ export default function Step5StartDate() {
                 medicationType,
                 whenToTake,
                 interval,
+                specificDaysOfWeek,
                 startDate: startDate.toISOString(),
               },
             })
