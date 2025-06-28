@@ -127,7 +127,7 @@ export default function Reward() {
 
   return (
     <SafeAreaView className="flex-1">
-      <View className="flex-1 items-center p-6">
+      <View className="flex-1 items-center p-8">
         <View className="flex-1 justify-center items-center gap-1">
           {videoFinished && (
             <View className="items-start gap-2">

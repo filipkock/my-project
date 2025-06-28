@@ -161,21 +161,14 @@ export default function ConfirmStep() {
 
       await Promise.all(reminderWrites);
 
-      Alert.alert("Success", "Medication and reminders created!", [
-        {
-          text: "OK",
-          onPress: () => {
-            router.replace("/(app)/(tabs)/(medications)");
-            setTimeout(() => {
-              Toast.show({
-                type: "plain",
-                text1: "Medication created",
-                text2: "Your medication was added successfully!",
-              });
-            }, 500);
-          },
-        },
-      ]);
+      router.replace("/(app)/(tabs)/(medications)");
+      setTimeout(() => {
+        Toast.show({
+          type: "plain",
+          text1: "Medication created",
+          text2: "Your medication was added successfully!",
+        });
+      }, 500);
       setIsSaving(false);
     } catch (e) {
       console.error(e);

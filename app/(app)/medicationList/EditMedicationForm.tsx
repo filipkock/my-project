@@ -5,6 +5,8 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Pressable,
+  ScrollView,
+  Modal,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DatePicker from "react-native-date-picker";
@@ -74,6 +76,8 @@ export default function EditMedicationForm({
   const [showStart, setShowStart] = useState(false);
   const [showEnd, setShowEnd] = useState(false);
   const [showTime, setShowTime] = useState<number | false>(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   /* ───────────── Form state ───────────── */
   const init = defaultValues ?? {};
@@ -285,44 +289,35 @@ export default function EditMedicationForm({
   };
 
   /* ───────────── DELETE ───────────── */
-  const remove = () =>
-    Alert.alert("Delete", "Remove medication and all reminders?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          if (!defaultValues?.id) return;
-          setLoading(true);
-          try {
-            const medId = defaultValues.id;
+  const remove = async () => {
+    if (!defaultValues?.id) return;
+    setLoading(true);
+    try {
+      const medId = defaultValues.id;
 
-            // 1. delete reminders & cancel notifications
-            const snap = await getDocs(
-              query(collection(db, "reminders"), where("medId", "==", medId))
-            );
-            await Promise.all(
-              snap.docs.map(async (d) => {
-                const nId = d.data().notificationId;
-                if (nId)
-                  await Notifications.cancelScheduledNotificationAsync(nId);
-                await deleteDoc(d.ref);
-              })
-            );
-            // 2. delete medication doc
-            await deleteDoc(doc(db, "medication", medId));
+      // 1. delete reminders & cancel notifications
+      const snap = await getDocs(
+        query(collection(db, "reminders"), where("medId", "==", medId))
+      );
+      await Promise.all(
+        snap.docs.map(async (d) => {
+          const nId = d.data().notificationId;
+          if (nId) await Notifications.cancelScheduledNotificationAsync(nId);
+          await deleteDoc(d.ref);
+        })
+      );
+      // 2. delete medication doc
+      await deleteDoc(doc(db, "medication", medId));
 
-            Toast.show({ type: "plain", text1: "Medication deleted" });
-            onSuccess();
-          } catch (e) {
-            console.error(e);
-            Alert.alert("Error", "Could not delete.");
-          } finally {
-            setLoading(false);
-          }
-        },
-      },
-    ]);
+      Toast.show({ type: "plain", text1: "Medication deleted" });
+      onSuccess();
+    } catch (e) {
+      console.error(e);
+      Alert.alert("Error", "Could not delete.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* ───────────── Render helpers ───────────── */
   const SelectRow = ({
@@ -365,8 +360,77 @@ export default function EditMedicationForm({
     </View>
   );
 
+  // ───────────── Modal Component ─────────────
+  const ConfirmModal = ({
+    visible,
+    onClose,
+    onConfirm,
+    title,
+    message,
+    confirmText = "Confirm",
+    cancelText = "Cancel",
+    confirmVariant = "default",
+  }: {
+    visible: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    confirmVariant?: "default" | "destructive";
+  }) => (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "rgba(0,0,0,0.4)",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <View
+          style={{
+            backgroundColor: "white",
+            borderRadius: 16,
+            padding: 24,
+            minWidth: 280,
+            alignItems: "center",
+          }}
+        >
+          <Text className="text-lg font-bold mb-2">{title}</Text>
+          <Text className="mb-6 text-center">{message}</Text>
+          <View style={{ flexDirection: "row", gap: 12 }}>
+            <Button
+              variant="outline"
+              onPress={onClose}
+              style={{ minWidth: 90, marginRight: 8 }}
+            >
+              <Text>{cancelText}</Text>
+            </Button>
+            <Button
+              variant={confirmVariant}
+              onPress={onConfirm}
+              style={{ minWidth: 90 }}
+            >
+              <Text>{confirmText}</Text>
+            </Button>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
   return (
-    <View className="p-6">
+    <ScrollView
+      contentContainerStyle={{ padding: 24, paddingBottom: 36 + insets.bottom }}
+      keyboardShouldPersistTaps="handled"
+    >
       {/* Name */}
       <Label>Medication name</Label>
       <Input
@@ -517,12 +581,49 @@ export default function EditMedicationForm({
       ))}
 
       {/* Action buttons */}
-      <Button onPress={save} disabled={loading} className="mb-4">
+      <Button
+        onPress={() => setShowSaveModal(true)}
+        disabled={loading}
+        className="mb-4 mt-2"
+      >
         {loading ? <ActivityIndicator color="#fff" /> : <Text>Save</Text>}
       </Button>
-      <Button onPress={remove} variant="destructive" disabled={loading}>
+      <Button
+        onPress={() => setShowDeleteModal(true)}
+        variant="destructive"
+        disabled={loading}
+      >
         {loading ? <ActivityIndicator color="#fff" /> : <Text>Delete</Text>}
       </Button>
-    </View>
+
+      {/* =====Save Confirmation Modal===== */}
+      <ConfirmModal
+        visible={showSaveModal}
+        onClose={() => setShowSaveModal(false)}
+        onConfirm={async () => {
+          setShowSaveModal(false);
+          await save();
+        }}
+        title="Save changes?"
+        message="Are you sure you want to save changes to this medication?"
+        confirmText="Save"
+        cancelText="Cancel"
+        confirmVariant="default"
+      />
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        visible={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={async () => {
+          setShowDeleteModal(false);
+          await remove();
+        }}
+        title="Delete medication?"
+        message="Remove medication and all reminders? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmVariant="destructive"
+      />
+    </ScrollView>
   );
 }

@@ -45,7 +45,7 @@ export default function DailyProgress() {
 
   return (
     <SafeAreaView className="flex-1">
-      <View className="flex-1 items-center p-6">
+      <View className="flex-1 items-center p-8">
         <View className="flex-1 justify-center items-center gap-4">
           <Text className="text-2xl font-semibold text-center">
             {takenCount === totalCount
