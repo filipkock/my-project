@@ -17,7 +17,7 @@ import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 export default function Step6EndDate() {
   const { medicationName, medicationType, whenToTake, interval, startDate } =
     useLocalSearchParams();
-  const [endDate, setEndDate] = useState(new Date());
+  const [endDate, setEndDate] = useState<Date | null>(new Date());
 
   const questionOpacity = useRef(new Animated.Value(1)).current;
 
@@ -77,14 +77,34 @@ export default function Step6EndDate() {
             }}
           >
             <DateTimePicker
-              value={endDate}
+              value={endDate ?? new Date()}
               mode="date"
               display={Platform.OS === "ios" ? "spinner" : "calendar"}
-              onChange={(event, date) => date && setEndDate(date)}
+              onChange={(event, date) => setEndDate(date ?? endDate)}
               style={{ width: 250, height: 120, transform: [{ scale: 1.3 }] }}
             />
           </View>
         </View>
+
+        <Button
+          className="mt-4 w-full"
+          variant="outline"
+          onPress={() =>
+            router.push({
+              pathname: "/addNewMedication/step7",
+              params: {
+                medicationName,
+                medicationType,
+                whenToTake,
+                interval,
+                startDate,
+                endDate: "",
+              },
+            })
+          }
+        >
+          <Text>No end date (take forever)</Text>
+        </Button>
 
         <Button
           className="mt-6 w-full py-4"
@@ -97,7 +117,9 @@ export default function Step6EndDate() {
                 whenToTake,
                 interval,
                 startDate,
-                endDate: endDate.toISOString(),
+                ...(endDate
+                  ? { endDate: endDate.toISOString() }
+                  : { endDate: "" }),
               },
             })
           }

@@ -73,12 +73,14 @@ export default function ConfirmStep() {
       }
 
       const start = formData.startDate!;
-      const end = formData.endDate!;
+      const now = new Date();
+      const trueEndDate = formData.endDate; // can be null
+      const chunkEndDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
       const customInterval = parseInt(formData.customIntervalValue || "1", 10);
 
       const reminderDates = generateReminderDates(
         start,
-        end,
+        chunkEndDate,
         formData.intakeInterval,
         {
           customIntervalValue: customInterval,
@@ -94,7 +96,8 @@ export default function ConfirmStep() {
         customInterval,
         specificDaysOfWeek: formData.specificDaysOfWeek,
         startDate: Timestamp.fromDate(start),
-        endDate: Timestamp.fromDate(end),
+        endDate: trueEndDate ? Timestamp.fromDate(trueEndDate) : null,
+        chunkEndDate: Timestamp.fromDate(chunkEndDate),
         ...(userinfo.email ? { userEmail: userinfo.email } : {}),
         createdAt: serverTimestamp(),
         uid: userinfo.uid,
@@ -113,7 +116,12 @@ export default function ConfirmStep() {
           notificationId: null,
         });
 
-        if (date.toDate().getTime() > Date.now()) {
+        // ✅ Only schedule if within 14 days
+        const now = new Date();
+        const twoWeeksFromNow = new Date(
+          now.getTime() + 14 * 24 * 60 * 60 * 1000
+        );
+        if (date.toDate() > now && date.toDate() < twoWeeksFromNow) {
           await scheduleMedicationReminder({
             id: docRef.id,
             uid: userinfo.uid,
@@ -210,7 +218,9 @@ export default function ConfirmStep() {
           <View>
             <Label className="text-gray-500 mb-1">End</Label>
             <Text className="text-lg">
-              {formData.endDate?.toLocaleDateString()}
+              {formData.endDate == null
+                ? "No end date (take forever)"
+                : formData.endDate.toLocaleDateString()}
             </Text>
           </View>
 

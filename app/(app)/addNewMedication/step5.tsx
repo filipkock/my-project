@@ -78,6 +78,7 @@ export default function Step5StartDate() {
               value={startDate}
               mode="date"
               display={Platform.OS === "ios" ? "spinner" : "calendar"}
+              minimumDate={new Date()}
               onChange={(event, date) => date && setStartDate(date)}
               style={{ width: 250, height: 120, transform: [{ scale: 1.3 }] }}
             />
