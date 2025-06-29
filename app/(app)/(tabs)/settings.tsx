@@ -87,7 +87,7 @@ const Settings = () => {
                 </>
               ) : (
                 <Button
-                  variant={"default"}
+                  variant={"outline"}
                   className="w-full"
                   onPress={handleLogout}
                 >

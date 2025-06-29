@@ -18,14 +18,19 @@ export default function signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const onHandleSignup = () => {
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
     const trimmedname = name.trim();
 
-    if (!email || !password) {
+    if (!email || !password || !confirmPassword || !name) {
       Alert.alert("Please fill all fields");
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert("Passwords do not match");
       return;
     }
     if (trimmedEmail !== "" && trimmedPassword !== "" && trimmedname !== "") {
@@ -60,7 +65,10 @@ export default function signup() {
               Alert.alert("Operation not allowed");
               break;
             case "auth/weak-password":
-              Alert.alert("Password is too weak");
+              Alert.alert(
+                "Password is too weak",
+                "Password should be at least 6 characters."
+              );
               break;
             default:
               Alert.alert("Signup error", errorMessage);
@@ -129,6 +137,13 @@ export default function signup() {
               placeholder="Input your password"
               value={password}
               onChangeText={setPassword}
+              secureTextEntry
+            />
+            <Input
+              placeholder="Confirm your password"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
             />
           </View>
         </View>
@@ -136,8 +151,8 @@ export default function signup() {
           <View className="items-center">
             <VideoView
               style={{
-                width: 250,
-                height: 250,
+                width: 200,
+                height: 200,
               }}
               player={player}
               allowsFullscreen={false}

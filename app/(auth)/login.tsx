@@ -120,8 +120,8 @@ export default function Login() {
           <View className="items-center">
             <VideoView
               style={{
-                width: 250,
-                height: 250,
+                width: 200,
+                height: 200,
               }}
               player={player}
               allowsFullscreen={false}
