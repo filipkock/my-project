@@ -4,6 +4,7 @@
 
 import React, { useEffect, useState } from "react";
 import { StarIcon } from "react-native-heroicons/solid";
+import { ArrowRightIcon } from "react-native-heroicons/solid";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -28,6 +29,7 @@ import {
 } from "~/src/constants/cardMap";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { Badge } from "~/components/ui/badge";
+import { Stepper } from "~/components/custom/Stepper";
 
 type UserCards = {
   uid: string;
@@ -61,6 +63,7 @@ export default function Reward() {
   const [loadingCard, setLoadingCard] = useState(true);
   const [isNewCard, setIsNewCard] = useState(false);
   const [isEvolved, setIsEvolved] = useState(false);
+  const [cardCount, setCardCount] = useState<number>(0);
 
   // Custom shimmer animation for evolved cards
   const shimmerTranslateX = useSharedValue(-300);
@@ -99,7 +102,9 @@ export default function Reward() {
           if (lastCardId) {
             const numericId = Number(lastCardId);
             setCardId(numericId);
-            if (userCards.cards[numericId] >= 10) setIsEvolved(true);
+            const count = userCards.cards[numericId];
+            setCardCount(count);
+            if (count >= 10) setIsEvolved(true);
           }
           return;
         }
@@ -117,8 +122,10 @@ export default function Reward() {
           await setDoc(ref, userCards);
         }
 
+        const count = userCards.cards[newCardId];
         setCardId(newCardId);
-        if (userCards.cards[newCardId] >= 10) setIsEvolved(true);
+        setCardCount(count);
+        if (count >= 10) setIsEvolved(true);
       } catch (err) {
         console.error("Error assigning card:", err);
       } finally {
@@ -245,9 +252,22 @@ export default function Reward() {
                       <StarIcon size={20} color="black" />
                     </View>
                   ) : (
-                    <Text className="text-center text-gray-600 italic mt-6">
-                      {cardQuote}
-                    </Text>
+                    <>
+                      {!isEvolved && (cardCount === 1 || cardCount < 10) && (
+                        <View className="flex-row items-center justify-between mt-3">
+                          <Stepper
+                            key={cardCount}
+                            totalSteps={10}
+                            currentStep={cardCount}
+                          />
+                          <ArrowRightIcon size={18} color="black" />
+                          <Text className="text-sm font-semibold"> Lv. 2</Text>
+                        </View>
+                      )}
+                      <Text className="text-center text-gray-600 italic mt-6">
+                        {cardQuote}
+                      </Text>
+                    </>
                   )}
                 </View>
               ) : (
