@@ -2,18 +2,36 @@ import { View, SafeAreaView } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { useRouter } from "expo-router";
-import { setOnboardingStatus } from "~/src/utils/onboarding";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 import StartImage from "~/assets/images/poka_excited.svg";
+import { useEffect } from "react";
+import { getDocs, collection, query, limit } from "firebase/firestore";
+import { db } from "~/config/firebase";
+import { getAuth } from "firebase/auth";
 
 export default function CreateMedication() {
   const router = useRouter();
 
+  useEffect(() => {
+    const checkForMedications = async () => {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const medsRef = collection(db, "users", user.uid, "medication");
+      const medsQuery = query(medsRef, limit(1));
+      const medsSnap = await getDocs(medsQuery);
+      if (!medsSnap.empty) {
+        router.replace("/(app)/(tabs)/(home)");
+      }
+    };
+
+    checkForMedications();
+  }, []);
+
   const handleCreateMedication = () => {
     // Mark onboarding as complete and navigate to medication creation
-    setOnboardingStatus(true).then(() => {
-      router.replace("/(app)/addNewMedication/step1");
-    });
+    router.replace("/(app)/addNewMedication/step1");
   };
 
   return (
