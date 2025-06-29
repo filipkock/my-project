@@ -85,7 +85,7 @@ export default function CardDetails() {
       <View className="flex-1 items-center p-6 w-full">
         <View className="w-full flex-row items-center mb-4">
           <TouchableOpacity
-            onPress={() => router.replace("/(app)/(tabs)/(collection)")}
+            onPress={() => router.replace("/(app)/(tabs)/(myCollection)")}
             className="p-2"
           >
             <ChevronLeftIcon size={28} color="#111" />

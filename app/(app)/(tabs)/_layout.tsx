@@ -63,7 +63,7 @@ const TabsLayout = () => {
         />
 
         <Tabs.Screen
-          name="(collection)"
+          name="(myCollection)"
           options={{
             headerShown: false,
             tabBarIcon: ({ color, size }) => (
