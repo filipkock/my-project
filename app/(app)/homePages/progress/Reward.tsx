@@ -3,7 +3,15 @@
 // It assigns a new random card if one hasn't been granted for today.
 
 import React, { useEffect, useState } from "react";
-import { View, Image } from "react-native";
+import { StarIcon } from "react-native-heroicons/solid";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+} from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
+import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text } from "~/components/ui/text";
 import { Button } from "~/components/ui/button";
@@ -38,14 +46,13 @@ export default function Reward() {
     (player) => {
       player.play();
       player.muted = true;
-      // Remove setOnPlaybackStatusUpdate, handle status in VideoView below
     }
   );
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setVideoFinished(true);
-    }, 2450); // 2 seconds for the video duration
+    }, 2450);
 
     return () => clearTimeout(timer);
   }, []);
@@ -53,49 +60,57 @@ export default function Reward() {
   const [cardId, setCardId] = useState<number | null>(null);
   const [loadingCard, setLoadingCard] = useState(true);
   const [isNewCard, setIsNewCard] = useState(false);
+  const [isEvolved, setIsEvolved] = useState(false);
 
-  // useEffect runs on component mount to handle reward logic
+  // Custom shimmer animation for evolved cards
+  const shimmerTranslateX = useSharedValue(-300);
+
   useEffect(() => {
-    // Firebase-based reward card assignment
+    if (isEvolved && videoFinished) {
+      shimmerTranslateX.value = withRepeat(
+        withTiming(600, { duration: 3000 }),
+        -1,
+        false
+      );
+    }
+  }, [isEvolved, videoFinished]);
 
+  const shimmerStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: shimmerTranslateX.value }],
+  }));
+
+  // Reward logic
+  useEffect(() => {
     const assignRewardCard = async () => {
       try {
-        // Get the currently logged-in user from local storage
         const user = await getFromStorage("userDetails");
         if (!user?.uid) return;
 
         const today = format(new Date(), "yyyy-MM-dd");
-        // Reference to the user's reward card document in Firestore
         const ref = doc(db, "userCards", user.uid);
         const snap = await getDoc(ref);
 
         let userCards: UserCards = snap.exists()
           ? (snap.data() as UserCards)
           : { uid: user.uid, cards: {}, lastRewardedDate: "" };
-        // Skip if a card has already been granted today
-        if (userCards?.lastRewardedDate === today) {
-          // Get last rewarded card ID
+
+        if (userCards.lastRewardedDate === today) {
           const lastCardId = Object.keys(userCards.cards).pop();
-          if (lastCardId) setCardId(Number(lastCardId));
+          if (lastCardId) {
+            const numericId = Number(lastCardId);
+            setCardId(numericId);
+            if (userCards.cards[numericId] >= 10) setIsEvolved(true);
+          }
           return;
         }
 
-        // Pick a new card ID between 1–X
         const newCardId = Math.floor(Math.random() * 15) + 1;
-
         const isNew = !userCards.cards[newCardId];
         setIsNewCard(isNew);
 
-        // Update card count or initialize if first time
-        if (userCards.cards[newCardId]) {
-          userCards.cards[newCardId] += 1;
-        } else {
-          userCards.cards[newCardId] = 1;
-        }
-
+        userCards.cards[newCardId] = (userCards.cards[newCardId] || 0) + 1;
         userCards.lastRewardedDate = today;
 
-        // Save updated card info to Firestore
         if (snap.exists()) {
           await updateDoc(ref, userCards);
         } else {
@@ -103,6 +118,7 @@ export default function Reward() {
         }
 
         setCardId(newCardId);
+        if (userCards.cards[newCardId] >= 10) setIsEvolved(true);
       } catch (err) {
         console.error("Error assigning card:", err);
       } finally {
@@ -113,7 +129,6 @@ export default function Reward() {
     assignRewardCard();
   }, []);
 
-  // Navigate back to the Home tab
   const handleGoHome = () => {
     router.replace("/(app)/(tabs)/(home)");
   };
@@ -127,27 +142,40 @@ export default function Reward() {
 
   return (
     <SafeAreaView className="flex-1">
+      {/* Global shimmer overlay when evolved */}
+      {isEvolved && (
+        <View className="absolute inset-0 z-0">
+          <Animated.View style={shimmerStyle}>
+            <LinearGradient
+              colors={["transparent", "rgba(255,255,255,0.1)", "transparent"]}
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
+              style={{ height: "100%", width: "100%" }}
+            />
+          </Animated.View>
+        </View>
+      )}
+
       <View className="flex-1 items-center p-8">
         <View className="flex-1 justify-center items-center gap-1">
-          {videoFinished && (
+          {videoFinished && cardId !== null && (
             <View className="items-start gap-2">
-              {cardId !== null && (
-                <View className="flex-col items-center gap-1">
-                  {isNewCard && (
-                    <Badge className="mb-3">
-                      <Text className="text-xs">NEW CARD</Text>
-                    </Badge>
-                  )}
-                  <Text className="text-3xl font-semibold text-gray-900">
-                    {cardNames[cardId]}
-                  </Text>
-                  <Text className="text-sm text-gray-500">
-                    {cardCollections[cardId]} collection
-                  </Text>
-                </View>
-              )}
+              <View className="flex-col items-center gap-1">
+                {isNewCard && (
+                  <Badge className="mb-3">
+                    <Text className="text-xs">NEW CARD</Text>
+                  </Badge>
+                )}
+                <Text className="text-3xl font-semibold text-gray-900">
+                  {cardNames[cardId]} {isEvolved ? "Lv. 2" : "Lv. 1"}
+                </Text>
+                <Text className="text-sm text-gray-500">
+                  {cardCollections[cardId]} collection
+                </Text>
+              </View>
             </View>
           )}
+
           {!videoFinished ? (
             <VideoView
               style={{ width: 400, height: 400 }}
@@ -164,12 +192,64 @@ export default function Reward() {
               {loadingCard ? (
                 <Text className="text-gray-500">Loading your card...</Text>
               ) : CardImageComponent ? (
-                <>
-                  <CardImageComponent width={200} height={200} />
-                  <Text className="text-center text-gray-600 italic mt-10">
-                    {cardQuote}
-                  </Text>
-                </>
+                <View className="items-center">
+                  <View
+                    className={
+                      "justify-center items-center rounded-xl p-6 relative"
+                    }
+                    style={{ transform: isEvolved ? [{ scale: 1.1 }] : [] }}
+                  >
+                    <View className="relative z-10">
+                      <CardImageComponent width={200} height={200} />
+                    </View>
+
+                    {isEvolved && (
+                      <View className="absolute inset-0 rounded-xl overflow-hidden z-20">
+                        <Animated.View
+                          style={[
+                            {
+                              position: "absolute",
+                              top: 0,
+                              bottom: 0,
+                              left: 12,
+                              right: 12,
+                              borderRadius: 12,
+                              overflow: "hidden",
+                            },
+                            shimmerStyle,
+                          ]}
+                        >
+                          <LinearGradient
+                            colors={[
+                              "transparent",
+                              "rgba(255,255,255,0.2)",
+                              "rgba(255,255,255,0.5)",
+                              "rgba(255,255,255,0.2)",
+                              "transparent",
+                            ]}
+                            locations={[0, 0.3, 0.5, 0.7, 1]}
+                            start={{ x: 0, y: 0.5 }}
+                            end={{ x: 1, y: 0.5 }}
+                            style={{ flex: 1 }}
+                          />
+                        </Animated.View>
+                      </View>
+                    )}
+                  </View>
+
+                  {isEvolved ? (
+                    <View className="flex-row items-center justify-center mt-6 gap-2">
+                      <Text className="text-center text-gray-600 italic">
+                        Poka’s proud of you — Lv. 2 unlocked!
+                      </Text>
+                      <StarIcon size={20} color="black" />
+                    </View>
+                  ) : (
+                    <Text className="text-center text-gray-600 italic mt-6">
+                      {cardQuote}
+                    </Text>
+                  )}
+                </View>
               ) : (
                 <Text>No card component found</Text>
               )}

@@ -1,12 +1,12 @@
-import * as SecureStore from "expo-secure-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ONBOARDING_KEY = "hasOnboarded";
 
 export async function getOnboardingStatus(): Promise<boolean> {
-  const value = await SecureStore.getItemAsync(ONBOARDING_KEY);
+  const value = await AsyncStorage.getItem(ONBOARDING_KEY);
   return value === "true";
 }
 
 export async function setOnboardingStatus(value: boolean): Promise<void> {
-  await SecureStore.setItemAsync(ONBOARDING_KEY, value ? "true" : "false");
+  await AsyncStorage.setItem(ONBOARDING_KEY, value ? "true" : "false");
 }

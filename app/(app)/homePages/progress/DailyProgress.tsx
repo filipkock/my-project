@@ -9,6 +9,7 @@ import { getFromStorage } from "~/src/services/storage";
 import { getStreakFromFirestore } from "~/src/utils/streak";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { FireIcon } from "react-native-heroicons/solid";
+import { GiftIcon } from "react-native-heroicons/solid";
 
 export default function DailyProgress() {
   const { taken, total } = useLocalSearchParams();
@@ -52,12 +53,6 @@ export default function DailyProgress() {
               ? "Great job! All taken today!"
               : "Taken! Great job!"}
           </Text>
-          {takenCount === totalCount && (
-            <View className="flex flex-row items-center gap-1">
-              <Text className="text-gray-600">Streak boost earned</Text>
-              <FireIcon size={24} color="black" />
-            </View>
-          )}
           <VideoView
             style={{ width: 400, height: 400 }}
             player={player}
@@ -65,12 +60,19 @@ export default function DailyProgress() {
             allowsPictureInPicture={false}
             nativeControls={false}
           />
+          {takenCount === totalCount && (
+            <View className="flex flex-row items-center gap-1">
+              <Text className="text-gray-600">Streak boost earned</Text>
+              <FireIcon size={24} color="black" />
+            </View>
+          )}
           {takenCount === totalCount ? (
-            <Text className="text-center text-gray-600 italic mt-4">
-              You’ve earned a reward. Continue to collect it!
-            </Text>
+            <View className="flex flex-row items-center gap-1">
+              <Text className="text-gray-600">Reward unlocked</Text>
+              <GiftIcon size={24} color="black" />
+            </View>
           ) : (
-            <Text className="text-center text-gray-600 italic mt-4">
+            <Text className="text-center text-gray-600 italic mt-2">
               {`You've taken ${takenCount} of ${totalCount} today. Take them all to earn a reward!`}
             </Text>
           )}
