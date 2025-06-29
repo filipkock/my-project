@@ -19,6 +19,9 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.filiplee.starterbase",
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+      },
     },
     android: {
       adaptiveIcon: {

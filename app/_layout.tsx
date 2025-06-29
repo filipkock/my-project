@@ -111,20 +111,24 @@ export default function RootLayout() {
   });
 
   return (
-    <AuthProvider>
-      <NotificationProvider>
-        <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-          <SelectedDateProvider>
-            {showSplash ? (
-              <Splash onFinish={() => setShowSplash(false)} />
-            ) : (
-              <Slot />
-            )}
-            <PortalHost />
-            <Toast config={toastConfig} />
-          </SelectedDateProvider>
-        </ThemeProvider>
-      </NotificationProvider>
-    </AuthProvider>
+    <>
+      {showSplash ? (
+        <Splash onFinish={() => setShowSplash(false)} />
+      ) : (
+        <AuthProvider>
+          <NotificationProvider>
+            <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
+              <SelectedDateProvider>
+                <Slot />
+
+                {/* Keep these inside, too */}
+                <PortalHost />
+                <Toast config={toastConfig} />
+              </SelectedDateProvider>
+            </ThemeProvider>
+          </NotificationProvider>
+        </AuthProvider>
+      )}
+    </>
   );
 }

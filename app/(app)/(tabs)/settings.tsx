@@ -105,8 +105,8 @@ const Settings = () => {
             </CardContent>
           </Card> */}
 
-          {/* Notifications Section */}
-          <Card>
+          {/* Notifications Section - add during testing */}
+          {/* <Card>
             <CardContent className="gap-2 p-4">
               <CardTitle className="text-lg mb-2">
                 Notifications - TESTING
@@ -119,7 +119,7 @@ const Settings = () => {
                 <Text>Remove scheduled notifications</Text>
               </Button>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Terms & Agreements Section */}
           <Card>

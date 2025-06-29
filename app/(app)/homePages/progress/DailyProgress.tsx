@@ -50,7 +50,7 @@ export default function DailyProgress() {
         <View className="flex-1 justify-center items-center gap-4">
           <Text className="text-2xl font-semibold text-center">
             {takenCount === totalCount
-              ? "Great job! All taken today!"
+              ? "Great job, all taken for today!"
               : "Taken! Great job!"}
           </Text>
           <VideoView
@@ -70,7 +70,7 @@ export default function DailyProgress() {
             <View className="flex flex-row items-center gap-1">
               <GiftIcon size={24} color="black" />
 
-              <Text className="text-gray-600">Reward unlocked</Text>
+              <Text className="text-gray-600">Reward earned</Text>
             </View>
           ) : (
             <Text className="text-center text-gray-600 italic mt-2">

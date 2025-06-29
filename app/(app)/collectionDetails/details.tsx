@@ -166,7 +166,7 @@ export default function CardDetails() {
                 <View className="flex-row items-center justify-center mt-4 gap-2">
                   <StarIcon size={20} color="black" />
                   <Text className="text-center text-gray-600 ">
-                    Lv. 2 unlocked - Poka’s feeling proud of you!
+                    Lv. 2 unlocked - Poka’s proud of you!
                   </Text>
                 </View>
               )}
