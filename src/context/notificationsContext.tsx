@@ -7,6 +7,7 @@ import React, {
   ReactNode,
 } from "react";
 import * as Notifications from "expo-notifications";
+import { useRouter } from "expo-router";
 import { EventSubscription } from "expo-notifications";
 import { registerForPushNotificationsAsync } from "~/src/utils/registerForPushNotificationsAsync";
 
@@ -47,6 +48,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   const notificationListener = useRef<EventSubscription>();
   const responseListener = useRef<EventSubscription>();
 
+  const router = useRouter();
+
   const registerPushToken = async () => {
     try {
       const token = await registerForPushNotificationsAsync();
@@ -71,6 +74,16 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
           JSON.stringify(response.notification.request.content.data, null, 2)
         );
         // Handle the notification response here
+        // 👉 Navigate to Medication Details if data is present
+        const data = response.notification.request.content.data || {};
+
+        if (data.medication) {
+          router.push({
+            pathname: "/(app)/homePages/details",
+            params: { medication: JSON.stringify(data.medication) },
+          });
+          return;
+        }
       });
 
     return () => {

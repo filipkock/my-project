@@ -5,7 +5,6 @@ import { auth } from "../../config/firebase";
 import { signInAnonymously } from "firebase/auth";
 import { router, Link } from "expo-router";
 import { setLocalStorage } from "~/src/services/storage";
-import { getOnboardingStatus } from "~/src/utils/onboarding";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 import { useVideoPlayer, VideoView } from "expo-video";
 
@@ -22,12 +21,8 @@ export default function Login() {
     try {
       const result = await signInAnonymously(auth);
       setLocalStorage("userDetails", result.user);
-      const onboarded = await getOnboardingStatus();
-      if (onboarded) {
-        router.replace("/(app)/(tabs)/(home)");
-      } else {
-        router.replace("/(auth)/allowNotification");
-      }
+
+      router.replace("/(auth)/allowNotification");
     } catch (error: any) {
       Alert.alert("Anonymous login failed", error.message);
     }
@@ -42,12 +37,8 @@ export default function Login() {
         .then(async (UserCredential) => {
           const user = UserCredential.user;
           setLocalStorage("userDetails", user);
-          const onboarded = await getOnboardingStatus();
-          if (onboarded) {
-            router.replace("/(app)/(tabs)/(home)");
-          } else {
-            router.replace("/(auth)/allowNotification");
-          }
+
+          router.replace("/(auth)/allowNotification");
         })
         .catch((error) => {
           const errorCode = error.code;

@@ -11,7 +11,6 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 import { setLocalStorage } from "~/src/services/storage";
-import { getOnboardingStatus } from "~/src/utils/onboarding";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 
 export default function signup() {
@@ -43,12 +42,7 @@ export default function signup() {
           });
           setLocalStorage("userDetails", user);
 
-          const onboarded = await getOnboardingStatus();
-          if (onboarded) {
-            router.replace("/(app)/(tabs)/(home)");
-          } else {
-            router.replace("/(auth)/allowNotification");
-          }
+          router.replace("/(auth)/allowNotification");
         })
         .catch((error) => {
           const errorCode = error.code;
@@ -84,12 +78,8 @@ export default function signup() {
     try {
       const result = await signInAnonymously(auth);
       setLocalStorage("userDetails", result.user);
-      const onboarded = await getOnboardingStatus();
-      if (onboarded) {
-        router.replace("/(app)/(tabs)/(home)");
-      } else {
-        router.replace("/(auth)/allowNotification");
-      }
+
+      router.replace("/(auth)/allowNotification");
     } catch (error: any) {
       Alert.alert("Anonymous login failed", error.message);
     }

@@ -8,15 +8,9 @@ import {
 } from "firebase/auth";
 import { auth } from "../../config/firebase";
 
-import {
-  getOnboardingStatus,
-  setOnboardingStatus,
-} from "~/src/utils/onboarding";
-
 type AuthContextType = {
   user: User | null;
   signOut: () => Promise<void>;
-  onboarded: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -36,29 +30,20 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
   const segments = useSegments();
   const [user, setUser] = useState<User | null>(null);
   const [initializing, setInitializing] = useState(true);
-  const [onboarded, setOnboarded] = useState<boolean>(false);
 
   // Load onboarding state and handle redirect based on user status
   useEffect(() => {
-    const checkAndRedirect = async () => {
-      if (initializing || !router) return;
+    if (initializing) return;
 
-      const onboardingStatus = await getOnboardingStatus();
-      setOnboarded(onboardingStatus);
-      const rootSegment = segments[0];
-      if (!user) {
-        if (!onboardingStatus && rootSegment !== "(auth)") {
-          router.replace("/(auth)/step1");
-        } else if (onboardingStatus && rootSegment !== "(auth)") {
-          router.replace("/(auth)/login");
-        }
-      } else {
-        if (rootSegment !== "(app)" && onboardingStatus) {
-          router.replace("/(app)/(tabs)/(home)");
-        }
-      }
-    };
-    checkAndRedirect();
+    const rootSegment = segments[0];
+
+    if (!user && rootSegment !== "(auth)") {
+      router.replace("/(auth)/step1");
+    }
+
+    if (user && rootSegment !== "(app)") {
+      router.replace("/(app)/(tabs)/(home)");
+    }
   }, [user, segments, initializing]);
 
   // Listen to Firebase auth state changes
@@ -71,16 +56,13 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
   }, []);
 
   async function signOut() {
+    console.trace("SIGN-OUT triggered");
     await firebaseSignOut(auth);
-    // Optionally reset onboarding status, used for testing
-    await setOnboardingStatus(false);
-    setOnboarded(false);
   }
 
   const value: AuthContextType = {
     user,
     signOut,
-    onboarded,
   };
 
   return (
