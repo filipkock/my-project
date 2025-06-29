@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
 import { Pressable } from "react-native";
+import * as Haptics from "expo-haptics";
 import { TextClassContext } from "~/components/ui/text";
 import { cn } from "~/lib/utils";
 
@@ -81,6 +82,10 @@ const Button = React.forwardRef<
         )}
         ref={ref}
         role="button"
+        onPress={async (e) => {
+          await Haptics.selectionAsync();
+          props.onPress?.(e);
+        }}
         {...props}
       />
     </TextClassContext.Provider>
