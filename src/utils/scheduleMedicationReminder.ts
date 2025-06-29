@@ -2,6 +2,7 @@ import * as Notifications from "expo-notifications";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "~/config/firebase"; // your Firestore instance
 import { getDateTimeFromReminder } from "~/src/utils/getDateTimeFromReminder";
+import getNotificationBody from "~/src/constants/notificationMessages";
 
 interface Reminder {
   id: string;
@@ -40,8 +41,9 @@ export async function scheduleMedicationReminder(reminder: Reminder) {
     const notificationId = await Notifications.scheduleNotificationAsync({
       content: {
         title: "Medication Reminder",
-        body: `It's time to take your ${reminder.whenToTake} medication!`,
+        body: getNotificationBody(reminder),
         data: { reminderId: reminder.id },
+        sound: "default",
       },
       trigger: {
         date: scheduledDate,
