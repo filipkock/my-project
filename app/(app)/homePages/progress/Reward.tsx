@@ -64,6 +64,7 @@ export default function Reward() {
   const [isNewCard, setIsNewCard] = useState(false);
   const [isEvolved, setIsEvolved] = useState(false);
   const [cardCount, setCardCount] = useState<number>(0);
+  const [stepperCardCount, setstepperCardCount] = useState<number>(0);
 
   // Custom shimmer animation for evolved cards
   const shimmerTranslateX = useSharedValue(-300);
@@ -104,6 +105,12 @@ export default function Reward() {
             setCardId(numericId);
             const count = userCards.cards[numericId];
             setCardCount(count);
+
+            // For stepper to ensure it updates as an animation
+            setstepperCardCount(count - 1);
+            setTimeout(() => {
+              setstepperCardCount(count);
+            }, 3000);
             if (count >= 10) setIsEvolved(true);
           }
           return;
@@ -125,6 +132,12 @@ export default function Reward() {
         const count = userCards.cards[newCardId];
         setCardId(newCardId);
         setCardCount(count);
+
+        // For stepper to ensure it updates as an animation
+        setstepperCardCount(count - 1);
+        setTimeout(() => {
+          setstepperCardCount(count);
+        }, 3000);
         if (count >= 10) setIsEvolved(true);
       } catch (err) {
         console.error("Error assigning card:", err);
@@ -254,11 +267,11 @@ export default function Reward() {
                   ) : (
                     <>
                       {!isEvolved && (cardCount === 1 || cardCount < 10) && (
-                        <View className="flex-row items-center justify-between mt-3">
+                        <View className="flex-row items-center justify-between">
                           <Stepper
                             key={cardCount}
                             totalSteps={10}
-                            currentStep={cardCount}
+                            currentStep={stepperCardCount}
                           />
                           <ArrowRightIcon size={18} color="black" />
                           <Text className="text-sm font-semibold"> Lv. 2</Text>
