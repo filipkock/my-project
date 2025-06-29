@@ -259,10 +259,10 @@ export default function Reward() {
 
                   {isEvolved ? (
                     <View className="flex-row items-center justify-center mt-6 gap-2">
+                      <StarIcon size={20} color="black" />
                       <Text className="text-center text-gray-600 italic">
                         Poka’s proud of you — Lv. 2 unlocked!
                       </Text>
-                      <StarIcon size={20} color="black" />
                     </View>
                   ) : (
                     <>

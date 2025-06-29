@@ -62,14 +62,15 @@ export default function DailyProgress() {
           />
           {takenCount === totalCount && (
             <View className="flex flex-row items-center gap-1">
-              <Text className="text-gray-600">Streak boost earned</Text>
               <FireIcon size={24} color="black" />
+              <Text className="text-gray-600">Streak boost earned</Text>
             </View>
           )}
           {takenCount === totalCount ? (
             <View className="flex flex-row items-center gap-1">
-              <Text className="text-gray-600">Reward unlocked</Text>
               <GiftIcon size={24} color="black" />
+
+              <Text className="text-gray-600">Reward unlocked</Text>
             </View>
           ) : (
             <Text className="text-center text-gray-600 italic mt-2">
