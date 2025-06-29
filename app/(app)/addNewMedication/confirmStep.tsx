@@ -37,6 +37,7 @@ export default function ConfirmStep() {
     whenToTake,
     interval,
     specificDaysOfWeek,
+    timesPerDay,
     startDate,
     endDate,
     reminderTimes,
@@ -212,7 +213,7 @@ export default function ConfirmStep() {
           elevation: 8,
         }}
       >
-        <View className="flex-1 gap-3">
+        <View className="flex-1 gap-3 p-8">
           <View>
             <Label className="text-gray-500 mb-1">Medication</Label>
             <Text className="text-lg">{medicationName}</Text>
@@ -231,6 +232,14 @@ export default function ConfirmStep() {
           <View>
             <Label className="text-gray-500 mb-1">Interval</Label>
             <Text className="text-lg">{interval}</Text>
+          </View>
+
+          <View>
+            <Label className="text-gray-500 mb-1">Times per day</Label>
+            <Text className="text-lg">
+              {timesPerDay} {Number(timesPerDay) === 1 ? "time" : "times"} per
+              day
+            </Text>
           </View>
 
           <View>

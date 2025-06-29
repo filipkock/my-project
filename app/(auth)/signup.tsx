@@ -4,6 +4,7 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../../config/firebase";
 import { signInAnonymously } from "firebase/auth";
 import { Link, router } from "expo-router";
+import { useVideoPlayer, VideoView } from "expo-video";
 
 // Components
 import { Button } from "~/components/ui/button";
@@ -86,6 +87,15 @@ export default function signup() {
     }
   };
 
+  const player = useVideoPlayer(
+    require("~/assets/animations/poka_waving.mp4"),
+    (player) => {
+      player.play();
+      player.muted = true;
+      player.loop = true;
+    }
+  );
+
   return (
     <SafeAreaView className="flex-1 bg-secondary/40">
       <View className="flex-1 p-12">
@@ -123,6 +133,18 @@ export default function signup() {
           </View>
         </View>
         <View className="gap-4">
+          <View className="items-center">
+            <VideoView
+              style={{
+                width: 250,
+                height: 250,
+              }}
+              player={player}
+              allowsFullscreen={false}
+              allowsPictureInPicture={false}
+              nativeControls={false}
+            />
+          </View>
           <Button className="w-full" onPress={onHandleSignup}>
             <Text>Sign up</Text>
           </Button>

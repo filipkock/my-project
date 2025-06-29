@@ -5,6 +5,7 @@ import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { useRouter } from "expo-router";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
+import NotificationImage from "~/assets/images/poka_notification.svg";
 
 export default function AllowNotification() {
   const router = useRouter();
@@ -38,10 +39,11 @@ export default function AllowNotification() {
             Skip
           </Text>
         </View>
-        <View className="flex-1 mt-10 gap-10 justify-center items-center">
+        <View className="flex-1 justify-between items-center py-10 mt-4">
           <Text className="text-3xl font-bold text-center">
-            Allow Notifications?
+            Allow Poka to poke you?
           </Text>
+          <NotificationImage width={230} height={230} />
           <Text className="text-center">
             We'll remind you when it's time to take your medication.
           </Text>

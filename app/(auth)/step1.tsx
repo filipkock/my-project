@@ -3,11 +3,20 @@ import { SafeAreaView, View, Image } from "react-native";
 import { router } from "expo-router";
 import { Text } from "~/components/ui/text";
 import { Button } from "~/components/ui/button";
+import { useVideoPlayer, VideoView } from "expo-video";
 
 export default function Step1() {
   const handleContinue = () => {
     router.push("/(auth)/signup");
   };
+
+  const player = useVideoPlayer(
+    require("~/assets/animations/onboarding.mp4"),
+    (player) => {
+      player.play();
+      player.muted = true;
+    }
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-secondary/40">
@@ -19,11 +28,23 @@ export default function Step1() {
             resizeMode="contain"
           />
 
-          <Text className="text-3xl font-bold mb-4">
-            LEt's make medication taking fun!
+          <Text className="text-3xl font-semibold -mb-6">
+            Let's make medication taking fun!
           </Text>
+          <View className="items-center">
+            <VideoView
+              style={{
+                width: 420,
+                height: 420,
+              }}
+              player={player}
+              allowsFullscreen={false}
+              allowsPictureInPicture={false}
+              nativeControls={false}
+            />
+          </View>
         </View>
-        <View className="">
+        <View>
           <Button className="w-full" onPress={handleContinue}>
             <Text>Continue</Text>
           </Button>

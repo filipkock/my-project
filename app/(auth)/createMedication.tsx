@@ -1,10 +1,10 @@
 import { View, SafeAreaView } from "react-native";
-import * as Notifications from "expo-notifications";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { useRouter } from "expo-router";
 import { setOnboardingStatus } from "~/src/utils/onboarding";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
+import { useVideoPlayer, VideoView } from "expo-video";
 
 export default function CreateMedication() {
   const router = useRouter();
@@ -15,6 +15,14 @@ export default function CreateMedication() {
       router.replace("/(app)/addNewMedication/step1");
     });
   };
+
+  const player = useVideoPlayer(
+    require("~/assets/animations/poka_melting.mp4"),
+    (player) => {
+      player.play();
+      player.muted = true;
+    }
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-secondary/40">
@@ -32,10 +40,22 @@ export default function CreateMedication() {
             Skip
           </Text>
         </View>
-        <View className="flex-1 mt-10 gap-10 justify-center items-center">
+        <View className="flex-1 justify-between items-center py-10 mt-4">
           <Text className="text-3xl font-bold text-center">
             Let’s get started!
           </Text>
+          <View className="items-center mb-6">
+            <VideoView
+              style={{
+                width: 400,
+                height: 400,
+              }}
+              player={player}
+              allowsFullscreen={false}
+              allowsPictureInPicture={false}
+              nativeControls={false}
+            />
+          </View>
           <Text className="text-center">
             Start by creating your first medication to begin tracking your
             doses.

@@ -8,7 +8,13 @@ export const TypeList = [
   "Other",
 ];
 
-export const WhenToTakeList = ["Morning", "Afternoon", "Evening", "Night"];
+export const WhenToTakeList = [
+  "Morning",
+  "Afternoon",
+  "Evening",
+  "Night",
+  "Throughout the day",
+];
 
 export const intervalToTakeList = [
   "Every day",
