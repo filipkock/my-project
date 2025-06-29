@@ -149,7 +149,7 @@ export default function Step4() {
                 }}
               >
                 <Text className="text-white text-center font-semibold ">
-                  Next
+                  NEXT
                 </Text>
               </Button>
             </>

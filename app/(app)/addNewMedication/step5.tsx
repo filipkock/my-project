@@ -113,7 +113,7 @@ export default function Step5StartDate() {
             })
           }
         >
-          <Text className="text-lg">Next</Text>
+          <Text className="text-lg">NEXT</Text>
         </Button>
       </View>
     </View>

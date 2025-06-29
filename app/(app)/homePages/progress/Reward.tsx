@@ -83,6 +83,17 @@ export default function Reward() {
     transform: [{ translateX: shimmerTranslateX.value }],
   }));
 
+  const animateStepperCount = (finalCount: number) => {
+    setstepperCardCount(0);
+    setTimeout(() => {
+      for (let i = 1; i <= finalCount; i++) {
+        setTimeout(() => {
+          setstepperCardCount(i);
+        }, i * 100);
+      }
+    }, 2500);
+  };
+
   // Reward logic
   useEffect(() => {
     const assignRewardCard = async () => {
@@ -107,10 +118,7 @@ export default function Reward() {
             setCardCount(count);
 
             // For stepper to ensure it updates as an animation
-            setstepperCardCount(count - 1);
-            setTimeout(() => {
-              setstepperCardCount(count);
-            }, 3000);
+            animateStepperCount(count);
             if (count >= 10) setIsEvolved(true);
           }
           return;
@@ -134,10 +142,7 @@ export default function Reward() {
         setCardCount(count);
 
         // For stepper to ensure it updates as an animation
-        setstepperCardCount(count - 1);
-        setTimeout(() => {
-          setstepperCardCount(count);
-        }, 3000);
+        animateStepperCount(count);
         if (count >= 10) setIsEvolved(true);
       } catch (err) {
         console.error("Error assigning card:", err);

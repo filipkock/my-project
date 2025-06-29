@@ -141,7 +141,7 @@ export default function Step6EndDate() {
             })
           }
         >
-          <Text className="text-lg">Next</Text>
+          <Text className="text-lg">NEXT</Text>
         </Button>
       </View>
     </View>

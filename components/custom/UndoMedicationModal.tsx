@@ -43,7 +43,7 @@ const UndoMedicationModal: React.FC<UndoMedicationModalProps> = ({
               onPress={onConfirm}
               className="px-4 py-2"
             >
-              <Text>Undo</Text>
+              <Text>UNDO</Text>
             </Button>
           </View>
         </View>

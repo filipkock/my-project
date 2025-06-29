@@ -142,7 +142,7 @@ export default function Step7ReminderTime() {
             }
           }}
         >
-          <Text className="text-lg">Next</Text>
+          <Text className="text-lg">NEXT</Text>
         </Button>
       </View>
     </View>

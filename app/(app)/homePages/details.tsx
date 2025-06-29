@@ -320,7 +320,9 @@ export default function MedicationDetails() {
               className="w-full"
               variant="outline"
             >
-              <Text className="text-foreground">Undo Medication</Text>
+              <Text className="text-foreground capitalize">
+                Undo Medication
+              </Text>
             </Button>
           )}
 
@@ -332,7 +334,7 @@ export default function MedicationDetails() {
               className="w-full"
               variant="default"
             >
-              <Text className="text-white">Mark as Taken</Text>
+              <Text className="text-white capitalize">Mark as Taken</Text>
             </Button>
           )}
 
@@ -343,7 +345,7 @@ export default function MedicationDetails() {
                 className="w-full"
                 variant="default"
               >
-                <Text className="text-white">Take Medication</Text>
+                <Text className="text-white capitalize">Take Medication</Text>
               </Button>
               <View className="mt-2">
                 <Button
@@ -378,7 +380,9 @@ export default function MedicationDetails() {
                   className="w-full"
                   variant="outline"
                 >
-                  <Text className="text-foreground">Skip Medication</Text>
+                  <Text className="text-foreground capitalize">
+                    Skip Medication
+                  </Text>
                 </Button>
               </View>
             </>

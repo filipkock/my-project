@@ -45,6 +45,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
 
       const onboardingStatus = await getOnboardingStatus();
       setOnboarded(onboardingStatus);
+      console.log("onboardingStatus,", onboardingStatus);
       const rootSegment = segments[0];
       if (!user) {
         if (!onboardingStatus && rootSegment !== "(auth)") {
@@ -54,6 +55,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
         }
       } else {
         if (rootSegment !== "(app)" && onboardingStatus) {
+          console.log("here");
           router.replace("/(app)/(tabs)/(home)");
         }
       }
