@@ -10,9 +10,18 @@ import {
 } from "react-native-heroicons/solid";
 import { Button } from "~/components/ui/button";
 import { router } from "expo-router";
+import { checkAndResetStreakIfNeeded } from "~/src/utils/streakResetOnLaunch";
+import { refreshRemindersOnLaunch } from "~/src/utils/refreshRemindersOnLaunch";
 
 const TabsLayout = () => {
   const { colors } = useTheme();
+
+  // Check if we should reset the streak on app launch
+  // Create relevant reminders and notifications
+  React.useEffect(() => {
+    checkAndResetStreakIfNeeded();
+    refreshRemindersOnLaunch();
+  }, []);
 
   return (
     <>

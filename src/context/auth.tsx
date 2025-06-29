@@ -41,21 +41,26 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
   // Load onboarding state and handle redirect based on user status
   useEffect(() => {
     const checkAndRedirect = async () => {
-      if (initializing) return;
+      if (initializing || !router) return;
 
       const onboardingStatus = await getOnboardingStatus();
       setOnboarded(onboardingStatus);
       console.log("onboardingStatus,", onboardingStatus);
       const rootSegment = segments[0];
       if (!user) {
+        console.log("user not exists");
         if (!onboardingStatus && rootSegment !== "(auth)") {
+          console.log("step1?");
           router.replace("/(auth)/step1");
         } else if (onboardingStatus && rootSegment !== "(auth)") {
+          console.log("login");
           router.replace("/(auth)/login");
         }
       } else {
+        console.log("user exists");
+
         if (rootSegment !== "(app)" && onboardingStatus) {
-          console.log("here");
+          console.log("home");
           router.replace("/(app)/(tabs)/(home)");
         }
       }

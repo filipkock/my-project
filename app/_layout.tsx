@@ -7,7 +7,8 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { Slot, SplashScreen } from "expo-router";
-import * as React from "react";
+import React, { useState } from "react";
+import Splash from "./SplashScreen";
 import { Platform } from "react-native";
 import { NAV_THEME } from "~/lib/constants";
 import { useColorScheme } from "~/lib/useColorScheme";
@@ -25,11 +26,9 @@ import {
   Poppins_800ExtraBold,
   useFonts,
 } from "@expo-google-fonts/poppins";
-import { checkAndResetStreakIfNeeded } from "~/src/utils/streakResetOnLaunch";
 import { SelectedDateProvider } from "~/src/context/SelectedDateContext";
 import Toast from "react-native-toast-message";
 import toastConfig from "~/src/constants/toastConfig";
-import { refreshRemindersOnLaunch } from "~/src/utils/refreshRemindersOnLaunch";
 
 // ==== react native reusables theme setup ====
 const LIGHT_THEME: Theme = {
@@ -50,6 +49,7 @@ export {
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const [showSplash, setShowSplash] = useState(true);
   const [fontsLoaded] = useFonts({
     /* PostScript names — needed by Agenda */
     PoppinsLight: Poppins_300Light,
@@ -90,13 +90,6 @@ export default function RootLayout() {
     })();
   }, []);
 
-  // Check if we should reset the streak on app launch
-  // Create relevant reminders and notifications
-  React.useEffect(() => {
-    checkAndResetStreakIfNeeded();
-    refreshRemindersOnLaunch();
-  }, []);
-
   // Ensure font and color is loaded
   React.useEffect(() => {
     if (fontsLoaded && isColorSchemeLoaded) {
@@ -122,7 +115,11 @@ export default function RootLayout() {
       <NotificationProvider>
         <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
           <SelectedDateProvider>
-            <Slot></Slot>
+            {showSplash ? (
+              <Splash onFinish={() => setShowSplash(false)} />
+            ) : (
+              <Slot />
+            )}
             <PortalHost />
             <Toast config={toastConfig} />
           </SelectedDateProvider>

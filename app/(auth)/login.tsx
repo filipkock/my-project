@@ -113,6 +113,7 @@ export default function Login() {
               placeholder="Input your password"
               value={password}
               onChangeText={setPassword}
+              secureTextEntry={true}
             />
           </View>
         </View>
