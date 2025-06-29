@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Alert, SafeAreaView, ScrollView } from "react-native";
 import { Text } from "~/components/ui/text";
 import { useAuth } from "~/src/context/auth";
@@ -27,6 +27,29 @@ const Settings = () => {
 
   // Expo notificaion testing
   const { notification, expoPushToken, error } = useNotification();
+  const [permissionGranted, setPermissionGranted] = useState<boolean | null>(
+    null
+  );
+  const { registerPushToken } = useNotification();
+
+  useEffect(() => {
+    const checkNotificationPermissions = async () => {
+      const { status } = await Notifications.getPermissionsAsync();
+      setPermissionGranted(status === "granted");
+    };
+
+    checkNotificationPermissions();
+  }, []);
+
+  const requestAndRegisterNotifications = async () => {
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status === "granted") {
+      await registerPushToken();
+      setPermissionGranted(true);
+    } else {
+      console.log("Notification permission not granted.");
+    }
+  };
 
   // Remove all notifications
   async function clearAllNotifications() {
@@ -120,6 +143,27 @@ const Settings = () => {
               </Button>
             </CardContent>
           </Card> */}
+
+          {permissionGranted === false && (
+            <Card>
+              <CardContent className="gap-2 p-4">
+                <CardTitle className="text-lg mb-2">
+                  Enable Notifications
+                </CardTitle>
+                <Text className="text-muted-foreground text-sm mb-4">
+                  Turn on push notifications to get medication reminders and
+                  updates.
+                </Text>
+                <Button
+                  variant="default"
+                  className="w-full"
+                  onPress={requestAndRegisterNotifications}
+                >
+                  <Text>Allow Notifications</Text>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Terms & Agreements Section */}
           <Card>

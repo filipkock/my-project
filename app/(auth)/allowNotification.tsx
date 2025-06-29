@@ -6,21 +6,35 @@ import { Text } from "~/components/ui/text";
 import { useRouter } from "expo-router";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 import NotificationImage from "~/assets/images/poka_notification.svg";
+import { useNotification } from "~/src/context/notificationsContext";
 
 export default function AllowNotification() {
   const router = useRouter();
+  const { registerPushToken } = useNotification();
+
+  React.useEffect(() => {
+    const checkPermission = async () => {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status === "granted") {
+        await registerPushToken();
+        router.replace("/(auth)/createMedication");
+      }
+    };
+    checkPermission();
+  }, []);
 
   const requestPermission = async () => {
     const { status } = await Notifications.requestPermissionsAsync();
+
     if (status === "granted") {
-      router.replace("/(auth)/createMedication");
+      // 🌟 Register token now
+      await registerPushToken();
     } else {
-      Alert.alert(
-        "Permission required",
-        "You can enable notifications later in settings."
-      );
-      router.replace("/(auth)/createMedication");
+      console.log("Push-permission denied by user");
     }
+
+    // navigate onward either way
+    router.replace("/(auth)/createMedication");
   };
 
   return (

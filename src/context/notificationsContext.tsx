@@ -14,6 +14,8 @@ interface NotificationContextType {
   expoPushToken: string | null;
   notification: Notifications.Notification | null;
   error: Error | null;
+  /** call this after the user grants permission */
+  registerPushToken: () => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
@@ -45,18 +47,16 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   const notificationListener = useRef<EventSubscription>();
   const responseListener = useRef<EventSubscription>();
 
-  useEffect(() => {
-    registerForPushNotificationsAsync().then(
-      (token) => {
-        if (token !== undefined) {
-          setExpoPushToken(token);
-        } else {
-          setError(new Error("Failed to get push token"));
-        }
-      },
-      (error) => setError(error)
-    );
+  const registerPushToken = async () => {
+    try {
+      const token = await registerForPushNotificationsAsync();
+      if (token) setExpoPushToken(token);
+    } catch (e) {
+      setError(e as Error);
+    }
+  };
 
+  useEffect(() => {
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
         console.log("🔔 Notification Received: ", notification);
@@ -87,7 +87,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
 
   return (
     <NotificationContext.Provider
-      value={{ expoPushToken, notification, error }}
+      value={{ expoPushToken, notification, error, registerPushToken }}
     >
       {children}
     </NotificationContext.Provider>

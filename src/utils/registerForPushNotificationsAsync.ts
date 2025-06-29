@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
@@ -6,7 +7,7 @@ import { auth } from "~/config/firebase";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 
 function handleRegistrationError(errorMessage: string) {
-  alert(errorMessage);
+  console.log(errorMessage);
   throw new Error(errorMessage);
 }
 
