@@ -11,6 +11,7 @@ import { Card, CardContent, CardTitle } from "~/components/ui/card";
 import { router } from "expo-router";
 
 import * as Notifications from "expo-notifications";
+import * as Linking from "expo-linking";
 
 const Settings = () => {
   const { user, signOut } = useAuth(); // Access the signOut function and user from AuthProvider
@@ -157,7 +158,38 @@ const Settings = () => {
                 <Button
                   variant="default"
                   className="w-full"
-                  onPress={requestAndRegisterNotifications}
+                  onPress={async () => {
+                    const { status, canAskAgain } =
+                      await Notifications.getPermissionsAsync();
+
+                    if (status === "granted") {
+                      setPermissionGranted(true);
+                      await registerPushToken();
+                    } else if (!canAskAgain) {
+                      Alert.alert(
+                        "Enable Notifications",
+                        "You've previously denied notification access. To enable it, go to Settings > Notifications.",
+                        [
+                          {
+                            text: "Open Settings",
+                            onPress: () => {
+                              Linking.openSettings();
+                            },
+                          },
+                          { text: "Cancel", style: "cancel" },
+                        ]
+                      );
+                    } else {
+                      const request =
+                        await Notifications.requestPermissionsAsync();
+                      if (request.status === "granted") {
+                        setPermissionGranted(true);
+                        await registerPushToken();
+                      } else {
+                        console.log("Permission denied again.");
+                      }
+                    }
+                  }}
                 >
                   <Text>Allow Notifications</Text>
                 </Button>

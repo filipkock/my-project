@@ -1,3 +1,5 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "~/src/context/auth"; // Adjust path if needed
 import { View, SafeAreaView } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
@@ -11,6 +13,7 @@ import { getAuth } from "firebase/auth";
 
 export default function CreateMedication() {
   const router = useRouter();
+  const { setHasCompletedOnboarding } = useAuth();
 
   useEffect(() => {
     const checkForMedications = async () => {
@@ -29,8 +32,9 @@ export default function CreateMedication() {
     checkForMedications();
   }, []);
 
-  const handleCreateMedication = () => {
-    // Mark onboarding as complete and navigate to medication creation
+  const handleCreateMedication = async () => {
+    await AsyncStorage.setItem("hasCompletedOnboarding", "true");
+    setHasCompletedOnboarding(true);
     router.replace("/(app)/addNewMedication/step1");
   };
 
@@ -45,7 +49,11 @@ export default function CreateMedication() {
           />
           <Text
             className="text-sm text-muted-foreground "
-            onPress={() => router.replace("/(app)/(tabs)/(home)")}
+            onPress={async () => {
+              await AsyncStorage.setItem("hasCompletedOnboarding", "true");
+              setHasCompletedOnboarding(true);
+              router.replace("/(app)/(tabs)/(home)");
+            }}
           >
             Skip
           </Text>

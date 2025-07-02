@@ -10,7 +10,7 @@ const timedMessages = [
   "Poka poke! It's __WHEN__ — time to take your dose 👉",
   "Poke! It's __WHEN__, time for your dose ✨",
   "Reminder from Poka: Take your __WHEN__ dose 🙌",
-  "Quick poke! Time for your  __WHEN__ dose 💪",
+  "Quick poke! Time for your __WHEN__ dose 💪",
 ];
 
 export default function getNotificationBody(reminder: {

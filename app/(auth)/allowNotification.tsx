@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Alert, SafeAreaView } from "react-native";
 import * as Notifications from "expo-notifications";
+import * as Linking from "expo-linking";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { useRouter } from "expo-router";
@@ -15,6 +16,8 @@ export default function AllowNotification() {
   React.useEffect(() => {
     const checkPermission = async () => {
       const { status } = await Notifications.getPermissionsAsync();
+      const perms = await Notifications.getPermissionsAsync();
+      console.log("Notification permission:", perms.status, perms);
       if (status === "granted") {
         await registerPushToken();
         router.replace("/(auth)/createMedication");
@@ -24,17 +27,40 @@ export default function AllowNotification() {
   }, []);
 
   const requestPermission = async () => {
-    const { status } = await Notifications.requestPermissionsAsync();
+    const { status, canAskAgain } =
+      await Notifications.requestPermissionsAsync();
 
     if (status === "granted") {
-      // 🌟 Register token now
       await registerPushToken();
-    } else {
-      console.log("Push-permission denied by user");
+      router.replace("/(auth)/createMedication");
+      return;
     }
 
-    // navigate onward either way
-    router.replace("/(auth)/createMedication");
+    if (!canAskAgain) {
+      Alert.alert(
+        "Enable Notifications",
+        "You've previously denied notification access. To enable it, go to Settings > Notifications.",
+        [
+          {
+            text: "Open Settings",
+            onPress: () => {
+              Linking.openSettings();
+              router.replace("/(auth)/createMedication");
+            },
+          },
+          {
+            text: "Cancel",
+            style: "cancel",
+            onPress: () => {
+              router.replace("/(auth)/createMedication");
+            },
+          },
+        ]
+      );
+    } else {
+      console.log("Push-permission denied but can ask again.");
+      router.replace("/(auth)/createMedication");
+    }
   };
 
   return (

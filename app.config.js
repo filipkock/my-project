@@ -17,6 +17,7 @@ export default {
     },
     assetBundlePatterns: ["**/*"],
     ios: {
+      icon: "./assets/images/icon_logo.png",
       supportsTablet: true,
       bundleIdentifier: "com.filiplee.starterbase",
       infoPlist: {
