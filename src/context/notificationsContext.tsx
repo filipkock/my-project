@@ -67,23 +67,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
       });
 
     responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log(
-          "🔔 Notification Response: ",
-          JSON.stringify(response, null, 2),
-          JSON.stringify(response.notification.request.content.data, null, 2)
-        );
-        // Handle the notification response here
-        // 👉 Navigate to Medication Details if data is present
-        const data = response.notification.request.content.data || {};
-
-        if (data.medication) {
-          router.push({
-            pathname: "/(app)/homePages/details",
-            params: { medication: JSON.stringify(data.medication) },
-          });
-          return;
-        }
+      Notifications.addNotificationResponseReceivedListener(() => {
+        router.push({ pathname: "/(app)/(tabs)/(home)" });
       });
 
     return () => {
