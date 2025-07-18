@@ -22,6 +22,7 @@ export default function Step6EndDate() {
     whenToTake,
     interval,
     specificDaysOfWeek,
+    customIntervalValue,
     timesPerDay,
     startDate,
   } = useLocalSearchParams();
@@ -111,6 +112,7 @@ export default function Step6EndDate() {
                 whenToTake,
                 interval,
                 specificDaysOfWeek,
+                customIntervalValue,
                 timesPerDay,
                 startDate,
                 endDate: "",

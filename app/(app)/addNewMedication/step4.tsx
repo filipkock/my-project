@@ -17,13 +17,9 @@ import { ChevronRight } from "~/lib/icons/ChevronRight";
 import { Button } from "~/components/ui/button";
 import { DaySelector } from "~/components/custom/DaySelector";
 import { Stepper } from "~/components/custom/Stepper";
-
-const IntervalList = [
-  "Every day",
-  "Every other day",
-  "Every 3 days",
-  "Specific days weekly",
-];
+import { Label } from "~/components/ui/label";
+import { Input } from "~/components/ui/input";
+import { intervalToTakeList } from "~/src/constants/addMedicationOptions";
 
 export default function Step4() {
   const { medicationName, medicationType, whenToTake } = useLocalSearchParams();
@@ -31,6 +27,8 @@ export default function Step4() {
   // Add specificDays and showDaySelector state hooks
   const [specificDays, setSpecificDays] = useState<number[]>([]);
   const [showDaySelector, setShowDaySelector] = useState(false);
+  const [showIntervalSelector, setShowIntervalSelector] = useState(false);
+  const [customIntervalValue, setCustomIntervalValue] = useState("");
 
   const questionOpacity = useRef(new Animated.Value(1)).current;
 
@@ -54,7 +52,15 @@ export default function Step4() {
     Keyboard.dismiss();
     if (option === "Specific days weekly") {
       setShowDaySelector(true);
+    } else if (
+      option === "every X days" ||
+      option === "every X weeks" ||
+      option === "every X months"
+    ) {
+      setShowIntervalSelector(true);
     } else {
+      setShowIntervalSelector(false);
+      setShowDaySelector(false);
       router.push({
         pathname: "/addNewMedication/step4.1",
         params: {
@@ -110,7 +116,7 @@ export default function Step4() {
         }}
       >
         <View className="flex-1 w-full justify-start items-center">
-          {IntervalList.map((option) => (
+          {intervalToTakeList.map((option) => (
             <TouchableOpacity
               key={option}
               onPress={() => handleSelect(option)}
@@ -152,6 +158,46 @@ export default function Step4() {
                   NEXT
                 </Text>
               </Button>
+            </>
+          )}
+          {/* Show day selector and Next button if needed */}
+          {["every X days", "every X weeks", "every X months"].includes(
+            interval
+          ) && (
+            <>
+              <>
+                <Label className="mt-5 mb-2">Enter X (number)</Label>
+                <Input
+                  keyboardType="numeric"
+                  placeholder="Input custom interval value"
+                  value={customIntervalValue}
+                  className="border w-full"
+                  onChangeText={(value) => {
+                    const numericValue = value.replace(/[^0-9]/g, ""); // keep only digits
+                    setCustomIntervalValue(numericValue);
+                  }}
+                />
+                <Button
+                  className="mt-auto w-full"
+                  onPress={() => {
+                    router.push({
+                      pathname: "/addNewMedication/step5",
+                      params: {
+                        medicationName,
+                        medicationType,
+                        whenToTake,
+                        interval,
+                        specificDaysOfWeek: specificDays.join(","),
+                        customIntervalValue: customIntervalValue || "1",
+                      },
+                    });
+                  }}
+                >
+                  <Text className="text-white text-center font-semibold ">
+                    NEXT
+                  </Text>
+                </Button>
+              </>
             </>
           )}
         </View>

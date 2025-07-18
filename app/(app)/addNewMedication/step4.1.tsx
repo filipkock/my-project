@@ -13,7 +13,6 @@ import { Text } from "~/components/ui/text";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeftIcon } from "react-native-heroicons/solid";
 import { ChevronRight } from "~/lib/icons/ChevronRight";
-import { Button } from "~/components/ui/button";
 import { Stepper } from "~/components/custom/Stepper";
 
 const FrequencyList = [
@@ -32,6 +31,7 @@ export default function Step4_1() {
     whenToTake,
     interval,
     specificDaysOfWeek,
+    customIntervalValue,
   } = useLocalSearchParams();
   const questionOpacity = useRef(new Animated.Value(1)).current;
 
@@ -53,6 +53,7 @@ export default function Step4_1() {
         whenToTake,
         interval,
         specificDaysOfWeek,
+        customIntervalValue,
         timesPerDay,
       },
     });

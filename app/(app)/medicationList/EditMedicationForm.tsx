@@ -89,7 +89,9 @@ export default function EditMedicationForm({
     startDate: init.startDate ? new Date(init.startDate) : undefined,
     endDate: init.endDate ? new Date(init.endDate) : undefined,
     reminderTimes: init.reminderTimes ?? [formatTime(new Date())],
-    customIntervalValue: init.customIntervalValue ?? "",
+    customIntervalValue: init.customInterval
+      ? String(init.customInterval) // convert number → string
+      : "",
     specificDaysOfWeek: init.specificDaysOfWeek ?? [],
   });
 
@@ -148,7 +150,7 @@ export default function EditMedicationForm({
         reminderTimes: formData.reminderTimes,
         updatedAt: serverTimestamp(),
         uid: user.uid,
-        userEmail: user.email,
+        userEmail: user.email ?? "",
         chunkEndDate: Timestamp.fromDate(windowEnd),
       });
 
@@ -261,7 +263,7 @@ export default function EditMedicationForm({
               status: "pending",
               medId,
               uid: user.uid,
-              userEmail: user.email,
+              userEmail: user.email ?? "",
               notificationId: null,
             });
             if (date > now) {

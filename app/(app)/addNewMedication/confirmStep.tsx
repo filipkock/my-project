@@ -37,6 +37,7 @@ export default function ConfirmStep() {
     whenToTake,
     interval,
     specificDaysOfWeek,
+    customIntervalValue,
     timesPerDay,
     startDate,
     endDate,
@@ -75,7 +76,12 @@ export default function ConfirmStep() {
     startDate: startDate ? new Date(startDate as string) : undefined,
     endDate: endDate ? new Date(endDate as string) : undefined,
     reminderTimes: formattedReminderTimes,
-    customIntervalValue: "1",
+    customIntervalValue:
+      typeof customIntervalValue === "string"
+        ? customIntervalValue
+        : Array.isArray(customIntervalValue)
+        ? customIntervalValue[0] ?? undefined
+        : undefined,
     reminderDates: [],
   };
 
@@ -97,22 +103,31 @@ export default function ConfirmStep() {
       const chunkEndDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
       const customInterval = parseInt(formData.customIntervalValue || "1", 10);
 
-      const reminderDates = generateReminderDates(
-        start,
-        chunkEndDate,
-        formData.intakeInterval,
-        {
-          customIntervalValue: customInterval,
-          specificDaysOfWeek: formData.specificDaysOfWeek,
+      // Generate desired dates similar to EditMedicationForm
+      const reminderTimes = formData.reminderTimes || [];
+      const desiredPairs: { date: Date; time: string }[] = [];
+
+      for (const reminderTime of reminderTimes) {
+        const dates = generateReminderDates(
+          start,
+          chunkEndDate,
+          formData.intakeInterval,
+          {
+            customIntervalValue: customInterval,
+            specificDaysOfWeek: formData.specificDaysOfWeek,
+          }
+        );
+        for (const d of dates) {
+          desiredPairs.push({ date: d.toDate(), time: reminderTime });
         }
-      );
+      }
 
       const medRef = await addDoc(collection(db, "medication"), {
         medicationName: formData.medicationName,
         medicationType: formData.medicationType,
         whenToTake: formData.whenToTake,
         intakeInterval: formData.intakeInterval,
-        customInterval,
+        customInterval: customInterval,
         specificDaysOfWeek: formData.specificDaysOfWeek,
         startDate: Timestamp.fromDate(start),
         endDate: trueEndDate ? Timestamp.fromDate(trueEndDate) : null,
@@ -123,43 +138,41 @@ export default function ConfirmStep() {
         reminderTimes: formData.reminderTimes,
       });
 
-      const reminderWrites = reminderDates.flatMap((date) =>
-        formData.reminderTimes.map(async (time) => {
-          const formattedTime = formatTime(time);
-          const docRef = await addDoc(collection(db, "reminders"), {
-            date,
+      const reminderWrites = desiredPairs.map(async ({ date, time }) => {
+        const formattedTime = formatTime(time);
+        const docRef = await addDoc(collection(db, "reminders"), {
+          date: Timestamp.fromDate(date),
+          time: formattedTime,
+          whenToTake: formData.whenToTake,
+          status: "pending",
+          medId: medRef.id,
+          uid: userinfo.uid,
+          ...(userinfo.email ? { userEmail: userinfo.email } : {}),
+          notificationId: null,
+        });
+
+        // ✅ Only schedule if within 14 days
+        const now = new Date();
+        const twoWeeksFromNow = new Date(
+          now.getTime() + 14 * 24 * 60 * 60 * 1000
+        );
+
+        const [hours, minutes] = formattedTime.split(":").map(Number);
+        const fullDateTime = new Date(date);
+        fullDateTime.setHours(hours, minutes, 0, 0);
+
+        if (fullDateTime > now && fullDateTime < twoWeeksFromNow) {
+          await scheduleMedicationReminder({
+            id: docRef.id,
+            uid: userinfo.uid,
+            date: Timestamp.fromDate(date),
             time: formattedTime,
             whenToTake: formData.whenToTake,
-            status: "pending",
             medId: medRef.id,
-            uid: userinfo.uid,
-            ...(userinfo.email ? { userEmail: userinfo.email } : {}),
             notificationId: null,
           });
-
-          // ✅ Only schedule if within 14 days
-          const now = new Date();
-          const twoWeeksFromNow = new Date(
-            now.getTime() + 14 * 24 * 60 * 60 * 1000
-          );
-          // Combine date and time string to create a full Date object for scheduling check
-          const [hours, minutes] = formattedTime.split(":").map(Number);
-          const fullDateTime = new Date(date.toDate());
-          fullDateTime.setHours(hours, minutes, 0, 0);
-
-          if (fullDateTime > now && fullDateTime < twoWeeksFromNow) {
-            await scheduleMedicationReminder({
-              id: docRef.id,
-              uid: userinfo.uid,
-              date,
-              time: formattedTime,
-              whenToTake: formData.whenToTake,
-              medId: medRef.id,
-              notificationId: null,
-            });
-          }
-        })
-      );
+        }
+      });
 
       await Promise.all(reminderWrites);
 
