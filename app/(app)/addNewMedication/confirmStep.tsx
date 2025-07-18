@@ -4,6 +4,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { Text } from "~/components/ui/text";
 import { Label } from "~/components/ui/label";
@@ -226,56 +227,66 @@ export default function ConfirmStep() {
           elevation: 8,
         }}
       >
-        <View className="flex-1 gap-3 p-8">
-          <View>
-            <Label className="text-gray-500 mb-1">Medication</Label>
-            <Text className="text-lg">{medicationName}</Text>
-          </View>
+        <ScrollView>
+          <View className="flex-1 gap-3 p-8">
+            <View>
+              <Label className="text-gray-500 mb-1">Medication</Label>
+              <Text className="text-lg">{medicationName}</Text>
+            </View>
 
-          <View>
-            <Label className="text-gray-500 mb-1">Type</Label>
-            <Text className="text-lg">{medicationType}</Text>
-          </View>
+            <View>
+              <Label className="text-gray-500 mb-1">Type</Label>
+              <Text className="text-lg">{medicationType}</Text>
+            </View>
 
-          <View>
-            <Label className="text-gray-500 mb-1">When</Label>
-            <Text className="text-lg">{whenToTake}</Text>
-          </View>
+            <View>
+              <Label className="text-gray-500 mb-1">When</Label>
+              <Text className="text-lg">{whenToTake}</Text>
+            </View>
 
-          <View>
-            <Label className="text-gray-500 mb-1">Interval</Label>
-            <Text className="text-lg">{interval}</Text>
-          </View>
+            <View>
+              <Label className="text-gray-500 mb-1">Interval</Label>
+              <Text className="text-lg">
+                {interval &&
+                typeof interval === "string" &&
+                interval.includes("X")
+                  ? interval.replace("X", String(customIntervalValue || "1"))
+                  : interval}
+              </Text>
+            </View>
 
-          <View>
-            <Label className="text-gray-500 mb-1">Times per day</Label>
-            <Text className="text-lg">
-              {timesPerDay} {Number(timesPerDay) === 1 ? "time" : "times"} per
-              day
-            </Text>
-          </View>
+            <View>
+              <Label className="text-gray-500 mb-1">Times per day</Label>
+              <Text className="text-lg">
+                {timesPerDay} {Number(timesPerDay) === 1 ? "time" : "times"} per
+                day
+              </Text>
+            </View>
 
-          <View>
-            <Label className="text-gray-500 mb-1">Start</Label>
-            <Text className="text-lg">
-              {new Date(startDate as string).toLocaleDateString()}
-            </Text>
-          </View>
+            <View>
+              <Label className="text-gray-500 mb-1">Start</Label>
+              <Text className="text-lg">
+                {new Date(startDate as string).toLocaleDateString()}
+              </Text>
+            </View>
 
-          <View>
-            <Label className="text-gray-500 mb-1">End</Label>
-            <Text className="text-lg">
-              {formData.endDate == null
-                ? "No end date (take forever)"
-                : formData.endDate.toLocaleDateString()}
-            </Text>
-          </View>
+            <View>
+              <Label className="text-gray-500 mb-1">End</Label>
+              <Text className="text-lg">
+                {formData.endDate == null
+                  ? "No end date (take forever)"
+                  : formData.endDate.toLocaleDateString()}
+              </Text>
+            </View>
 
-          <View>
-            <Label className="text-gray-500 mb-1">Reminder times</Label>
-            <Text className="text-lg">{formData.reminderTimes.join(", ")}</Text>
+            <View>
+              <Label className="text-gray-500 mb-1">Reminder times</Label>
+              <Text className="text-lg">
+                {formData.reminderTimes.join(", ")}
+              </Text>
+            </View>
           </View>
-        </View>
+        </ScrollView>
         <Button className="mt-4" onPress={handleSave} disabled={isSaving}>
           {isSaving ? (
             <ActivityIndicator size="small" color="white" />
