@@ -143,7 +143,7 @@ export default function Step4() {
                 className="mt-auto w-full"
                 onPress={() => {
                   router.push({
-                    pathname: "/addNewMedication/step5",
+                    pathname: "/addNewMedication/step4.1",
                     params: {
                       medicationName,
                       medicationType,
@@ -181,7 +181,7 @@ export default function Step4() {
                   className="mt-auto w-full"
                   onPress={() => {
                     router.push({
-                      pathname: "/addNewMedication/step5",
+                      pathname: "/addNewMedication/step4.1",
                       params: {
                         medicationName,
                         medicationType,
