@@ -12,6 +12,7 @@ import { Button } from "~/components/ui/button";
 import { router } from "expo-router";
 import { checkAndResetStreakIfNeeded } from "~/src/utils/streakResetOnLaunch";
 import { refreshRemindersOnLaunch } from "~/src/utils/refreshRemindersOnLaunch";
+import { useGlobalNotificationHandler } from "~/src/utils/useGlobalNotificationHandler";
 
 const TabsLayout = () => {
   const { colors } = useTheme();
@@ -22,6 +23,9 @@ const TabsLayout = () => {
     checkAndResetStreakIfNeeded();
     refreshRemindersOnLaunch();
   }, []);
+
+  // Runs if user changes from notificatinos denied to allowed, and reschedule notifications
+  useGlobalNotificationHandler();
 
   return (
     <>

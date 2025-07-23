@@ -9,6 +9,7 @@ import {
   Animated,
   Platform,
   UIManager,
+  ScrollView,
 } from "react-native";
 import { Text } from "~/components/ui/text";
 import { router, useLocalSearchParams } from "expo-router";
@@ -52,12 +53,14 @@ export default function Step4() {
     Keyboard.dismiss();
     if (option === "Specific days weekly") {
       setShowDaySelector(true);
+      setShowIntervalSelector(false);
     } else if (
       option === "every X days" ||
       option === "every X weeks" ||
       option === "every X months"
     ) {
       setShowIntervalSelector(true);
+      setShowDaySelector(false);
     } else {
       setShowIntervalSelector(false);
       setShowDaySelector(false);
@@ -102,78 +105,82 @@ export default function Step4() {
         </TouchableWithoutFeedback>
       </SafeAreaView>
 
-      <View
-        className="flex-1 bg-white p-8 shadow-sm justify-center items-center"
-        style={{
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
-          backgroundColor: "white",
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.05,
-          shadowRadius: 12,
-          elevation: 8,
-        }}
-      >
-        <View className="flex-1 w-full justify-start items-center">
-          {intervalToTakeList.map((option) => (
-            <TouchableOpacity
-              key={option}
-              onPress={() => handleSelect(option)}
-              className="py-4 flex-row justify-between items-center border-b border-gray-200 px-2 mb-2"
-              style={{
-                minHeight: 56,
-                width: "100%",
-                borderRadius: 12,
-                backgroundColor: interval === option ? "#f3f4f6" : "#fff",
-              }}
-            >
-              <Text className="text-lg">{option}</Text>
-              <ChevronRight size={28} color="black" />
-            </TouchableOpacity>
-          ))}
-          {/* Show day selector and Next button if needed */}
-          {showDaySelector && (
-            <>
-              <DaySelector
-                selectedDays={specificDays}
-                onToggleDay={toggleDay}
-              />
-              <Button
-                className="mt-auto w-full"
-                onPress={() => {
-                  router.push({
-                    pathname: "/addNewMedication/step4.1",
-                    params: {
-                      medicationName,
-                      medicationType,
-                      whenToTake,
-                      interval,
-                      specificDaysOfWeek: specificDays.join(","),
-                    },
-                  });
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View
+          className="flex-1 bg-white p-8 shadow-sm justify-center items-center"
+          style={{
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            backgroundColor: "white",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: -4 },
+            shadowOpacity: 0.05,
+            shadowRadius: 12,
+            elevation: 8,
+          }}
+        >
+          <ScrollView
+            className="flex-1 w-full"
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            {intervalToTakeList.map((option) => (
+              <TouchableOpacity
+                key={option}
+                onPress={() => handleSelect(option)}
+                className="py-4 flex-row justify-between items-center border-b border-gray-200 px-2 mb-2"
+                style={{
+                  minHeight: 56,
+                  width: "100%",
+                  borderRadius: 12,
+                  backgroundColor: interval === option ? "#f3f4f6" : "#fff",
                 }}
               >
-                <Text className="text-white text-center font-semibold ">
-                  NEXT
-                </Text>
-              </Button>
-            </>
-          )}
-          {/* Show day selector and Next button if needed */}
-          {["every X days", "every X weeks", "every X months"].includes(
-            interval
-          ) && (
-            <>
+                <Text className="text-lg">{option}</Text>
+                <ChevronRight size={28} color="black" />
+              </TouchableOpacity>
+            ))}
+
+            {showDaySelector && (
+              <>
+                <DaySelector
+                  selectedDays={specificDays}
+                  onToggleDay={toggleDay}
+                />
+                <Button
+                  className="mt-auto w-full"
+                  onPress={() => {
+                    router.push({
+                      pathname: "/addNewMedication/step4.1",
+                      params: {
+                        medicationName,
+                        medicationType,
+                        whenToTake,
+                        interval,
+                        specificDaysOfWeek: specificDays.join(","),
+                      },
+                    });
+                  }}
+                >
+                  <Text className="text-white text-center font-semibold ">
+                    NEXT
+                  </Text>
+                </Button>
+              </>
+            )}
+
+            {["every X days", "every X weeks", "every X months"].includes(
+              interval
+            ) && (
               <>
                 <Label className="mt-5 mb-2">Enter X (number)</Label>
                 <Input
                   keyboardType="numeric"
                   placeholder="Input custom interval value"
                   value={customIntervalValue}
-                  className="border w-full"
+                  className="border w-full mb-4"
                   onChangeText={(value) => {
-                    const numericValue = value.replace(/[^0-9]/g, ""); // keep only digits
+                    const numericValue = value.replace(/[^0-9]/g, "");
                     setCustomIntervalValue(numericValue);
                   }}
                 />
@@ -198,10 +205,10 @@ export default function Step4() {
                   </Text>
                 </Button>
               </>
-            </>
-          )}
+            )}
+          </ScrollView>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </View>
   );
 }

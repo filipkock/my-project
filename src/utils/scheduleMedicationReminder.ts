@@ -15,6 +15,13 @@ interface Reminder {
 }
 
 export async function scheduleMedicationReminder(reminder: Reminder) {
+  // ✅ Check if permission is granted
+  const { status } = await Notifications.getPermissionsAsync();
+  if (status !== "granted") {
+    console.warn("Skipping scheduling: Notifications permission not granted.");
+    return;
+  }
+
   const scheduledDate = await getDateTimeFromReminder(reminder);
 
   const now = new Date();
@@ -51,7 +58,7 @@ export async function scheduleMedicationReminder(reminder: Reminder) {
       } as Notifications.DateTriggerInput,
     });
 
-    // 4. Save the newNotificationId in Firestore
+    // Save the new notificationId in Firestore
     await updateDoc(doc(db, "reminders", reminder.id), {
       notificationId: notificationId,
     });
