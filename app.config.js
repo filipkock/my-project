@@ -11,7 +11,7 @@ export default {
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     splash: {
-      image: "./assets/images/logo.png",
+      image: "./assets/images/square_splash_logo.png",
       resizeMode: "contain",
       backgroundColor: "#ffffff",
     },

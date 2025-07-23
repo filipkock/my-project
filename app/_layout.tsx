@@ -29,6 +29,7 @@ import {
 import { SelectedDateProvider } from "~/src/context/SelectedDateContext";
 import Toast from "react-native-toast-message";
 import toastConfig from "~/src/constants/toastConfig";
+import NoInternetBanner from "~/components/custom/NoInternetBanner";
 
 // ==== react native reusables theme setup ====
 const LIGHT_THEME: Theme = {
@@ -119,6 +120,7 @@ export default function RootLayout() {
           <NotificationProvider>
             <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
               <SelectedDateProvider>
+                <NoInternetBanner />
                 <Slot />
 
                 {/* Keep these inside, too */}
