@@ -4,6 +4,7 @@ import {
   query,
   Timestamp,
   where,
+  getDoc,
 } from "firebase/firestore";
 import moment from "moment";
 import type { Medication } from "~/src/types/medication";
@@ -11,6 +12,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import { db } from "~/config/firebase";
 import { updateStreak, maybeDecrementStreakOnUntake } from "~/src/utils/streak";
 import { getFromStorage } from "~/src/services/storage";
+import { cancelMedicationReminder } from "~/src/utils/scheduleMedicationReminder";
 
 /** Convert Firestore Timestamp → JS Date */
 export const tsToDate = (ts: Timestamp | { seconds: number }): Date =>
@@ -124,6 +126,23 @@ export const markMedicationAsTaken = async (
     const userinfo = await getFromStorage("userDetails");
     if (userinfo) {
       await updateStreak(userinfo.uid, isToday);
+    }
+
+    // ✅ Fetch reminder to get notificationId
+    const reminderSnap = await getDoc(reminderRef);
+    if (reminderSnap.exists()) {
+      const reminderData = reminderSnap.data();
+      const scheduledTime = getScheduledDate(medication);
+
+      if (
+        reminderData.notificationId && // Notification exists
+        takenTime < scheduledTime // Taken before scheduled reminder time
+      ) {
+        await cancelMedicationReminder(
+          medication.reminderDocID,
+          reminderData.notificationId
+        );
+      }
     }
 
     callbacks.onSuccess(takenTime, onTime);

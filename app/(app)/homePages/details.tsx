@@ -16,6 +16,7 @@ import {
   limit,
   getDocs,
   updateDoc,
+  getDoc,
   doc,
 } from "firebase/firestore";
 import { db } from "~/config/firebase";
@@ -30,6 +31,7 @@ import { useSelectedDate } from "~/src/context/SelectedDateContext";
 import BottomSheet from "~/components/custom/BottomSheet";
 import { ChevronLeftIcon } from "react-native-heroicons/solid";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { cancelMedicationReminder } from "~/src/utils/scheduleMedicationReminder";
 
 interface ReminderData {
   takenTime: Timestamp;
@@ -373,6 +375,19 @@ export default function MedicationDetails() {
                         takenTime: null,
                         onTime: false,
                       });
+
+                      // ✅ Cancel scheduled notification if exists
+                      // Fetch the reminder document to get notificationId
+                      const reminderSnap = await getDoc(reminderRef);
+                      if (reminderSnap.exists()) {
+                        const reminderData = reminderSnap.data();
+                        if (reminderData.notificationId) {
+                          await cancelMedicationReminder(
+                            localMed.reminderDocID,
+                            reminderData.notificationId
+                          );
+                        }
+                      }
                     }
 
                     setShowSkippedInfo(true);

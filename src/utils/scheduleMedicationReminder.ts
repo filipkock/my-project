@@ -68,3 +68,24 @@ export async function scheduleMedicationReminder(reminder: Reminder) {
     console.error("Error scheduling notification:", err);
   }
 }
+
+export async function cancelMedicationReminder(
+  reminderId: string,
+  notificationId: string
+) {
+  try {
+    // Cancel the scheduled local notification
+    await Notifications.cancelScheduledNotificationAsync(notificationId);
+
+    // Update Firestore to remove the notificationId reference
+    await updateDoc(doc(db, "reminders", reminderId), {
+      notificationId: null,
+    });
+
+    console.log(
+      `Canceled notification ${notificationId} for reminder ${reminderId}`
+    );
+  } catch (error) {
+    console.error("Error canceling notification:", error);
+  }
+}
