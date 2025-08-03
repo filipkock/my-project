@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, SafeAreaView, TouchableOpacity } from "react-native";
 import { Text } from "~/components/ui/text";
 import { Card, CardContent, CardTitle } from "~/components/ui/card";
@@ -11,6 +11,7 @@ import {
   SparklesIcon,
   HeartIcon,
 } from "react-native-heroicons/solid";
+import Purchases from "react-native-purchases";
 
 const plans = [
   {
@@ -29,8 +30,31 @@ const plans = [
   },
 ];
 
+type PurchaseOfferings = any;
+
 const SubscriptionPlans = () => {
   const [selectedPlan, setSelectedPlan] = useState("monthly");
+
+  // Offerings and subscription needs further setup and testing to fully work
+  const [offerings, setOfferings] = useState<PurchaseOfferings | null>(null);
+
+  useEffect(() => {
+    getOfferings();
+  }, []);
+
+  async function getOfferings() {
+    console.log("gettings offerings");
+    const offerings = await Purchases.getOfferings();
+    if (
+      offerings.current !== null &&
+      offerings.current.availablePackages.length !== 0
+    ) {
+      console.log("Current offerings:", offerings);
+      setOfferings(offerings);
+    } else {
+      console.error("No current offerings available");
+    }
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-secondary/40">

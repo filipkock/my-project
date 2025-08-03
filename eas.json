@@ -9,7 +9,8 @@
       "distribution": "internal",
       "ios": {
         "simulator": false
-      }
+      },
+      "android": { "buildType": "apk" }
     },
     "preview": {
       "distribution": "store",

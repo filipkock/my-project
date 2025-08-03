@@ -225,8 +225,7 @@ const Settings = () => {
                 variant="outline"
                 className="w-full"
                 onPress={() => {
-                  // TODO: Open feedback screen or form
-                  Alert.alert("Feedback", "Open feedback form or screen.");
+                  Linking.openURL("mailto:pokareminder@gmail.com");
                 }}
               >
                 <Text>Send Feedback</Text>

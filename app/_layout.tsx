@@ -30,6 +30,8 @@ import { SelectedDateProvider } from "~/src/context/SelectedDateContext";
 import Toast from "react-native-toast-message";
 import toastConfig from "~/src/constants/toastConfig";
 import NoInternetBanner from "~/components/custom/NoInternetBanner";
+import Purchases, { LOG_LEVEL } from "react-native-purchases";
+import Constants from "expo-constants";
 
 // ==== react native reusables theme setup ====
 const LIGHT_THEME: Theme = {
@@ -89,6 +91,27 @@ export default function RootLayout() {
       setAndroidNavigationBar(colorTheme);
       setIsColorSchemeLoaded(true);
     })();
+  }, []);
+
+  // Subscription plans setup - needs further setup and testing
+  React.useEffect(() => {
+    Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+
+    if (Platform.OS === "ios") {
+      Purchases.configure({
+        apiKey: Constants.expoConfig?.extra?.appstoreApiKey ?? "",
+      });
+    }
+    // ===== I need to set this up later once I have tested the app on Android =====
+    // else if (Platform.OS === "android") {
+    //   Purchases.configure({ apiKey: "YOUR_REVENUECAT_GOOGLE_API_KEY" });
+
+    //   // OR: if building for Amazon, be sure to follow the installation instructions then:
+    //   Purchases.configure({
+    //     apiKey: "YOUR_REVENUECAT_AMAZON_API_KEY",
+    //     useAmazon: true,
+    //   });
+    // }
   }, []);
 
   // Ensure font and color is loaded
