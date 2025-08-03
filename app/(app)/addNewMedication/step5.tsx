@@ -26,6 +26,7 @@ export default function Step5StartDate() {
     timesPerDay,
   } = useLocalSearchParams();
   const [startDate, setStartDate] = useState(new Date());
+  const [showAndroidPicker, setShowAndroidPicker] = useState(false);
 
   const questionOpacity = useRef(new Animated.Value(1)).current;
 
@@ -87,13 +88,39 @@ export default function Step5StartDate() {
               width: "100%",
             }}
           >
-            <DateTimePicker
-              value={startDate}
-              mode="date"
-              display={Platform.OS === "ios" ? "spinner" : "calendar"}
-              minimumDate={new Date()}
-              onChange={(event, date) => date && setStartDate(date)}
-            />
+            {Platform.OS === "ios" ? (
+              <DateTimePicker
+                value={startDate}
+                mode="date"
+                display="spinner"
+                minimumDate={new Date()}
+                onChange={(event, date) => date && setStartDate(date)}
+              />
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  onPress={() => setShowAndroidPicker(true)}
+                  size="lg"
+                >
+                  <Text className="font-bold">{startDate.toDateString()}</Text>
+                </Button>
+                {showAndroidPicker && (
+                  <DateTimePicker
+                    value={startDate}
+                    mode="date"
+                    display="calendar"
+                    minimumDate={new Date()}
+                    onChange={(event, date) => {
+                      setShowAndroidPicker(false);
+                      if (date) {
+                        setStartDate(date);
+                      }
+                    }}
+                  />
+                )}
+              </>
+            )}
           </View>
         </View>
 

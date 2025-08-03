@@ -27,6 +27,7 @@ export default function Step6EndDate() {
     startDate,
   } = useLocalSearchParams();
   const [endDate, setEndDate] = useState<Date | null>(new Date());
+  const [showAndroidPicker, setShowAndroidPicker] = useState(false);
 
   const questionOpacity = useRef(new Animated.Value(1)).current;
 
@@ -90,13 +91,39 @@ export default function Step6EndDate() {
               width: "100%",
             }}
           >
-            <DateTimePicker
-              value={endDate ?? new Date()}
-              mode="date"
-              display={Platform.OS === "ios" ? "spinner" : "calendar"}
-              minimumDate={new Date()}
-              onChange={(event, date) => setEndDate(date ?? endDate)}
-            />
+            {Platform.OS === "ios" ? (
+              <DateTimePicker
+                value={endDate ?? new Date()}
+                mode="date"
+                display="spinner"
+                minimumDate={new Date()}
+                onChange={(event, date) => setEndDate(date ?? endDate)}
+              />
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  onPress={() => setShowAndroidPicker(true)}
+                  size="lg"
+                >
+                  <Text className="font-bold">
+                    {endDate?.toDateString() ?? "Pick a date"}
+                  </Text>
+                </Button>
+                {showAndroidPicker && (
+                  <DateTimePicker
+                    value={endDate ?? new Date()}
+                    mode="date"
+                    display="calendar"
+                    minimumDate={new Date()}
+                    onChange={(event, date) => {
+                      setShowAndroidPicker(false);
+                      if (date) setEndDate(date);
+                    }}
+                  />
+                )}
+              </>
+            )}
           </View>
         </View>
 

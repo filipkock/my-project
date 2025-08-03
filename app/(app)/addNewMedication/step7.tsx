@@ -34,6 +34,7 @@ export default function Step7ReminderTime() {
       .fill(null)
       .map(() => new Date())
   );
+  const [showAndroidPicker, setShowAndroidPicker] = useState(false);
 
   const questionOpacity = useRef(new Animated.Value(1)).current;
 
@@ -93,18 +94,51 @@ export default function Step7ReminderTime() {
                 ? `Dose ${currentIndex + 1} of ${times}`
                 : "Time to take"}
             </Text>
-            <DateTimePicker
-              value={reminderTimes[currentIndex] ?? new Date()}
-              mode="time"
-              display={Platform.OS === "ios" ? "spinner" : "clock"}
-              onChange={(event, date) => {
-                if (date) {
-                  const updated = [...reminderTimes];
-                  updated[currentIndex] = date;
-                  setReminderTimes(updated);
-                }
-              }}
-            />
+            {Platform.OS === "ios" ? (
+              <DateTimePicker
+                value={reminderTimes[currentIndex] ?? new Date()}
+                mode="time"
+                display="spinner"
+                onChange={(event, date) => {
+                  if (date) {
+                    const updated = [...reminderTimes];
+                    updated[currentIndex] = date;
+                    setReminderTimes(updated);
+                  }
+                }}
+              />
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  onPress={() => setShowAndroidPicker(true)}
+                  size="lg"
+                >
+                  <Text className="font-bold">
+                    {reminderTimes[currentIndex]?.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })}
+                  </Text>
+                </Button>
+                {showAndroidPicker && (
+                  <DateTimePicker
+                    value={reminderTimes[currentIndex] ?? new Date()}
+                    mode="time"
+                    display="clock"
+                    onChange={(event, date) => {
+                      setShowAndroidPicker(false);
+                      if (date) {
+                        const updated = [...reminderTimes];
+                        updated[currentIndex] = date;
+                        setReminderTimes(updated);
+                      }
+                    }}
+                  />
+                )}
+              </>
+            )}
           </View>
         </View>
 

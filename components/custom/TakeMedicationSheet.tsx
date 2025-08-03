@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View } from "react-native";
+import { View, Platform } from "react-native";
 import { Text } from "~/components/ui/text";
 import { Button } from "~/components/ui/button";
 import { Alert, AlertTitle, AlertDescription } from "~/components/ui/alert";
@@ -27,6 +27,7 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
   onSetTime,
 }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showAndroidPicker, setShowAndroidPicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const scheduledTime = getScheduledDate(medication);
@@ -144,13 +145,42 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
             <Text className="text-lg font-semibold text-center mb-2">
               What time did you take {medication.medicationName}?
             </Text>
-            <View className="items-center">
-              <DateTimePicker
-                value={selectedDate}
-                mode="time"
-                display="spinner"
-                onChange={handleDateChange}
-              />
+            <View className="items-center space-y-2">
+              {Platform.OS === "ios" ? (
+                <DateTimePicker
+                  value={selectedDate}
+                  mode="time"
+                  display="spinner"
+                  onChange={handleDateChange}
+                />
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    onPress={() => setShowAndroidPicker(true)}
+                    size="lg"
+                  >
+                    <Text className="font-bold">
+                      {selectedDate.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })}
+                    </Text>
+                  </Button>
+                  {showAndroidPicker && (
+                    <DateTimePicker
+                      value={selectedDate}
+                      mode="time"
+                      display="clock"
+                      onChange={(event, date) => {
+                        setShowAndroidPicker(false);
+                        if (date) setSelectedDate(date);
+                      }}
+                    />
+                  )}
+                </>
+              )}
             </View>
             <Button onPress={handleConfirm} className="w-full py-4 mt-4">
               <Text className="text-lg font-semibold">Confirm Time</Text>
