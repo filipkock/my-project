@@ -91,7 +91,7 @@ const TabsLayout = () => {
       </Tabs>
       <Button
         className="absolute left-1/2 -translate-x-1/2 w-16 h-16 rounded-full"
-        style={{ bottom: 54 }}
+        style={{ bottom: 50 }}
         onPress={() => router.push("/addNewMedication/step1")}
         size={"icon"}
       >

@@ -65,32 +65,36 @@ export default function RootLayout() {
     /* Generic family used by Tailwind / NativeWind */
     Poppins: Poppins_400Regular, // base weight
   });
-  const { colorScheme, setColorScheme, isDarkColorScheme } = useColorScheme();
+  // Force light mode, uncomment if it is to be added
+  // const { colorScheme, setColorScheme, isDarkColorScheme } = useColorScheme();
+  const isDarkColorScheme = false;
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
 
-  // Default functionality included from project start
+  // Force light mode, consider removing later on
   React.useEffect(() => {
-    (async () => {
-      const theme = await AsyncStorage.getItem("theme");
-      if (Platform.OS === "web") {
-        // Adds the background color to the html element to prevent white background on overscroll.
-        document.documentElement.classList.add("bg-background");
-      }
-      if (!theme) {
-        AsyncStorage.setItem("theme", colorScheme);
-        setIsColorSchemeLoaded(true);
-        return;
-      }
-      const colorTheme = theme === "dark" ? "dark" : "light";
-      if (colorTheme !== colorScheme) {
-        setColorScheme(colorTheme);
-        setAndroidNavigationBar(colorTheme);
-        setIsColorSchemeLoaded(true);
-        return;
-      }
-      setAndroidNavigationBar(colorTheme);
-      setIsColorSchemeLoaded(true);
-    })();
+    // (async () => {
+    //   const theme = await AsyncStorage.getItem("theme");
+    //   if (Platform.OS === "web") {
+    //     // Adds the background color to the html element to prevent white background on overscroll.
+    //     document.documentElement.classList.add("bg-background");
+    //   }
+    //   if (!theme) {
+    //     AsyncStorage.setItem("theme", colorScheme);
+    //     setIsColorSchemeLoaded(true);
+    //     return;
+    //   }
+    //   const colorTheme = theme === "dark" ? "dark" : "light";
+    //   if (colorTheme !== colorScheme) {
+    //     setColorScheme(colorTheme);
+    //     setAndroidNavigationBar(colorTheme);
+    //     setIsColorSchemeLoaded(true);
+    //     return;
+    //   }
+    //   setAndroidNavigationBar(colorTheme);
+    //   setIsColorSchemeLoaded(true);
+    // })();
+    // Force color scheme loaded for light mode
+    setIsColorSchemeLoaded(true);
   }, []);
 
   // Subscription plans setup - needs further setup and testing
