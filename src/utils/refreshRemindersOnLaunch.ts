@@ -30,11 +30,30 @@ export async function refreshRemindersOnLaunch() {
     query(collection(db, "medication"), where("uid", "==", userinfo.uid))
   );
 
-  const now = new Date(Date.now() * 24 * 60 * 60 * 1000);
+  // anchor to local midnight today
+  const todayStart = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth(),
+    new Date().getDate()
+  );
 
-  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  // start-of-day exactly 7 days ago
+  const sevenDaysAgo = new Date(
+    todayStart.getFullYear(),
+    todayStart.getMonth(),
+    todayStart.getDate() - 7
+  );
 
-  const chunkEndDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+  // end-of-day 14 days ahead (we use "<" for the query upper bound)
+  const chunkEndDate = new Date(
+    todayStart.getFullYear(),
+    todayStart.getMonth(),
+    todayStart.getDate() + 14,
+    23,
+    59,
+    59,
+    999
+  );
 
   for (const medDoc of medicationSnap.docs) {
     const med = medDoc.data();
@@ -54,12 +73,23 @@ export async function refreshRemindersOnLaunch() {
       )
     );
 
-    const existingDates = new Set(
-      existingRemindersSnap.docs.map((doc) => doc.data().date?.seconds)
+    const existingDateTimeKeys = new Set(
+      existingRemindersSnap.docs.map((d) => {
+        const data = d.data();
+        const ts = data?.date;
+        const t = data?.time;
+        let normalizedSec = "";
+        if (ts?.seconds) {
+          const dDate = new Date(ts.seconds * 1000);
+          dDate.setHours(0, 0, 0, 0);
+          normalizedSec = Math.floor(dDate.getTime() / 1000).toString();
+        }
+        return `${normalizedSec}_${t}`;
+      })
     );
 
     const newReminderDates = generateReminderDates(
-      med.startDate.toDate(),
+      sevenDaysAgo,
       chunkEndDate,
       med.intakeInterval,
       {
@@ -68,32 +98,66 @@ export async function refreshRemindersOnLaunch() {
       }
     );
 
+    console.log("Generated dates:", newReminderDates.length);
+
+    // Build times array: prefer reminderTimes[], fallback to single time string
+    const times: string[] =
+      Array.isArray(med.reminderTimes) && med.reminderTimes.length
+        ? med.reminderTimes
+        : typeof med.time === "string" && med.time
+        ? [med.time]
+        : [];
+
+    if (!times.length) {
+      console.warn("Skipping med with no reminder times:", medId);
+    }
+
     for (const date of newReminderDates) {
-      const seconds = Math.floor(
-        (date instanceof Date ? date : date.toDate()).getTime() / 1000
+      const asDate = date instanceof Date ? date : date.toDate();
+      const normalizedDate = new Date(
+        asDate.getFullYear(),
+        asDate.getMonth(),
+        asDate.getDate()
       );
-      if (existingDates.has(seconds)) continue;
+      const seconds = Math.floor(normalizedDate.getTime() / 1000);
 
-      const docRef = await addDoc(collection(db, "reminders"), {
-        date: Timestamp.fromDate(date instanceof Date ? date : date.toDate()),
-        time: med.time,
-        whenToTake: med.whenToTake,
-        status: "pending",
-        medId,
-        uid: userinfo.uid,
-        ...(userinfo.email ? { userEmail: userinfo.email } : {}),
-        notificationId: null,
-      });
+      for (const timeStr of times) {
+        if (typeof timeStr !== "string" || !timeStr.includes(":")) {
+          console.warn("Skipping invalid time format for", medId, timeStr);
+          continue;
+        }
 
-      await scheduleMedicationReminder({
-        id: docRef.id,
-        uid: userinfo.uid,
-        date: date,
-        time: med.time,
-        whenToTake: med.whenToTake,
-        medId,
-        notificationId: null,
-      });
+        const key = `${seconds}_${timeStr}`;
+        if (existingDateTimeKeys.has(key)) continue;
+
+        const docRef = await addDoc(collection(db, "reminders"), {
+          date: Timestamp.fromDate(normalizedDate),
+          time: timeStr,
+          whenToTake: med.whenToTake,
+          status: "pending",
+          medId,
+          uid: userinfo.uid,
+          ...(userinfo.email ? { userEmail: userinfo.email } : {}),
+          notificationId: null,
+        });
+        existingDateTimeKeys.add(key);
+        console.log(
+          "Created reminder with ID:",
+          docRef.id,
+          "for time",
+          timeStr
+        );
+
+        await scheduleMedicationReminder({
+          id: docRef.id,
+          uid: userinfo.uid,
+          date: asDate,
+          time: timeStr,
+          whenToTake: med.whenToTake,
+          medId,
+          notificationId: null,
+        });
+      }
     }
 
     // Update chunkEndDate

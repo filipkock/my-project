@@ -17,10 +17,10 @@ import { useGlobalNotificationHandler } from "~/src/utils/useGlobalNotificationH
 const TabsLayout = () => {
   const { colors } = useTheme();
 
-  // Check if we should reset the streak on app launch
-  // Create relevant reminders and notifications
   React.useEffect(() => {
+    // Check if we should reset the streak on app launch
     checkAndResetStreakIfNeeded();
+    // Create relevant reminders and notifications
     refreshRemindersOnLaunch();
   }, []);
 
