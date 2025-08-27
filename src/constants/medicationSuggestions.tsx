@@ -13,6 +13,10 @@ export const medicationSuggestions: string[] = [
   "Tramadol",
   "Cyclobenzaprine",
   "Baclofen",
+  "Tylenol",
+  "Advil",
+  "Motrin",
+  "Aleve",
 
   // Vitamins & Supplements
   "Vitamin D",
@@ -56,6 +60,11 @@ export const medicationSuggestions: string[] = [
   "Quetiapine",
   "Olanzapine",
   "Risperidone",
+  "Zoloft",
+  "Lexapro",
+  "Prozac",
+  "Celexa",
+  "Paxil",
 
   // ADHD Medications
   "Methylphenidate",
@@ -67,9 +76,21 @@ export const medicationSuggestions: string[] = [
   "Atomoxetine Hydrochloride",
   "Extended-release Methylphenidate",
   "ADHD Capsules",
+  "Concerta",
+  "Ritalin",
+  "Adderall",
+  "Vyvanse",
+  "Focalin",
+  "Daytrana",
+  "Evekeo",
+  "Mydayis",
+  "Strattera",
+  "Intuniv",
 
   // Sleep Aids
   "Melatonin",
+  "Ambien",
+  "Lunesta",
 
   // Allergy & Respiratory
   "Cetirizine",
@@ -104,6 +125,9 @@ export const medicationSuggestions: string[] = [
   "Liraglutide",
   "Semaglutide",
   "GLP-1 Injections",
+  "Jardiance",
+  "Farxiga",
+  "Ozempic",
 
   // Heart, Blood Pressure & Cholesterol
   "Lisinopril",
