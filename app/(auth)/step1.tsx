@@ -29,7 +29,7 @@ export default function Step1() {
           />
 
           <Text className="text-3xl font-semibold -mb-6">
-            Let's make medication taking fun!
+            Here to help you remember your meds!
           </Text>
           <View className="items-center">
             <VideoView

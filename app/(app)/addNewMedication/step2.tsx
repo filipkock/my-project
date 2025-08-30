@@ -51,7 +51,7 @@ export default function Step2() {
                 className="mb-6"
               />
               <View className="flex-1 items-center -ml-8">
-                <Stepper totalSteps={7} currentStep={2} />
+                <Stepper totalSteps={9} currentStep={2} />
               </View>
             </View>
             <Animated.View

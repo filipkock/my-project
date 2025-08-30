@@ -50,7 +50,7 @@ export default function Step5StartDate() {
                 className="mb-6"
               />
               <View className="flex-1 items-center -ml-8">
-                <Stepper totalSteps={7} currentStep={5} />
+                <Stepper totalSteps={9} currentStep={6} />
               </View>
             </View>
             <Animated.View

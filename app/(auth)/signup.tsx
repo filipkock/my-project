@@ -216,7 +216,7 @@ export default function signup() {
               variant="outline"
               onPress={() => setShowEmailForm(true)}
             >
-              <Text>Sign up with email & password</Text>
+              <Text>Email & password</Text>
             </Button>
           )}
 

@@ -58,7 +58,7 @@ export default function Step7ReminderTime() {
                 className="mb-6"
               />
               <View className="flex-1 items-center -ml-8">
-                <Stepper totalSteps={7} currentStep={7} />
+                <Stepper totalSteps={9} currentStep={8} />
               </View>
             </View>
             <Animated.View

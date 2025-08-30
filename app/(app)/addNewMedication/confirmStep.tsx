@@ -206,7 +206,7 @@ export default function ConfirmStep() {
                 className="mb-6"
               />
               <View className="flex-1 items-center -ml-8">
-                <Stepper totalSteps={7} currentStep={7} />
+                <Stepper totalSteps={9} currentStep={9} />
               </View>
             </View>
             <Text className="text-2xl font-semibold mt-10">Summary</Text>

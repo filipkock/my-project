@@ -175,7 +175,7 @@ export default function Login() {
                 variant="outline"
                 onPress={() => setShowEmailForm(true)}
               >
-                <Text>Login with email & password</Text>
+                <Text>Email & password</Text>
               </Button>
             </>
           )}

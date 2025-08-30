@@ -89,7 +89,7 @@ export default function Step4() {
                 className="mb-6"
               />
               <View className="flex-1 items-center -ml-8">
-                <Stepper totalSteps={7} currentStep={4} />
+                <Stepper totalSteps={9} currentStep={4} />
               </View>
             </View>
             <Animated.View
