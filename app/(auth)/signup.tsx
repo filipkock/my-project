@@ -29,6 +29,7 @@ export default function signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showEmailForm, setShowEmailForm] = useState(false);
 
   const redirectUri = makeRedirectUri({ scheme: "poka-reminder" });
 
@@ -145,59 +146,100 @@ export default function signup() {
             Continue as Guest
           </Text>
         </View>
-        <View className="flex-1 mt-10 gap-10">
+        <View className="flex-1 mt-10 gap-6">
           <Text className="text-3xl font-bold">Sign up to get started!</Text>
-          <View className="gap-4">
-            <Input
-              placeholder="Input your full name"
-              value={name}
-              onChangeText={setName}
-            />
-            <Input
-              placeholder="Input your email"
-              value={email}
-              onChangeText={setEmail}
-            />
-            <Input
-              placeholder="Input your password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-            <Input
-              placeholder="Confirm your password"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-            />
-          </View>
+          {showEmailForm && (
+            <View className="gap-4">
+              <Input
+                placeholder="Input your full name"
+                value={name}
+                onChangeText={setName}
+              />
+              <Input
+                placeholder="Input your email"
+                value={email}
+                onChangeText={setEmail}
+              />
+              <Input
+                placeholder="Input your password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+              <Input
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+              />
+            </View>
+          )}
         </View>
         <View className="gap-4">
-          <View className="items-center">
-            <VideoView
-              style={{
-                width: 200,
-                height: 200,
-              }}
-              player={player}
-              allowsFullscreen={false}
-              allowsPictureInPicture={false}
-              nativeControls={false}
-            />
-          </View>
-          <Button
-            className="w-full"
-            disabled={!request}
-            onPress={handleGoogleSignup}
-          >
-            <Text>Continue with Google</Text>
-          </Button>
-          <Button className="w-full" onPress={onHandleSignup}>
-            <Text>Sign up</Text>
-          </Button>
-          <Link href="../login" className="text-center underline">
-            Login
-          </Link>
+          {!showEmailForm && (
+            <>
+              <View className="items-center mb-5">
+                <VideoView
+                  style={{
+                    width: 250,
+                    height: 250,
+                  }}
+                  player={player}
+                  allowsFullscreen={false}
+                  allowsPictureInPicture={false}
+                  nativeControls={false}
+                />
+              </View>
+
+              {/* Google button */}
+              <Button
+                className="w-full"
+                disabled={!request}
+                onPress={handleGoogleSignup}
+              >
+                <Text>Continue with Google</Text>
+              </Button>
+
+              {/* 2) Divider with OR */}
+              <View className="flex-row items-center my-2">
+                <View className="flex-1 h-px bg-gray-300" />
+                <Text className="px-3 text-gray-500">or</Text>
+                <View className="flex-1 h-px bg-gray-300" />
+              </View>
+            </>
+          )}
+
+          {/* 3) Outline button to reveal email/password form */}
+          {!showEmailForm && (
+            <Button
+              className="w-full"
+              variant="outline"
+              onPress={() => setShowEmailForm(true)}
+            >
+              <Text>Sign up with email & password</Text>
+            </Button>
+          )}
+
+          {/* 4) When selected, show confirm button and small link to switch method */}
+          {showEmailForm && (
+            <>
+              <Button className="w-full" onPress={onHandleSignup}>
+                <Text>Sign up</Text>
+              </Button>
+              <Text
+                className="text-center underline mt-2"
+                onPress={() => setShowEmailForm(false)}
+              >
+                Sign up with another method
+              </Text>
+            </>
+          )}
+
+          {!showEmailForm && (
+            <Link href="../login" className="text-center underline mt-4">
+              Already have an account? Log in
+            </Link>
+          )}
         </View>
       </View>
     </SafeAreaView>

@@ -21,6 +21,7 @@ WebBrowser.maybeCompleteAuthSession();
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showEmailForm, setShowEmailForm] = useState(false);
 
   const redirectUri = makeRedirectUri({ scheme: "poka-reminder" });
 
@@ -121,48 +122,85 @@ export default function Login() {
             Continue as Guest
           </Text>
         </View>
-        <View className="flex-1 mt-10 gap-10">
+        <View className="flex-1 mt-10 gap-6">
           <Text className="text-3xl font-bold">Login to continue</Text>
-          <View className="gap-4">
-            <Input
-              placeholder="Input your email"
-              value={email}
-              onChangeText={setEmail}
-            />
-            <Input
-              placeholder="Input your password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={true}
-            />
-          </View>
+          {showEmailForm && (
+            <View className="gap-4">
+              <Input
+                placeholder="Input your email"
+                value={email}
+                onChangeText={setEmail}
+              />
+              <Input
+                placeholder="Input your password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={true}
+              />
+            </View>
+          )}
         </View>
         <View className="gap-4 ">
-          <View className="items-center">
-            <VideoView
-              style={{
-                width: 200,
-                height: 200,
-              }}
-              player={player}
-              allowsFullscreen={false}
-              allowsPictureInPicture={false}
-              nativeControls={false}
-            />
-          </View>
-          <Button
-            className="w-full"
-            disabled={!request}
-            onPress={handleGoogleLogin}
-          >
-            <Text>Continue with Google</Text>
-          </Button>
-          <Button className="w-full" onPress={onHandleLogin}>
-            <Text>Login</Text>
-          </Button>
-          <Link href="../signup" className="text-center underline">
-            Sign up
-          </Link>
+          {!showEmailForm && (
+            <>
+              <View className="items-center mb-5">
+                <VideoView
+                  style={{
+                    width: 250,
+                    height: 250,
+                  }}
+                  player={player}
+                  allowsFullscreen={false}
+                  allowsPictureInPicture={false}
+                  nativeControls={false}
+                />
+              </View>
+              {/* 1) Google first */}
+              <Button
+                className="w-full"
+                disabled={!request}
+                onPress={handleGoogleLogin}
+              >
+                <Text>Continue with Google</Text>
+              </Button>
+
+              {/* 2) Divider with OR */}
+              <View className="flex-row items-center my-2">
+                <View className="flex-1 h-px bg-gray-300" />
+                <Text className="px-3 text-gray-500">or</Text>
+                <View className="flex-1 h-px bg-gray-300" />
+              </View>
+              <Button
+                className="w-full"
+                variant="outline"
+                onPress={() => setShowEmailForm(true)}
+              >
+                <Text>Login with email & password</Text>
+              </Button>
+            </>
+          )}
+
+          {/* 4) When selected, show confirm button and small link to switch method */}
+          {showEmailForm && (
+            <>
+              <Button className="w-full" onPress={onHandleLogin}>
+                <Text>Login</Text>
+              </Button>
+              <Text
+                className="text-center underline text-sm mt-2"
+                onPress={() => setShowEmailForm(false)}
+              >
+                Login with another method
+              </Text>
+            </>
+          )}
+
+          {/* Link to signup matches visibility with signup screen */}
+          {!showEmailForm && (
+            <Link href="../signup" className="text-center underline mt-4">
+              Don’t have an account? Sign up
+            </Link>
+          )}
         </View>
       </View>
     </SafeAreaView>
