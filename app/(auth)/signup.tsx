@@ -1,10 +1,18 @@
 import React, { useState } from "react";
-import { SafeAreaView, Alert, View, Image } from "react-native";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { SafeAreaView, Alert, View, Image, Platform } from "react-native";
+import {
+  createUserWithEmailAndPassword,
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithCredential,
+} from "firebase/auth";
 import { auth } from "../../config/firebase";
 import { signInAnonymously } from "firebase/auth";
 import { Link, router } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+import { makeRedirectUri } from "expo-auth-session";
 
 // Components
 import { Button } from "~/components/ui/button";
@@ -12,12 +20,39 @@ import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 import { setLocalStorage } from "~/src/services/storage";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
+import Constants from "expo-constants";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const redirectUri = makeRedirectUri({ scheme: "poka-reminder" });
+
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    iosClientId: Constants.expoConfig?.extra?.iosClientId,
+    androidClientId: Constants.expoConfig?.extra?.androidClientId,
+  });
+
+  React.useEffect(() => {
+    (async () => {
+      if (response?.type === "success") {
+        const { id_token } = response.params;
+        if (!id_token) return;
+        const credential = GoogleAuthProvider.credential(id_token);
+        const res = await signInWithCredential(auth, credential);
+        setLocalStorage("userDetails", res.user);
+        router.replace("/(auth)/allowNotification");
+      }
+    })();
+  }, [response]);
+
+  const handleGoogleSignup = () => {
+    promptAsync();
+  };
 
   const onHandleSignup = () => {
     const trimmedEmail = email.trim();
@@ -150,6 +185,13 @@ export default function signup() {
               nativeControls={false}
             />
           </View>
+          <Button
+            className="w-full"
+            disabled={!request}
+            onPress={handleGoogleSignup}
+          >
+            <Text>Continue with Google</Text>
+          </Button>
           <Button className="w-full" onPress={onHandleSignup}>
             <Text>Sign up</Text>
           </Button>

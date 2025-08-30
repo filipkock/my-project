@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { SafeAreaView, Alert, View } from "react-native";
+import { SafeAreaView, Alert, View, Platform } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../config/firebase";
 import { signInAnonymously } from "firebase/auth";
@@ -7,15 +7,44 @@ import { router, Link } from "expo-router";
 import { setLocalStorage } from "~/src/services/storage";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 import { useVideoPlayer, VideoView } from "expo-video";
-
-// Components
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+import { makeRedirectUri } from "expo-auth-session";
+import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
+import Constants from "expo-constants";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const redirectUri = makeRedirectUri({ scheme: "poka-reminder" });
+
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    iosClientId: Constants.expoConfig?.extra?.iosClientId,
+    androidClientId: Constants.expoConfig?.extra?.androidClientId,
+  });
+
+  React.useEffect(() => {
+    (async () => {
+      if (response?.type === "success") {
+        const { id_token } = response.params;
+        if (!id_token) return;
+        const credential = GoogleAuthProvider.credential(id_token);
+        const res = await signInWithCredential(auth, credential);
+        setLocalStorage("userDetails", res.user);
+        router.replace("/(auth)/allowNotification");
+      }
+    })();
+  }, [response]);
+
+  const handleGoogleLogin = () => {
+    promptAsync();
+  };
 
   const handleAnonymousLogin = async () => {
     try {
@@ -121,6 +150,13 @@ export default function Login() {
               nativeControls={false}
             />
           </View>
+          <Button
+            className="w-full"
+            disabled={!request}
+            onPress={handleGoogleLogin}
+          >
+            <Text>Continue with Google</Text>
+          </Button>
           <Button className="w-full" onPress={onHandleLogin}>
             <Text>Login</Text>
           </Button>

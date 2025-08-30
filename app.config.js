@@ -55,6 +55,9 @@ export default {
       messagingSenderId: process.env.MESSAGING_SENDER_ID,
       appId: process.env.APP_ID,
       appstoreApiKey: process.env.APPSTORE_API_KEY,
+      androidClientId: process.env.ANDROID_CLIENT_ID,
+      iosClientId: process.env.IOS_CLIENT_ID,
     },
+    scheme: "poka-reminder",
   },
 };
