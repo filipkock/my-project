@@ -67,15 +67,17 @@ const SubscriptionPlans = () => {
         <View className="flex-col gap-3 px-6 pb-12">
           <View className="flex-row items-center gap-2">
             <CheckCircleIcon size={20} color="#000" />
-            <Text className="text-base">Unlimited medications</Text>
+            <Text className="text-base">Add unlimited medications</Text>
           </View>
           <View className="flex-row items-center gap-2">
             <StarIcon size={20} color="#000" />
-            <Text className="text-base">All card collections</Text>
+            <Text className="text-base">Unlock every Poka card</Text>
           </View>
           <View className="flex-row items-center gap-2">
             <HeartIcon size={20} color="#000" />
-            <Text className="text-base">Premium support</Text>
+            <Text className="text-base">
+              Priority support — you’re first in line
+            </Text>
           </View>
           <View className="flex-row items-center gap-2">
             <SparklesIcon size={20} color="#000" />

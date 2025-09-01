@@ -110,13 +110,24 @@ const Settings = () => {
                   </Button>
                 </>
               ) : (
-                <Button
-                  variant={"outline"}
-                  className="w-full"
-                  onPress={handleLogout}
-                >
-                  <Text>Logout</Text>
-                </Button>
+                <>
+                  {user?.email ? (
+                    <Text className="text-muted-foreground text-sm mb-4">
+                      Signed in as {user.email}
+                    </Text>
+                  ) : (
+                    <Text className="text-muted-foreground text-sm mb-4">
+                      You are signed in.
+                    </Text>
+                  )}
+                  <Button
+                    variant={"outline"}
+                    className="w-full"
+                    onPress={handleLogout}
+                  >
+                    <Text>Logout</Text>
+                  </Button>
+                </>
               )}
             </CardContent>
           </Card>
@@ -197,30 +208,14 @@ const Settings = () => {
             </Card>
           )}
 
-          {/* Terms & Agreements Section */}
-          <Card>
-            <CardContent className="gap-2 p-4">
-              <CardTitle className="text-lg mb-2">Legal</CardTitle>
-              <Button
-                variant="outline"
-                className="w-full"
-                onPress={() => {
-                  // TODO: Navigate to terms screen or open modal
-                  Alert.alert(
-                    "Terms & Privacy",
-                    "Open Terms & Privacy screen."
-                  );
-                }}
-              >
-                <Text>View Terms & Privacy</Text>
-              </Button>
-            </CardContent>
-          </Card>
-
           {/* Feedback Section */}
           <Card>
             <CardContent className="gap-2 p-4">
               <CardTitle className="text-lg mb-2">Feedback</CardTitle>
+              <Text className="text-muted-foreground text-sm mb-2">
+                All feedback is welcome. Feature requests, ideas for what you'd
+                like to see, bugs, or any questions.
+              </Text>
               <Button
                 variant="outline"
                 className="w-full"
@@ -233,12 +228,45 @@ const Settings = () => {
             </CardContent>
           </Card>
 
+          {/* Terms & Agreements Section */}
+          <Card>
+            <CardContent className="gap-2 p-4">
+              <CardTitle className="text-lg mb-2">Legal</CardTitle>
+              <Text className="text-muted-foreground text-sm mb-2">
+                Read our policies to understand how we handle your data and your
+                rights.
+              </Text>
+              <Button
+                variant="outline"
+                className="w-full"
+                onPress={() => {
+                  Linking.openURL("https://pokareminder.com/privacy.html");
+                }}
+              >
+                <Text>Privacy Policy</Text>
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onPress={() => {
+                  Linking.openURL("https://pokareminder.com/terms.html");
+                }}
+              >
+                <Text>Terms & Conditions</Text>
+              </Button>
+            </CardContent>
+          </Card>
+
           {/* App Info Section */}
           <Card>
             <CardContent className="gap-2 p-4">
               <CardTitle className="text-lg mb-2">About</CardTitle>
-              <Text className="text-muted-foreground">App version 1.0.0</Text>
-              <Text className="text-muted-foreground">Made with ❤️</Text>
+              <Text className="text-muted-foreground text-sm mb-2">
+                Hi! I’m the developer and designer behind Poka. I built it as a
+                passion project to make everyday tasks like taking medications a
+                little more fun. I hope you enjoy it, and thank you for
+                supporting it ❤️
+              </Text>
             </CardContent>
           </Card>
         </View>
