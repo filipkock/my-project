@@ -37,9 +37,9 @@ const TabsLayout = () => {
           },
           tabBarItemStyle:
             route.name === "(medications)"
-              ? { marginRight: 48 }
+              ? { marginRight: 56 }
               : route.name === "collection"
-              ? { marginLeft: 48 }
+              ? { marginLeft: 56 }
               : {},
         })}
       >

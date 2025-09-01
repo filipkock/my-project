@@ -59,6 +59,26 @@ export async function refreshRemindersOnLaunch() {
     const med = medDoc.data();
     const medId = medDoc.id;
 
+    // Determine scheduling start: use the later of medication start-of-day and sevenDaysAgo
+    let medStartDate: Date | null = null;
+    if (med.startDate?.toDate) {
+      const d = med.startDate.toDate();
+      medStartDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+    const scheduleStart = medStartDate
+      ? medStartDate > sevenDaysAgo
+        ? medStartDate
+        : sevenDaysAgo
+      : sevenDaysAgo;
+
+    // If the medication starts after our scheduling window end, skip scheduling
+    if (medStartDate && medStartDate > chunkEndDate) {
+      console.log(
+        `Skipping ${medId}, startDate ${medStartDate.toISOString()} is after window ending ${chunkEndDate.toISOString()}`
+      );
+      continue;
+    }
+
     if (med.chunkEndDate?.toDate() >= chunkEndDate) {
       console.log(`Skipping ${medId}, already scheduled past ${chunkEndDate}`);
       continue;
@@ -68,7 +88,7 @@ export async function refreshRemindersOnLaunch() {
       query(
         collection(db, "reminders"),
         where("medId", "==", medId),
-        where("date", ">=", Timestamp.fromDate(sevenDaysAgo)),
+        where("date", ">=", Timestamp.fromDate(scheduleStart)),
         where("date", "<", Timestamp.fromDate(chunkEndDate))
       )
     );
@@ -89,7 +109,7 @@ export async function refreshRemindersOnLaunch() {
     );
 
     const newReminderDates = generateReminderDates(
-      sevenDaysAgo,
+      scheduleStart,
       chunkEndDate,
       med.intakeInterval,
       {
