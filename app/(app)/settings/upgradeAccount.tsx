@@ -97,6 +97,7 @@ export default function UpgradeAccount() {
               placeholder="Input your password"
               value={password}
               onChangeText={setPassword}
+              secureTextEntry
             />
           </View>
         </View>
