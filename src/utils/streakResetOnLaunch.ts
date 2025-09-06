@@ -37,6 +37,12 @@ export const checkAndResetStreakIfNeeded = async (): Promise<void> => {
     let lastChecked =
       (await AsyncStorage.getItem(LAST_CHECK_KEY)) ?? yesterdayStr;
 
+    // Early return if already checked today
+    if (lastChecked === todayStr) {
+      console.log("Already checked today, skipping.");
+      return;
+    }
+
     /* 3. Merge with Firestore meta */
     const userinfo = await getFromStorage("userDetails");
     if (!userinfo) return;

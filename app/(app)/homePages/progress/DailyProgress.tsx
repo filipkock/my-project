@@ -50,8 +50,8 @@ export default function DailyProgress() {
         <View className="flex-1 justify-center items-center gap-4">
           <Text className="text-2xl font-semibold text-center">
             {takenCount === totalCount
-              ? "Great job, all taken for today!"
-              : "Taken! Great job!"}
+              ? "Poka is proud… all done for today!"
+              : "Taken! Poka feels a little calmer now"}
           </Text>
           <VideoView
             style={{ width: 400, height: 400 }}
