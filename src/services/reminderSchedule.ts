@@ -67,13 +67,15 @@ export function generateReminderDates(
       }
       case "every X days": {
         dates.push(Timestamp.fromDate(current.toDate()));
-        const increment = localCustomValue && localCustomValue > 0 ? localCustomValue : 1;
+        const increment =
+          localCustomValue && localCustomValue > 0 ? localCustomValue : 1;
         current.add(increment, "days");
         break;
       }
       case "every X months": {
         dates.push(Timestamp.fromDate(current.toDate()));
-        const increment = localCustomValue && localCustomValue > 0 ? localCustomValue : 1;
+        const increment =
+          localCustomValue && localCustomValue > 0 ? localCustomValue : 1;
         current.add(increment, "months");
         break;
       }
@@ -111,3 +113,27 @@ export const formatTime = (date: Date): string => {
 export const timeStringToDate = (timeString: string): Date => {
   return moment(timeString, "HH:mm").toDate();
 };
+
+/**
+ * Clamps a user-selected end date to a chunk window that ends `afterDays` days from `now`.
+ * Returns both the computed windowEnd and the effectiveEnd to use for generation/queries.
+ */
+export function clampEndToWindow(
+  userEnd: Date | undefined | null,
+  now: Date = new Date(),
+  afterDays: number = 14
+): Date {
+  // ensure it's end of day 23:59:59.999 (end-of-day)
+  const windowEnd = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + afterDays,
+    23,
+    59,
+    59,
+    999
+  );
+  return userEnd && userEnd.getTime() <= windowEnd.getTime()
+    ? userEnd
+    : windowEnd;
+}

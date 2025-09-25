@@ -33,6 +33,7 @@ import {
   generateReminderDates,
   formatTime,
   timeStringToDate,
+  clampEndToWindow,
 } from "~/src/services/reminderSchedule";
 import { getFromStorage } from "~/src/services/storage";
 import { scheduleMedicationReminder } from "~/src/utils/scheduleMedicationReminder";
@@ -135,8 +136,9 @@ export default function EditMedicationForm({
 
       /* --- Reconcile reminders (-7 → +14 days) --- */
       const now = new Date();
-      const windowStart = new Date(now.getTime() - 7 * 864e5);
-      const windowEnd = new Date(now.getTime() + 14 * 864e5);
+      const DAY_MS = 24 * 60 * 60 * 1000; // 86_400_000, convers from miliseconds to days
+      const windowStart = new Date(now.getTime() - 7 * DAY_MS);
+      const effectiveEnd = clampEndToWindow(formData.endDate, now, 14);
 
       await updateDoc(medRef, {
         medicationName,
@@ -151,7 +153,7 @@ export default function EditMedicationForm({
         updatedAt: serverTimestamp(),
         uid: user.uid,
         userEmail: user.email ?? "",
-        chunkEndDate: Timestamp.fromDate(windowEnd),
+        chunkEndDate: Timestamp.fromDate(effectiveEnd),
       });
 
       // 1. Generate desired dates in window
@@ -161,7 +163,7 @@ export default function EditMedicationForm({
       for (const reminderTime of reminderTimes) {
         const dates = generateReminderDates(
           startDate ?? new Date(),
-          windowEnd,
+          effectiveEnd,
           intakeInterval,
           {
             customIntervalValue: parseInt(
@@ -188,7 +190,7 @@ export default function EditMedicationForm({
           collection(db, "reminders"),
           where("medId", "==", medId),
           where("date", ">=", Timestamp.fromDate(windowStart)),
-          where("date", "<=", Timestamp.fromDate(windowEnd))
+          where("date", "<=", Timestamp.fromDate(effectiveEnd))
         )
       );
 

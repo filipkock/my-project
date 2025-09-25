@@ -19,7 +19,10 @@ import {
 } from "firebase/firestore";
 import { Alert } from "react-native";
 import { scheduleMedicationReminder } from "~/src/utils/scheduleMedicationReminder";
-import { generateReminderDates } from "~/src/services/reminderSchedule";
+import {
+  generateReminderDates,
+  clampEndToWindow,
+} from "~/src/services/reminderSchedule";
 import { getFromStorage } from "~/src/services/storage";
 import { db } from "~/config/firebase";
 import { getAuth } from "firebase/auth";
@@ -101,7 +104,7 @@ export default function ConfirmStep() {
       const start = formData.startDate!;
       const now = new Date();
       const trueEndDate = formData.endDate; // can be null
-      const chunkEndDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+      const effectiveEnd = clampEndToWindow(formData.endDate, now, 14);
       const customInterval = parseInt(formData.customIntervalValue || "1", 10);
 
       // Generate desired dates similar to EditMedicationForm
@@ -111,7 +114,7 @@ export default function ConfirmStep() {
       for (const reminderTime of reminderTimes) {
         const dates = generateReminderDates(
           start,
-          chunkEndDate,
+          effectiveEnd,
           formData.intakeInterval,
           {
             customIntervalValue: customInterval,
@@ -132,7 +135,7 @@ export default function ConfirmStep() {
         specificDaysOfWeek: formData.specificDaysOfWeek,
         startDate: Timestamp.fromDate(start),
         endDate: trueEndDate ? Timestamp.fromDate(trueEndDate) : null,
-        chunkEndDate: Timestamp.fromDate(chunkEndDate),
+        chunkEndDate: Timestamp.fromDate(effectiveEnd),
         ...(userinfo.email ? { userEmail: userinfo.email } : {}),
         createdAt: serverTimestamp(),
         uid: userinfo.uid,

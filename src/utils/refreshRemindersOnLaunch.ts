@@ -10,7 +10,10 @@ import {
 } from "firebase/firestore";
 import { db } from "~/config/firebase";
 import { scheduleMedicationReminder } from "~/src/utils/scheduleMedicationReminder";
-import { generateReminderDates } from "~/src/services/reminderSchedule";
+import {
+  generateReminderDates,
+  clampEndToWindow,
+} from "~/src/services/reminderSchedule";
 import { getFromStorage, setLocalStorage } from "~/src/services/storage";
 
 export async function refreshRemindersOnLaunch() {
@@ -44,20 +47,20 @@ export async function refreshRemindersOnLaunch() {
     todayStart.getDate() - 7
   );
 
-  // end-of-day 14 days ahead (we use "<" for the query upper bound)
-  const chunkEndDate = new Date(
-    todayStart.getFullYear(),
-    todayStart.getMonth(),
-    todayStart.getDate() + 14,
-    23,
-    59,
-    59,
-    999
-  );
-
   for (const medDoc of medicationSnap.docs) {
     const med = medDoc.data();
     const medId = medDoc.id;
+
+    // Determine the rolling window end (today + 14d) and clamp to the med's endDate if sooner
+    const medEndDate: Date | null = med.endDate?.toDate
+      ? med.endDate.toDate()
+      : null;
+
+    const effectiveEnd = clampEndToWindow(
+      medEndDate ?? undefined,
+      todayStart,
+      14
+    );
 
     // Determine scheduling start: use the later of medication start-of-day and sevenDaysAgo
     let medStartDate: Date | null = null;
@@ -72,15 +75,18 @@ export async function refreshRemindersOnLaunch() {
       : sevenDaysAgo;
 
     // If the medication starts after our scheduling window end, skip scheduling
-    if (medStartDate && medStartDate > chunkEndDate) {
+    if (medStartDate && medStartDate > effectiveEnd) {
       console.log(
-        `Skipping ${medId}, startDate ${medStartDate.toISOString()} is after window ending ${chunkEndDate.toISOString()}`
+        `Skipping ${medId}, startDate ${medStartDate.toISOString()} is after window ending ${effectiveEnd.toISOString()}`
       );
       continue;
     }
 
-    if (med.chunkEndDate?.toDate() >= chunkEndDate) {
-      console.log(`Skipping ${medId}, already scheduled past ${chunkEndDate}`);
+    // if we’ve already scheduled up to (or beyond) what we intend, skip.
+    if (med.chunkEndDate?.toDate() >= effectiveEnd) {
+      console.log(
+        `Skipping ${medId}, already scheduled as needed past ${effectiveEnd}`
+      );
       continue;
     }
 
@@ -89,7 +95,7 @@ export async function refreshRemindersOnLaunch() {
         collection(db, "reminders"),
         where("medId", "==", medId),
         where("date", ">=", Timestamp.fromDate(scheduleStart)),
-        where("date", "<", Timestamp.fromDate(chunkEndDate))
+        where("date", "<=", Timestamp.fromDate(effectiveEnd))
       )
     );
 
@@ -110,7 +116,7 @@ export async function refreshRemindersOnLaunch() {
 
     const newReminderDates = generateReminderDates(
       scheduleStart,
-      chunkEndDate,
+      effectiveEnd,
       med.intakeInterval,
       {
         customIntervalValue: med.customInterval || 1,
@@ -182,7 +188,7 @@ export async function refreshRemindersOnLaunch() {
 
     // Update chunkEndDate
     await updateDoc(doc(db, "medication", medId), {
-      chunkEndDate: Timestamp.fromDate(chunkEndDate),
+      chunkEndDate: Timestamp.fromDate(effectiveEnd),
     });
   }
   await setLocalStorage("lastReminderRefreshDate", new Date().toISOString());
