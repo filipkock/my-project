@@ -115,15 +115,14 @@ export const timeStringToDate = (timeString: string): Date => {
 };
 
 /**
- * Clamps a user-selected end date to a chunk window that ends `afterDays` days from `now`.
- * Returns both the computed windowEnd and the effectiveEnd to use for generation/queries.
+ * Computes both the rolling window end (now + afterDays, end-of-day)
+ * and the effective end (min(userEnd, windowEnd)).
  */
-export function clampEndToWindow(
+export function computeEndWindow(
   userEnd: Date | undefined | null,
   now: Date = new Date(),
   afterDays: number = 14
-): Date {
-  // ensure it's end of day 23:59:59.999 (end-of-day)
+): { effectiveEnd: Date; windowEnd: Date } {
   const windowEnd = new Date(
     now.getFullYear(),
     now.getMonth(),
@@ -133,7 +132,19 @@ export function clampEndToWindow(
     59,
     999
   );
-  return userEnd && userEnd.getTime() <= windowEnd.getTime()
-    ? userEnd
-    : windowEnd;
+  const effectiveEnd =
+    userEnd && userEnd.getTime() <= windowEnd.getTime() ? userEnd : windowEnd;
+  return { effectiveEnd, windowEnd };
+}
+
+/**
+ * Clamps a user-selected end date to a chunk window that ends `afterDays` days from `now`.
+ * Returns the effectiveEnd to use for generation/queries.
+ */
+export function clampEndToWindow(
+  userEnd: Date | undefined | null,
+  now: Date = new Date(),
+  afterDays: number = 14
+): Date {
+  return computeEndWindow(userEnd, now, afterDays).effectiveEnd;
 }

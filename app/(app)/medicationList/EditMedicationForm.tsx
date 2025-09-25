@@ -33,7 +33,7 @@ import {
   generateReminderDates,
   formatTime,
   timeStringToDate,
-  clampEndToWindow,
+  computeEndWindow,
 } from "~/src/services/reminderSchedule";
 import { getFromStorage } from "~/src/services/storage";
 import { scheduleMedicationReminder } from "~/src/utils/scheduleMedicationReminder";
@@ -138,7 +138,11 @@ export default function EditMedicationForm({
       const now = new Date();
       const DAY_MS = 24 * 60 * 60 * 1000; // 86_400_000, convers from miliseconds to days
       const windowStart = new Date(now.getTime() - 7 * DAY_MS);
-      const effectiveEnd = clampEndToWindow(formData.endDate, now, 14);
+      const { effectiveEnd, windowEnd } = computeEndWindow(
+        formData.endDate,
+        now,
+        14
+      );
 
       await updateDoc(medRef, {
         medicationName,
@@ -190,7 +194,7 @@ export default function EditMedicationForm({
           collection(db, "reminders"),
           where("medId", "==", medId),
           where("date", ">=", Timestamp.fromDate(windowStart)),
-          where("date", "<=", Timestamp.fromDate(effectiveEnd))
+          where("date", "<=", Timestamp.fromDate(windowEnd))
         )
       );
 
