@@ -33,7 +33,7 @@ const plans = [
 type PurchaseOfferings = any;
 
 const SubscriptionPlans = () => {
-  const [selectedPlan, setSelectedPlan] = useState("monthly");
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
   // Offerings and subscription needs further setup and testing to fully work
   const [offerings, setOfferings] = useState<PurchaseOfferings | null>(null);
@@ -43,18 +43,41 @@ const SubscriptionPlans = () => {
   }, []);
 
   async function getOfferings() {
-    console.log("gettings offerings");
     const offerings = await Purchases.getOfferings();
     if (
       offerings.current !== null &&
       offerings.current.availablePackages.length !== 0
     ) {
-      console.log("Current offerings:", offerings);
       setOfferings(offerings);
+      // Set selected plan to the first available offering
+      if (offerings.current.availablePackages.length > 0) {
+        setSelectedPlan(offerings.current.availablePackages[0].identifier);
+      }
     } else {
       console.error("No current offerings available");
     }
   }
+
+  // Prevent spamming the subscribe button by disabling it during purchase
+  const [isPurchasing, setIsPurchasing] = useState(false);
+
+  const handleSubscribe = async (pkg: any) => {
+    if (isPurchasing) return;
+    setIsPurchasing(true);
+    try {
+      const { customerInfo } = await Purchases.purchasePackage(pkg);
+      if (
+        customerInfo.entitlements.active &&
+        Object.keys(customerInfo.entitlements.active).length > 0
+      ) {
+        router.push("/");
+      }
+    } catch (e: any) {
+      if (!e.userCancelled) {
+        console.error("Purchase error:", e);
+      }
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-secondary/40">
@@ -87,13 +110,15 @@ const SubscriptionPlans = () => {
         <View className="gap-6 px-4">
           {/* Premium Plan Options as Selectable Cards */}
           <View className="gap-4">
-            {plans.map((plan) => {
-              const isSelected = selectedPlan === plan.id;
+            {offerings?.current?.availablePackages.map((pkg: any) => {
+              const isSelected = selectedPlan === pkg.identifier;
+              // You may want to format price and description as needed
+              const product = pkg.product;
               return (
                 <TouchableOpacity
-                  key={plan.id}
+                  key={pkg.identifier}
                   activeOpacity={0.85}
-                  onPress={() => setSelectedPlan(plan.id)}
+                  onPress={() => setSelectedPlan(pkg.identifier)}
                   style={{ borderRadius: 24 }}
                 >
                   <Card
@@ -108,19 +133,20 @@ const SubscriptionPlans = () => {
                             isSelected ? "text-primary" : ""
                           }`}
                         >
-                          <Text>{plan.label}</Text>
+                          <Text>{product.title}</Text>
                         </CardTitle>
-                        {plan.discount && (
+                        {/* If you have discount info in product or pkg, show it here */}
+                        {product.introPrice && (
                           <Text className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                            {plan.discount}
+                            {product.introPrice}
                           </Text>
                         )}
                       </View>
                       <Text className="text-xl font-bold mb-1">
-                        {plan.price}
+                        {product.priceString}
                       </Text>
                       <Text className="text-muted-foreground mb-1">
-                        {plan.description}
+                        {product.description}
                       </Text>
                     </CardContent>
                   </Card>
@@ -132,9 +158,28 @@ const SubscriptionPlans = () => {
       </View>
       {/* Subscribe button at the bottom */}
       <View className="px-6 pb-6 pt-2 bg-secondary/40">
-        <Button variant="default" className="w-full">
+        <Button
+          variant="default"
+          className="w-full"
+          onPress={() => {
+            const selectedPkg = offerings?.current?.availablePackages.find(
+              (p: any) => p.identifier === selectedPlan
+            );
+            if (selectedPkg) {
+              handleSubscribe(selectedPkg);
+            } else {
+              console.error(
+                "Couldn't find package for selected plan identifier:",
+                selectedPlan
+              );
+            }
+          }}
+        >
           <Text>
-            Subscribe to {plans.find((p) => p.id === selectedPlan)?.label}
+            Subscribe to{" "}
+            {offerings?.current?.availablePackages.find(
+              (pkg: any) => pkg.identifier === selectedPlan
+            )?.product?.title || "a plan"}
           </Text>
         </Button>
         <Text className="text-md mt-4 text-muted-foreground text-center">
