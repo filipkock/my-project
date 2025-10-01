@@ -4,6 +4,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   ActivityIndicator,
+  Linking,
 } from "react-native";
 import { Text } from "~/components/ui/text";
 import { Card, CardContent, CardTitle } from "~/components/ui/card";

@@ -11,9 +11,56 @@ import { router } from "expo-router";
 
 import * as Notifications from "expo-notifications";
 import * as Linking from "expo-linking";
+import Purchases from "react-native-purchases";
 
 const Settings = () => {
   const { user, signOut } = useAuth(); // Access the signOut function and user from AuthProvider
+
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [planName, setPlanName] = useState("");
+
+  useEffect(() => {
+    const fetchSubscriptionStatus = async () => {
+      try {
+        const customerInfo = await Purchases.getCustomerInfo();
+        const activeEntitlements = customerInfo.entitlements.active;
+        if (activeEntitlements && Object.keys(activeEntitlements).length > 0) {
+          const firstEntitlement =
+            activeEntitlements[Object.keys(activeEntitlements)[0]];
+          const productId = firstEntitlement.productIdentifier || "";
+
+          // Fetch offerings to find product title
+          const offerings = await Purchases.getOfferings();
+          let productTitle = productId;
+
+          if (
+            offerings.current &&
+            offerings.current.availablePackages &&
+            offerings.current.availablePackages.length > 0
+          ) {
+            const matchedPackage = offerings.current.availablePackages.find(
+              (pkg) => pkg.product.identifier === productId
+            );
+            if (matchedPackage) {
+              productTitle = matchedPackage.product.title || productId;
+            }
+          }
+
+          setIsSubscribed(true);
+          setPlanName(productTitle);
+        } else {
+          setIsSubscribed(false);
+          setPlanName("");
+        }
+      } catch (error) {
+        console.log("Error fetching subscription status:", error);
+        setIsSubscribed(false);
+        setPlanName("");
+      }
+    };
+
+    fetchSubscriptionStatus();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -25,8 +72,6 @@ const Settings = () => {
     }
   };
 
-  // Expo notificaion testing
-  const { notification, expoPushToken, error } = useNotification();
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(
     null
   );
@@ -41,17 +86,7 @@ const Settings = () => {
     checkNotificationPermissions();
   }, []);
 
-  const requestAndRegisterNotifications = async () => {
-    const { status } = await Notifications.requestPermissionsAsync();
-    if (status === "granted") {
-      await registerPushToken();
-      setPermissionGranted(true);
-    } else {
-      console.log("Notification permission not granted.");
-    }
-  };
-
-  // Remove all notifications
+  // Remove all notifications - for testing
   async function clearAllNotifications() {
     await Notifications.cancelAllScheduledNotificationsAsync();
     console.log("All scheduled notifications cleared!");
@@ -66,27 +101,49 @@ const Settings = () => {
         <Text className="text-3xl font-bold px-2 pt-8 pb-2">Settings</Text>
         <View className="gap-6">
           {/* Subscription Section */}
-          <Card className="bg-black mb-6">
-            <CardContent className="gap-2 p-6">
-              <CardTitle className="text-2xl text-white mb-2">
-                Subscription
-              </CardTitle>
-              <Text className="text-white text-base mb-4">
-                Unlock premium features and support the app!
-              </Text>
-              <Button
-                variant="default"
-                className="bg-white border-0"
-                onPress={() => {
-                  router.push("/subscription/subscriptionPlans");
-                }}
-              >
-                <Text className="text-black font-bold">
-                  Manage Subscription
+          {isSubscribed ? (
+            <Card>
+              <CardContent className="gap-2 p-4">
+                <CardTitle className="text-lg mb-2">Subscription</CardTitle>
+                <Text className="text-base mb-4">
+                  You're subscribed to {planName}
                 </Text>
-              </Button>
-            </CardContent>
-          </Card>
+                <Button
+                  variant={"outline"}
+                  className="w-full"
+                  onPress={() => {
+                    Linking.openURL(
+                      "itms-apps://apps.apple.com/account/subscriptions"
+                    );
+                  }}
+                >
+                  <Text>Manage Subscription</Text>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="bg-black mb-6">
+              <CardContent className="gap-2 p-6">
+                <CardTitle className="text-2xl text-white mb-2">
+                  Subscription
+                </CardTitle>
+                <Text className="text-white text-base mb-4">
+                  Unlock premium features and support the app!
+                </Text>
+                <Button
+                  variant="default"
+                  className="bg-white border-0"
+                  onPress={() => {
+                    router.push("/subscription/subscriptionPlans");
+                  }}
+                >
+                  <Text className="text-black font-bold">
+                    Manage Subscription
+                  </Text>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Account Section */}
           <Card>
