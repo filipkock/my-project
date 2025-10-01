@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Linking,
+  ScrollView,
 } from "react-native";
 import { Text } from "~/components/ui/text";
 import { Card, CardContent, CardTitle } from "~/components/ui/card";
@@ -18,6 +19,7 @@ import {
   HeartIcon,
 } from "react-native-heroicons/solid";
 import Purchases from "react-native-purchases";
+import { Badge } from "~/components/ui/badge";
 
 type PurchaseOfferings = any;
 
@@ -87,9 +89,23 @@ const SubscriptionPlans = () => {
     setIsRestoring(false);
   };
 
+  // Helper function to get marketing-friendly plan names
+  const getFriendlyPlanName = (identifier: string) => {
+    switch (identifier) {
+      case "poka_premium_monthly":
+      case "$rc_monthly":
+        return "Monthly";
+      case "poka_premium_yearly":
+      case "$rc_annual":
+        return "Yearly";
+      default:
+        return identifier;
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-secondary/40">
-      <View className="flex-1 w-full p-6 ">
+      <ScrollView className="flex-1 w-full p-6">
         <XMarkIcon size={28} color="#222" onPress={() => router.back()} />
         <Text className="text-3xl font-bold px-6 pt-8 pb-6">
           Unlock Pokas Full Potential
@@ -102,17 +118,21 @@ const SubscriptionPlans = () => {
           </View>
           <View className="flex-row items-center gap-2">
             <StarIcon size={20} color="#000" />
-            <Text className="text-base">Unlock every Poka card</Text>
+            <Text className="text-base">Unlock all Poka card decks</Text>
           </View>
           <View className="flex-row items-center gap-2">
             <HeartIcon size={20} color="#000" />
-            <Text className="text-base">
-              Priority support — you’re first in line
-            </Text>
+            <Text className="text-base">Get priority support</Text>
           </View>
           <View className="flex-row items-center gap-2">
             <SparklesIcon size={20} color="#000" />
-            <Text className="text-base">Early access to new features</Text>
+            <Text className="text-base">
+              Early access to new cards & features
+            </Text>
+          </View>
+          <View className="flex-row items-center gap-2">
+            <XMarkIcon size={20} color="#000" />
+            <Text className="text-base">Cancel your subscription anytime</Text>
           </View>
         </View>
         <View className="gap-6 px-4">
@@ -122,6 +142,25 @@ const SubscriptionPlans = () => {
               const isSelected = selectedPlan === pkg.identifier;
               // You may want to format price and description as needed
               const product = pkg.product;
+              // Determine if yearly or monthly
+              const isYearly =
+                pkg.identifier === "poka_premium_yearly" ||
+                pkg.identifier === "$rc_annual";
+              const isMonthly =
+                pkg.identifier === "poka_premium_monthly" ||
+                pkg.identifier === "$rc_monthly";
+              // Title text: "Yearly" or "Monthly"
+              const titleText = isYearly
+                ? "Yearly "
+                : isMonthly
+                ? "Monthly "
+                : pkg.identifier;
+              // Description text
+              const descriptionText = isYearly
+                ? "Try 7 days free"
+                : isMonthly
+                ? "Try 3 days free"
+                : product.description;
               return (
                 <TouchableOpacity
                   key={pkg.identifier}
@@ -134,6 +173,13 @@ const SubscriptionPlans = () => {
                       isSelected ? "border-primary" : "border-gray-200"
                     }`}
                   >
+                    <View className="absolute top-3 right-5 z-10">
+                      {isYearly && (
+                        <Badge>
+                          <Text>Most Popular</Text>
+                        </Badge>
+                      )}
+                    </View>
                     <CardContent className="p-5 gap-2">
                       <View className="flex-row items-center justify-between mb-1">
                         <CardTitle
@@ -141,20 +187,26 @@ const SubscriptionPlans = () => {
                             isSelected ? "text-primary" : ""
                           }`}
                         >
-                          <Text>{product.title}</Text>
+                          <View className="flex-row items-center">
+                            <Text>{titleText}</Text>
+                            {isYearly && (
+                              <Text className="ml-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                                Save 20%
+                              </Text>
+                            )}
+                          </View>
                         </CardTitle>
-                        {/* If you have discount info in product or pkg, show it here */}
-                        {product.introPrice && (
-                          <Text className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                            {product.introPrice}
-                          </Text>
-                        )}
                       </View>
                       <Text className="text-xl font-bold mb-1">
                         {product.priceString}
+                        {(isYearly || isMonthly) && (
+                          <Text className="text-sm text-muted-foreground ml-1">
+                            {isYearly ? "/ year" : isMonthly ? "/ month" : ""}
+                          </Text>
+                        )}
                       </Text>
                       <Text className="text-muted-foreground mb-1">
-                        {product.description}
+                        {descriptionText}
                       </Text>
                     </CardContent>
                   </Card>
@@ -163,7 +215,7 @@ const SubscriptionPlans = () => {
             })}
           </View>
         </View>
-      </View>
+      </ScrollView>
       {/* Subscribe button at the bottom */}
       <View className="px-6 pb-6 pt-2 bg-secondary/40">
         <Button
@@ -192,9 +244,11 @@ const SubscriptionPlans = () => {
           ) : (
             <Text>
               Subscribe to{" "}
-              {offerings?.current?.availablePackages.find(
-                (pkg: any) => pkg.identifier === selectedPlan
-              )?.product?.title || "a plan"}
+              {getFriendlyPlanName(
+                offerings?.current?.availablePackages.find(
+                  (pkg: any) => pkg.identifier === selectedPlan
+                )?.identifier || ""
+              )}
             </Text>
           )}
         </Button>
