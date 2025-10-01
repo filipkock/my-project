@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { View, SafeAreaView, TouchableOpacity } from "react-native";
+import {
+  View,
+  SafeAreaView,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { Text } from "~/components/ui/text";
 import { Card, CardContent, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -12,23 +17,6 @@ import {
   HeartIcon,
 } from "react-native-heroicons/solid";
 import Purchases from "react-native-purchases";
-
-const plans = [
-  {
-    id: "monthly",
-    label: "Monthly",
-    price: "$4.99/month",
-    description: "Billed monthly, cancel anytime.",
-    discount: null,
-  },
-  {
-    id: "yearly",
-    label: "Yearly",
-    price: "$39.99/year",
-    description: "Best value! Save 33% vs monthly.",
-    discount: "Save 33%",
-  },
-];
 
 type PurchaseOfferings = any;
 
@@ -58,8 +46,9 @@ const SubscriptionPlans = () => {
     }
   }
 
-  // Prevent spamming the subscribe button by disabling it during purchase
+  // Loading states
   const [isPurchasing, setIsPurchasing] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
 
   const handleSubscribe = async (pkg: any) => {
     if (isPurchasing) return;
@@ -70,13 +59,31 @@ const SubscriptionPlans = () => {
         customerInfo.entitlements.active &&
         Object.keys(customerInfo.entitlements.active).length > 0
       ) {
-        router.push("/");
+        router.push("/(app)/subscription/subscriptionSuccess");
       }
     } catch (e: any) {
       if (!e.userCancelled) {
         console.error("Purchase error:", e);
       }
     }
+    setIsPurchasing(false);
+  };
+
+  const handleRestorePurchases = async () => {
+    if (isRestoring || isPurchasing) return;
+    setIsRestoring(true);
+    try {
+      const customerInfo = await Purchases.restorePurchases();
+      if (
+        customerInfo.entitlements?.active &&
+        Object.keys(customerInfo.entitlements.active).length > 0
+      ) {
+        router.push("/(app)/subscription/subscriptionSuccess");
+      }
+    } catch (e: any) {
+      console.error("Restore purchases error:", e);
+    }
+    setIsRestoring(false);
   };
 
   return (
@@ -161,6 +168,7 @@ const SubscriptionPlans = () => {
         <Button
           variant="default"
           className="w-full"
+          disabled={isPurchasing || !selectedPlan}
           onPress={() => {
             const selectedPkg = offerings?.current?.availablePackages.find(
               (p: any) => p.identifier === selectedPlan
@@ -175,16 +183,36 @@ const SubscriptionPlans = () => {
             }
           }}
         >
-          <Text>
-            Subscribe to{" "}
-            {offerings?.current?.availablePackages.find(
-              (pkg: any) => pkg.identifier === selectedPlan
-            )?.product?.title || "a plan"}
-          </Text>
+          {isPurchasing ? (
+            <View className="flex-row items-center gap-2">
+              <ActivityIndicator color="#fff" />
+              <Text>Subscribing...</Text>
+            </View>
+          ) : (
+            <Text>
+              Subscribe to{" "}
+              {offerings?.current?.availablePackages.find(
+                (pkg: any) => pkg.identifier === selectedPlan
+              )?.product?.title || "a plan"}
+            </Text>
+          )}
         </Button>
-        <Text className="text-md mt-4 text-muted-foreground text-center">
-          Cancel anytime{" "}
-        </Text>
+        <View className="items-center mt-4">
+          <Button
+            variant="link"
+            disabled={isRestoring || isPurchasing}
+            onPress={handleRestorePurchases}
+          >
+            {isRestoring ? (
+              <View className="flex-row items-center gap-2">
+                <ActivityIndicator />
+                <Text>Restoring...</Text>
+              </View>
+            ) : (
+              <Text>Restore Purchases</Text>
+            )}
+          </Button>
+        </View>
       </View>
     </SafeAreaView>
   );

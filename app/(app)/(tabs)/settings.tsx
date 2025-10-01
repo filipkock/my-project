@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { View, Alert, SafeAreaView, ScrollView } from "react-native";
 import { Text } from "~/components/ui/text";
 import { useAuth } from "~/src/context/auth";
-import { User } from "firebase/auth";
 import { Button } from "~/components/ui/button";
 import { clearStorage } from "~/src/services/storage";
 import { useNotification } from "~/src/context/notificationsContext";
