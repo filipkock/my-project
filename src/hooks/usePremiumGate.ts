@@ -1,22 +1,21 @@
 // hooks/usePremiumGate.ts
 import { Alert, Platform } from "react-native";
 import { useSubscription } from "../providers/SubscriptionProvider";
+import { useRouter } from "expo-router";
 // If you use a toast lib, import it here instead of Alert
 
-function showUpgradeToast() {
-  // Replace with your toast lib if you have one (e.g. react-native-toast-message)
+function showUpgradeToast(onUpgrade: () => void) {
   const msg = "Upgrade to Premium to use this feature.";
-  if (Platform.OS === "android") {
-    // simple optional: ToastAndroid.show(msg, ToastAndroid.SHORT);
-    Alert.alert("Premium feature", msg);
-  } else {
-    Alert.alert("Premium feature", msg);
-  }
+  Alert.alert("Premium feature", msg, [
+    { text: "OK", style: "cancel" },
+    { text: "Upgrade to Premium", onPress: onUpgrade },
+  ]);
 }
 
 export function usePremiumGate() {
   const { status } = useSubscription();
   const isPremium = !!status?.active;
+  const router = useRouter();
 
   /** Call this to guard an action. Returns true if allowed, false if blocked. */
   const guard = (action?: () => void) => {
@@ -24,7 +23,7 @@ export function usePremiumGate() {
       action?.();
       return true;
     }
-    showUpgradeToast();
+    showUpgradeToast(() => router.push("/subscription/subscriptionPlans"));
     return false;
   };
 

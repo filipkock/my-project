@@ -26,10 +26,12 @@ import {
   cardQuotes,
   cardNames,
   cardCollections,
+  cardIsPremium,
 } from "~/src/constants/cardMap";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { Badge } from "~/components/ui/badge";
 import { Stepper } from "~/components/custom/Stepper";
+import { usePremiumGate } from "~/src/hooks/usePremiumGate";
 
 type UserCards = {
   uid: string;
@@ -39,6 +41,7 @@ type UserCards = {
 
 export default function Reward() {
   const router = useRouter();
+  const { isPremium } = usePremiumGate();
 
   // Video player logic for pack opening animation
   const [videoFinished, setVideoFinished] = useState(false);
@@ -124,7 +127,16 @@ export default function Reward() {
           return;
         }
 
-        const newCardId = Math.floor(Math.random() * 15) + 1;
+        // Build the list of card IDs the user is eligible to receive
+        const allIds = Object.keys(cardCollections).map((k) => Number(k));
+        const eligibleIds = isPremium
+          ? allIds
+          : allIds.filter((id) => !cardIsPremium[id]);
+
+        // Fallback guard: if for some reason list is empty, fall back to all
+        const pool = eligibleIds.length > 0 ? eligibleIds : allIds;
+        const newCardId = pool[Math.floor(Math.random() * pool.length)];
+
         const isNew = !userCards.cards[newCardId];
         setIsNewCard(isNew);
 

@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Linking,
   ScrollView,
+  Alert,
 } from "react-native";
 import { Text } from "~/components/ui/text";
 import { Card, CardContent, CardTitle } from "~/components/ui/card";
@@ -77,14 +78,35 @@ const SubscriptionPlans = () => {
     setIsRestoring(true);
     try {
       const customerInfo = await Purchases.restorePurchases();
-      if (
+      const hasActiveEntitlement = !!(
         customerInfo.entitlements?.active &&
         Object.keys(customerInfo.entitlements.active).length > 0
-      ) {
+      );
+
+      if (hasActiveEntitlement) {
         router.push("/(app)/subscription/subscriptionSuccess");
+      } else {
+        Alert.alert(
+          "No purchases found",
+          "We couldn't find any previous purchases to restore.\n\nMake sure you're signed in with the same Apple ID you used for the purchase, then try again.",
+          [
+            { text: "OK" },
+            {
+              text: "Manage Subscriptions",
+              onPress: () =>
+                Linking.openURL(
+                  "itms-apps://apps.apple.com/account/subscriptions"
+                ),
+            },
+          ]
+        );
       }
     } catch (e: any) {
       console.error("Restore purchases error:", e);
+      Alert.alert(
+        "Restore failed",
+        "Something went wrong while restoring purchases. Please try again in a moment."
+      );
     }
     setIsRestoring(false);
   };
@@ -257,6 +279,7 @@ const SubscriptionPlans = () => {
             variant="link"
             disabled={isRestoring || isPurchasing}
             onPress={handleRestorePurchases}
+            size="sm"
           >
             {isRestoring ? (
               <View className="flex-row items-center gap-2">

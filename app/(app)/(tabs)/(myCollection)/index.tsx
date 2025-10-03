@@ -9,14 +9,18 @@ import {
   cardImages,
   cardNames,
   cardCollections,
+  PREMIUM_COLLECTIONS,
 } from "~/src/constants/cardMap";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { LockClosedIcon } from "react-native-heroicons/outline";
 import Toast from "react-native-toast-message";
+import { Badge } from "~/components/ui/badge";
+import { usePremiumGate } from "~/src/hooks/usePremiumGate";
 
 const collection = () => {
   const router = useRouter();
   const [unlockedCards, setUnlockedCards] = useState<number[]>([]);
+  const { isPremium } = usePremiumGate();
 
   useEffect(() => {
     const fetchUnlockedCards = async () => {
@@ -43,18 +47,31 @@ const collection = () => {
   }, {} as Record<string, { id: number; name: string }[]>);
 
   const handleCardPress = (id: number, isUnlocked: boolean) => {
+    const collectionName = cardCollections[id];
+    const isCollectionPremium = PREMIUM_COLLECTIONS.has(collectionName);
+
     if (isUnlocked) {
       router.push({
         pathname: "/(app)/collectionDetails/details",
         params: { id: id.toString() },
       });
-    } else {
+      return;
+    }
+
+    if (!isPremium && isCollectionPremium) {
       Toast.show({
         type: "plain",
-        text1: "Card Locked",
-        text2: "Unlock this card by taking your medications!",
+        text1: "Premium feature",
+        text2: "Upgrade to Premium to unlock this collection.",
       });
+      return;
     }
+
+    Toast.show({
+      type: "plain",
+      text1: "Card Locked",
+      text2: "Unlock this card by taking your medications!",
+    });
   };
 
   return (
@@ -63,7 +80,14 @@ const collection = () => {
         <Text className="text-xl font-bold mb-4">Collection</Text>
         {Object.entries(groupedCards).map(([collectionName, cards]) => (
           <View key={collectionName} className="mb-8">
-            <Text className="text-md font-semibold mb-4">{collectionName}</Text>
+            <View className="flex-row items-center gap-2 mb-4">
+              <Text className="text-md font-semibold">{collectionName}</Text>
+              {!isPremium && PREMIUM_COLLECTIONS.has(collectionName) && (
+                <Badge>
+                  <Text className="text-xs">Premium collection</Text>
+                </Badge>
+              )}
+            </View>
             <View className="flex-row flex-wrap -mx-2">
               {cards.map(({ id, name }) => {
                 const isUnlocked = unlockedCards.includes(id);
