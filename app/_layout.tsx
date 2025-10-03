@@ -32,6 +32,7 @@ import toastConfig from "~/src/constants/toastConfig";
 import NoInternetBanner from "~/components/custom/NoInternetBanner";
 import Purchases, { LOG_LEVEL } from "react-native-purchases";
 import Constants from "expo-constants";
+import { SubscriptionProvider } from "~/src/providers/SubscriptionProvider";
 
 // ==== react native reusables theme setup ====
 const LIGHT_THEME: Theme = {
@@ -144,18 +145,22 @@ export default function RootLayout() {
         <Splash onFinish={() => setShowSplash(false)} />
       ) : (
         <AuthProvider>
-          <NotificationProvider>
-            <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-              <SelectedDateProvider>
-                <NoInternetBanner />
-                <Slot />
+          <SubscriptionProvider>
+            <NotificationProvider>
+              <ThemeProvider
+                value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}
+              >
+                <SelectedDateProvider>
+                  <NoInternetBanner />
+                  <Slot />
 
-                {/* Keep these inside, too */}
-                <PortalHost />
-                <Toast config={toastConfig} />
-              </SelectedDateProvider>
-            </ThemeProvider>
-          </NotificationProvider>
+                  {/* Keep these inside, too */}
+                  <PortalHost />
+                  <Toast config={toastConfig} />
+                </SelectedDateProvider>
+              </ThemeProvider>
+            </NotificationProvider>
+          </SubscriptionProvider>
         </AuthProvider>
       )}
     </>

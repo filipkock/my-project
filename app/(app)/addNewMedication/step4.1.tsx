@@ -11,9 +11,10 @@ import {
 } from "react-native";
 import { Text } from "~/components/ui/text";
 import { router, useLocalSearchParams } from "expo-router";
-import { ChevronLeftIcon } from "react-native-heroicons/solid";
+import { ChevronLeftIcon, LockClosedIcon } from "react-native-heroicons/solid";
 import { ChevronRight } from "~/lib/icons/ChevronRight";
 import { Stepper } from "~/components/custom/Stepper";
+import { usePremiumGate } from "~/src/hooks/usePremiumGate";
 
 const FrequencyList = [
   "Once a day",
@@ -34,6 +35,7 @@ export default function Step4_1() {
     customIntervalValue,
   } = useLocalSearchParams();
   const questionOpacity = useRef(new Animated.Value(1)).current;
+  const { isPremium, guard } = usePremiumGate();
 
   if (
     Platform.OS === "android" &&
@@ -105,11 +107,21 @@ export default function Step4_1() {
           {FrequencyList.map((option, index) => (
             <TouchableOpacity
               key={option}
-              onPress={() => handleSelect(index)}
+              onPress={() =>
+                index === 0
+                  ? handleSelect(index)
+                  : guard(() => handleSelect(index))
+              }
               className="py-4 flex-row justify-between items-center border-b border-gray-200 px-2 mb-2 min-h-[56px] w-full rounded-xl bg-white"
             >
               <Text className="text-lg">{option}</Text>
-              <ChevronRight size={28} color="black" />
+              {index === 0 ? (
+                <ChevronRight size={28} color="black" />
+              ) : isPremium ? (
+                <ChevronRight size={28} color="black" />
+              ) : (
+                <LockClosedIcon size={28} color="black" />
+              )}
             </TouchableOpacity>
           ))}
         </View>
