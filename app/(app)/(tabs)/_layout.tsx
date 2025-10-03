@@ -1,4 +1,5 @@
 import React from "react";
+import { Alert } from "react-native";
 import { Tabs } from "expo-router";
 import { useTheme } from "@react-navigation/native";
 import {
@@ -13,9 +14,14 @@ import { router } from "expo-router";
 import { checkAndResetStreakIfNeeded } from "~/src/utils/streakResetOnLaunch";
 import { refreshRemindersOnLaunch } from "~/src/utils/refreshRemindersOnLaunch";
 import { useGlobalNotificationHandler } from "~/src/utils/useGlobalNotificationHandler";
+import { usePremiumGate } from "~/src/hooks/usePremiumGate";
+import { getFromStorage } from "~/src/services/storage";
+import { db } from "~/config/firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 const TabsLayout = () => {
   const { colors } = useTheme();
+  const { isPremium } = usePremiumGate();
 
   React.useEffect(() => {
     // Check if we should reset the streak on app launch
@@ -26,6 +32,52 @@ const TabsLayout = () => {
 
   // Runs if user changes from notificatinos denied to allowed, and reschedule notifications
   useGlobalNotificationHandler();
+
+  const handleAddMedicationPress = async () => {
+    try {
+      if (isPremium) {
+        router.push("/addNewMedication/step1");
+        return;
+      }
+
+      // Free users: allow only one medication
+      const user = await getFromStorage("userDetails");
+      const uid = user?.uid;
+      if (!uid) {
+        // Fallback: if no user, block and hint to login
+        Alert.alert("Sign in required", "Please sign in to add a medication.");
+        return;
+      }
+
+      const medicationQuery = query(
+        collection(db, "medication"),
+        where("uid", "==", uid)
+      );
+      const snapshot = await getDocs(medicationQuery);
+      const count = snapshot.size;
+
+      if (count >= 1) {
+        Alert.alert(
+          "Limit reached",
+          "The free version allows one medication. Upgrade to Premium for unlimited medications.",
+          [
+            { text: "OK", style: "cancel" },
+            {
+              text: "Upgrade to Premium",
+              onPress: () => router.push("/subscription/subscriptionPlans"),
+            },
+          ]
+        );
+        return;
+      }
+
+      // Under the limit → allow
+      router.push("/addNewMedication/step1");
+    } catch (e) {
+      console.error("Add medication gate error", e);
+      Alert.alert("Something went wrong", "Please try again in a moment.");
+    }
+  };
 
   return (
     <>
@@ -92,7 +144,7 @@ const TabsLayout = () => {
       <Button
         className="absolute left-1/2 -translate-x-1/2 w-16 h-16 rounded-full"
         style={{ bottom: 50 }}
-        onPress={() => router.push("/addNewMedication/step1")}
+        onPress={handleAddMedicationPress}
         size={"icon"}
       >
         <PlusIcon size={24} color="white" />
