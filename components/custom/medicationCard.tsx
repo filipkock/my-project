@@ -258,7 +258,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
                   <Text className="text-gray-500">Taken {takenTimeStr}</Text>
                   {typeof medication.onTime !== undefined && (
                     <Text className="text-gray-500">
-                      {medication.onTime ? "• On time" : "• Late"}
+                      {medication.onTime ? "•  On time" : "•  Not on time"}
                     </Text>
                   )}
                 </View>
