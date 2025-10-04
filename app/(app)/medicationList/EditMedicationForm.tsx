@@ -55,6 +55,7 @@ import {
   SelectItem,
 } from "~/components/ui/select";
 import { DaySelector } from "~/components/custom/DaySelector";
+import { usePremiumGate } from "~/src/hooks/usePremiumGate";
 
 import type { FormData } from "~/src/types/medication";
 
@@ -79,6 +80,9 @@ export default function EditMedicationForm({
   const [showTime, setShowTime] = useState<number | false>(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  /* ───────────── Premium hook ───────────── */
+  const { isPremium, guard } = usePremiumGate();
 
   /* ───────────── Form state ───────────── */
   const init = defaultValues ?? {};
@@ -543,12 +547,16 @@ export default function EditMedicationForm({
           </Pressable>
           {formData.reminderTimes.length > 1 && (
             <TouchableOpacity
-              onPress={() => {
-                setFormData((prev) => ({
-                  ...prev,
-                  reminderTimes: prev.reminderTimes.filter((_, i) => i !== idx),
-                }));
-              }}
+              onPress={() =>
+                guard(() => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    reminderTimes: prev.reminderTimes.filter(
+                      (_, i) => i !== idx
+                    ),
+                  }));
+                })
+              }
               style={{ marginLeft: 8 }}
             >
               <Text style={{ color: "red" }}>Remove</Text>
@@ -557,12 +565,14 @@ export default function EditMedicationForm({
         </View>
       ))}
       <Button
-        onPress={() => {
-          setFormData((prev) => ({
-            ...prev,
-            reminderTimes: [...prev.reminderTimes, formatTime(new Date())],
-          }));
-        }}
+        onPress={() =>
+          guard(() => {
+            setFormData((prev) => ({
+              ...prev,
+              reminderTimes: [...prev.reminderTimes, formatTime(new Date())],
+            }));
+          })
+        }
         variant="outline"
         className="mb-4"
       >
