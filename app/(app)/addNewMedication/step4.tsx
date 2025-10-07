@@ -31,6 +31,10 @@ export default function Step4() {
   const [showIntervalSelector, setShowIntervalSelector] = useState(false);
   const [customIntervalValue, setCustomIntervalValue] = useState("");
 
+  const isAdvanced =
+    showDaySelector ||
+    ["every X days", "every X weeks", "every X months"].includes(interval);
+
   const questionOpacity = useRef(new Animated.Value(1)).current;
 
   if (
@@ -85,7 +89,17 @@ export default function Step4() {
               <ChevronLeftIcon
                 size={32}
                 color="black"
-                onPress={() => router.back()}
+                onPress={() => {
+                  if (isAdvanced) {
+                    // Reset advanced UI and return to the options list
+                    setShowDaySelector(false);
+                    setShowIntervalSelector(false);
+                    setInterval("");
+                    setCustomIntervalValue("");
+                    return;
+                  }
+                  router.back();
+                }}
                 className="mb-6"
               />
               <View className="flex-1 items-center -ml-8">
@@ -124,22 +138,23 @@ export default function Step4() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {intervalToTakeList.map((option) => (
-              <TouchableOpacity
-                key={option}
-                onPress={() => handleSelect(option)}
-                className="py-4 flex-row justify-between items-center border-b border-gray-200 px-2 mb-2"
-                style={{
-                  minHeight: 56,
-                  width: "100%",
-                  borderRadius: 12,
-                  backgroundColor: interval === option ? "#f3f4f6" : "#fff",
-                }}
-              >
-                <Text className="text-lg">{option}</Text>
-                <ChevronRight size={28} color="black" />
-              </TouchableOpacity>
-            ))}
+            {!isAdvanced &&
+              intervalToTakeList.map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  onPress={() => handleSelect(option)}
+                  className="py-4 flex-row justify-between items-center border-b border-gray-200 px-2 mb-2"
+                  style={{
+                    minHeight: 56,
+                    width: "100%",
+                    borderRadius: 12,
+                    backgroundColor: interval === option ? "#f3f4f6" : "#fff",
+                  }}
+                >
+                  <Text className="text-lg">{option}</Text>
+                  <ChevronRight size={28} color="black" />
+                </TouchableOpacity>
+              ))}
 
             {showDaySelector && (
               <>
@@ -166,6 +181,20 @@ export default function Step4() {
                     NEXT
                   </Text>
                 </Button>
+                {isAdvanced && (
+                  <Button
+                    variant="outline"
+                    className="mt-3"
+                    onPress={() => {
+                      setShowDaySelector(false);
+                      setShowIntervalSelector(false);
+                      setInterval("");
+                      setCustomIntervalValue("");
+                    }}
+                  >
+                    <Text className="text-center">Back to options</Text>
+                  </Button>
+                )}
               </>
             )}
 
@@ -173,7 +202,9 @@ export default function Step4() {
               interval
             ) && (
               <>
-                <Label className="mt-5 mb-2">Enter X (number)</Label>
+                <Label className="mt-5 mb-2">
+                  How many {interval.replace("every X ", "")}?
+                </Label>
                 <Input
                   keyboardType="numeric"
                   placeholder="Input custom interval value"
@@ -204,6 +235,20 @@ export default function Step4() {
                     NEXT
                   </Text>
                 </Button>
+                {isAdvanced && (
+                  <Button
+                    variant="outline"
+                    className="mt-3"
+                    onPress={() => {
+                      setShowDaySelector(false);
+                      setShowIntervalSelector(false);
+                      setInterval("");
+                      setCustomIntervalValue("");
+                    }}
+                  >
+                    <Text className="text-center">Back to options</Text>
+                  </Button>
+                )}
               </>
             )}
           </ScrollView>

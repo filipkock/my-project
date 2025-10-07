@@ -161,6 +161,7 @@ export default function Step6EndDate() {
                 whenToTake,
                 interval,
                 specificDaysOfWeek,
+                customIntervalValue,
                 timesPerDay,
                 startDate,
                 ...(endDate
