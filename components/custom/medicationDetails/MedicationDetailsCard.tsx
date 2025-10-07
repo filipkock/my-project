@@ -10,7 +10,6 @@ interface Medication {
   medicationType: string;
   intakeInterval: string;
   reminderTimes: string[];
-  whenToTake: string;
 }
 
 interface MedicationCardProps {

@@ -159,7 +159,6 @@ export async function refreshRemindersOnLaunch() {
         const docRef = await addDoc(collection(db, "reminders"), {
           date: Timestamp.fromDate(normalizedDate),
           time: timeStr,
-          whenToTake: med.whenToTake,
           status: "pending",
           medId,
           uid: userinfo.uid,
@@ -179,7 +178,6 @@ export async function refreshRemindersOnLaunch() {
           uid: userinfo.uid,
           date: asDate,
           time: timeStr,
-          whenToTake: med.whenToTake,
           medId,
           notificationId: null,
         });

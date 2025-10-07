@@ -39,7 +39,6 @@ import { getFromStorage } from "~/src/services/storage";
 import { scheduleMedicationReminder } from "~/src/utils/scheduleMedicationReminder";
 import {
   TypeList,
-  WhenToTakeList,
   intervalToTakeList,
 } from "~/src/constants/addMedicationOptions";
 import { Input } from "~/components/ui/input";
@@ -89,7 +88,6 @@ export default function EditMedicationForm({
   const [formData, setFormData] = useState<FormData>({
     medicationName: init.medicationName ?? "",
     medicationType: init.medicationType ?? "",
-    whenToTake: init.whenToTake ?? "",
     intakeInterval: init.intakeInterval ?? "",
     startDate: init.startDate ? new Date(init.startDate) : undefined,
     endDate: init.endDate ? new Date(init.endDate) : undefined,
@@ -117,13 +115,12 @@ export default function EditMedicationForm({
     const {
       medicationName,
       medicationType,
-      whenToTake,
       intakeInterval,
       startDate,
       endDate,
     } = formData;
 
-    if (!(medicationName && medicationType && whenToTake && intakeInterval)) {
+    if (!(medicationName && medicationType && intakeInterval)) {
       Alert.alert("Missing fields", "Fill in required fields.");
       return;
     }
@@ -151,7 +148,6 @@ export default function EditMedicationForm({
       await updateDoc(medRef, {
         medicationName,
         medicationType,
-        whenToTake,
         intakeInterval,
         customInterval: parseInt(formData.customIntervalValue || "1", 10),
         specificDaysOfWeek: formData.specificDaysOfWeek,
@@ -228,13 +224,11 @@ export default function EditMedicationForm({
             const data = snapDoc.data();
             // Extract correct time from key
             const [dateStr, timeStr] = key.split("|");
-            const needsReschedule =
-              data && (data.time !== timeStr || data.whenToTake !== whenToTake);
+            const needsReschedule = data && data.time !== timeStr;
 
             // Always update Firestore fields
             await updateDoc(reminderRef, {
               time: timeStr,
-              whenToTake,
               updatedAt: serverTimestamp(),
             });
 
@@ -250,7 +244,6 @@ export default function EditMedicationForm({
                 uid: user.uid,
                 date: new Date(dateStr),
                 time: timeStr,
-                whenToTake,
                 medId,
                 notificationId: null,
               });
@@ -269,7 +262,6 @@ export default function EditMedicationForm({
             const ref = await addDoc(collection(db, "reminders"), {
               date: Timestamp.fromDate(date),
               time,
-              whenToTake,
               status: "pending",
               medId,
               uid: user.uid,
@@ -282,7 +274,6 @@ export default function EditMedicationForm({
                 uid: user.uid,
                 date,
                 time,
-                whenToTake,
                 medId,
                 notificationId: null,
               });
@@ -457,11 +448,6 @@ export default function EditMedicationForm({
         label="Medication type"
         list={TypeList}
         field="medicationType"
-      />
-      <SelectRow
-        label="When to take"
-        list={WhenToTakeList}
-        field="whenToTake"
       />
       <SelectRow
         label="Frequency"

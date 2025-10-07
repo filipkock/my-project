@@ -31,7 +31,6 @@ export async function reschedulePendingReminders(uid: string) {
         uid,
         date: reminder.date,
         time: reminder.time,
-        whenToTake: reminder.whenToTake,
         medId: reminder.medId,
         notificationId: reminder.notificationId || null,
       });

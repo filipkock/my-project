@@ -19,7 +19,6 @@ export default function Step7ReminderTime() {
   const {
     medicationName,
     medicationType,
-    whenToTake,
     interval,
     specificDaysOfWeek,
     customIntervalValue,
@@ -58,7 +57,7 @@ export default function Step7ReminderTime() {
                 className="mb-6"
               />
               <View className="flex-1 items-center -ml-8">
-                <Stepper totalSteps={9} currentStep={8} />
+                <Stepper totalSteps={8} currentStep={7} />
               </View>
             </View>
             <Animated.View
@@ -158,7 +157,6 @@ export default function Step7ReminderTime() {
                 params: {
                   medicationName,
                   medicationType,
-                  whenToTake,
                   interval,
                   specificDaysOfWeek,
                   customIntervalValue,

@@ -29,7 +29,6 @@ export default function Step4_1() {
   const {
     medicationName,
     medicationType,
-    whenToTake,
     interval,
     specificDaysOfWeek,
     customIntervalValue,
@@ -52,7 +51,6 @@ export default function Step4_1() {
       params: {
         medicationName,
         medicationType,
-        whenToTake,
         interval,
         specificDaysOfWeek,
         customIntervalValue,
@@ -74,7 +72,7 @@ export default function Step4_1() {
                 className="mb-6"
               />
               <View className="flex-1 items-center -ml-8">
-                <Stepper totalSteps={9} currentStep={5} />
+                <Stepper totalSteps={8} currentStep={4} />
               </View>
             </View>
             <Animated.View

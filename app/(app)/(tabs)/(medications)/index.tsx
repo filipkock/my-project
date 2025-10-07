@@ -16,7 +16,6 @@ interface Medication {
   medicationType: string;
   intakeInterval: string;
   time: string;
-  whenToTake: string;
 }
 
 const Index = () => {

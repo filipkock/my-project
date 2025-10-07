@@ -8,7 +8,6 @@ export interface Medication {
   medicationName: string;
   medicationType: string;
   reminderTime: string;
-  whenToTake: string;
   status: string;
   reminderDocID: string;
   date: Timestamp;
@@ -24,7 +23,6 @@ export interface Medication {
 export interface FormData {
   medicationName: string | undefined;
   medicationType: string | undefined;
-  whenToTake: string | undefined;
   intakeInterval: string;
   startDate: Date | undefined;
   endDate: Date | undefined;

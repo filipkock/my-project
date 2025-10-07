@@ -239,8 +239,6 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
                   <Text className="text-gray-500">
                     {medication.medicationType}
                   </Text>
-                  <View className="w-1 h-1 rounded-full bg-gray-500" />
-                  <Text className="text-gray-500">{medication.whenToTake}</Text>
                 </View>
               </CardContent>
             </TouchableWithoutFeedback>

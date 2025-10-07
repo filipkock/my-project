@@ -38,7 +38,6 @@ export default function ConfirmStep() {
   const {
     medicationName,
     medicationType,
-    whenToTake,
     interval,
     specificDaysOfWeek,
     customIntervalValue,
@@ -74,7 +73,6 @@ export default function ConfirmStep() {
   const formData: FormData = {
     medicationName: medicationName as string,
     medicationType: medicationType as string,
-    whenToTake: whenToTake as string,
     intakeInterval: interval as string,
     specificDaysOfWeek: parsedSpecificDays,
     startDate: startDate ? new Date(startDate as string) : undefined,
@@ -129,7 +127,6 @@ export default function ConfirmStep() {
       const medRef = await addDoc(collection(db, "medication"), {
         medicationName: formData.medicationName,
         medicationType: formData.medicationType,
-        whenToTake: formData.whenToTake,
         intakeInterval: formData.intakeInterval,
         customInterval: customInterval,
         specificDaysOfWeek: formData.specificDaysOfWeek,
@@ -147,7 +144,6 @@ export default function ConfirmStep() {
         const docRef = await addDoc(collection(db, "reminders"), {
           date: Timestamp.fromDate(date),
           time: formattedTime,
-          whenToTake: formData.whenToTake,
           status: "pending",
           medId: medRef.id,
           uid: userinfo.uid,
@@ -171,7 +167,6 @@ export default function ConfirmStep() {
             uid: userinfo.uid,
             date: Timestamp.fromDate(date),
             time: formattedTime,
-            whenToTake: formData.whenToTake,
             medId: medRef.id,
             notificationId: null,
           });
@@ -209,7 +204,7 @@ export default function ConfirmStep() {
                 className="mb-6"
               />
               <View className="flex-1 items-center -ml-8">
-                <Stepper totalSteps={9} currentStep={9} />
+                <Stepper totalSteps={8} currentStep={8} />
               </View>
             </View>
             <Text className="text-2xl font-semibold mt-10">Summary</Text>
@@ -240,11 +235,6 @@ export default function ConfirmStep() {
             <View>
               <Label className="text-gray-500 mb-1">Type</Label>
               <Text className="text-lg">{medicationType}</Text>
-            </View>
-
-            <View>
-              <Label className="text-gray-500 mb-1">When</Label>
-              <Text className="text-lg">{whenToTake}</Text>
             </View>
 
             <View>

@@ -19,7 +19,6 @@ export default function Step5StartDate() {
   const {
     medicationName,
     medicationType,
-    whenToTake,
     interval,
     specificDaysOfWeek,
     customIntervalValue,
@@ -50,7 +49,7 @@ export default function Step5StartDate() {
                 className="mb-6"
               />
               <View className="flex-1 items-center -ml-8">
-                <Stepper totalSteps={9} currentStep={6} />
+                <Stepper totalSteps={8} currentStep={5} />
               </View>
             </View>
             <Animated.View
@@ -132,7 +131,6 @@ export default function Step5StartDate() {
               params: {
                 medicationName,
                 medicationType,
-                whenToTake,
                 interval,
                 specificDaysOfWeek,
                 customIntervalValue,

@@ -23,7 +23,7 @@ import { Input } from "~/components/ui/input";
 import { intervalToTakeList } from "~/src/constants/addMedicationOptions";
 
 export default function Step4() {
-  const { medicationName, medicationType, whenToTake } = useLocalSearchParams();
+  const { medicationName, medicationType } = useLocalSearchParams();
   const [interval, setInterval] = useState("");
   // Add specificDays and showDaySelector state hooks
   const [specificDays, setSpecificDays] = useState<number[]>([]);
@@ -73,7 +73,6 @@ export default function Step4() {
         params: {
           medicationName,
           medicationType,
-          whenToTake,
           interval: option,
         },
       });
@@ -103,7 +102,7 @@ export default function Step4() {
                 className="mb-6"
               />
               <View className="flex-1 items-center -ml-8">
-                <Stepper totalSteps={9} currentStep={4} />
+                <Stepper totalSteps={8} currentStep={3} />
               </View>
             </View>
             <Animated.View
@@ -170,7 +169,6 @@ export default function Step4() {
                       params: {
                         medicationName,
                         medicationType,
-                        whenToTake,
                         interval,
                         specificDaysOfWeek: specificDays.join(","),
                       },
@@ -223,7 +221,6 @@ export default function Step4() {
                       params: {
                         medicationName,
                         medicationType,
-                        whenToTake,
                         interval,
                         specificDaysOfWeek: specificDays.join(","),
                         customIntervalValue: customIntervalValue || "1",

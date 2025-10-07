@@ -14,7 +14,7 @@ const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export const DaySelector: React.FC<DaySelectorProps> = ({
   selectedDays,
   onToggleDay,
-  label = "Select weekly days (tap):",
+  label = "Select weekly days:",
 }) => {
   return (
     <View>

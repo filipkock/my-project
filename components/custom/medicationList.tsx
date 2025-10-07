@@ -155,7 +155,6 @@ export default function MedicationList({
           medicationName: medication.medicationName || "Unknown",
           medicationType: medication.medicationType || "Unknown",
           reminderTime: reminder.time,
-          whenToTake: reminder.whenToTake,
           status: reminder.status,
           reminderDocID: reminder.reminderDocID,
           date: reminder.date,

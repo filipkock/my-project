@@ -33,7 +33,7 @@ export default function Step2() {
     setMedicationType(option);
     Keyboard.dismiss();
     router.push({
-      pathname: "/addNewMedication/step3",
+      pathname: "/addNewMedication/step4",
       params: { medicationName, medicationType: option },
     });
   };
@@ -51,7 +51,7 @@ export default function Step2() {
                 className="mb-6"
               />
               <View className="flex-1 items-center -ml-8">
-                <Stepper totalSteps={9} currentStep={2} />
+                <Stepper totalSteps={8} currentStep={2} />
               </View>
             </View>
             <Animated.View

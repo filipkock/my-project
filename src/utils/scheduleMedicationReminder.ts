@@ -9,7 +9,6 @@ interface Reminder {
   uid: string;
   date: any; // Firestore Timestamp
   time: string | undefined; // e.g. "20:14"
-  whenToTake: string | undefined;
   notificationId?: string | null; // optional
   medId: string;
 }
