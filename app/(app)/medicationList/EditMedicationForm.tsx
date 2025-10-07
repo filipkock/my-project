@@ -443,7 +443,7 @@ export default function EditMedicationForm({
         onChangeText={(v) => handle("medicationName", v)}
       />
 
-      {/* Type, When, Interval */}
+      {/* Type, Interval */}
       <SelectRow
         label="Medication type"
         list={TypeList}

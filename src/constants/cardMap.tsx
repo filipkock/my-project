@@ -139,21 +139,21 @@ export const cardImages: Record<
 // Card Quotes Mapping
 // ====================
 export const cardQuotes: Record<number, string> = {
-  1: "🥚 Soft on the outside, chaotic on the inside. Just like Poka. Take your meds.",
-  2: "🍄 Even mushrooms have routines.",
-  3: "🧅 I cry so you don’t have to forget your meds.",
-  4: "🌱 Grow strong like this plant. Watered with discipline (and meds).",
-  5: "🍞 Crispy, toasty, and responsible. Poka approves.",
-  6: "🔪 Take your meds... or Poka’s bringing the knife.",
-  7: "💣 Boom. Another day, another dose.",
-  8: "🐟 Poka brought a fish. You bring consistency.",
-  9: "🍴 This fork? For dinner. But meds come first.",
-  10: "⚠️ SIGN: Take your meds or else.",
-  11: "🎈 Love floats… so do reminders. Don’t let this one pop.",
-  12: "🎁 This gift? It's from Poka. Take the damn pill.",
-  13: "💌 You’ve got mail... and a pill to swallow.",
-  14: "💖 Poka says: romance starts with routine. Drink the potion.",
-  15: "🌹 A rose a day? No. But your meds? Definitely.",
+  1: "🥚 U-um... I’m soft on the outside, chaotic on the inside. D-don’t forget your meds, okay?",
+  2: "🍄 M-mushrooms grow better with care... l-like you. Take your meds.",
+  3: "🧅 I-I might cry a little if you forget again...",
+  4: "🌱 Th-this plant is growing strong... I h-hope you are too.",
+  5: "🍞 T-toasty and responsible! J-just... don’t forget, okay?",
+  6: "🔪 I-I’m not mad! J-just... please take your meds before I panic...",
+  7: "💣 B-boom...! S-sorry! I didn’t mean to scare you. Medicine time?",
+  8: "🐟 I b-brought a fish! Y-you bring the meds, deal?",
+  9: "🍴 U-um... before dinner... meds first, right?",
+  10: "⚠️ S-sign says... take your meds, please... I m-made it myself...",
+  11: "🎈 L-love floats... and s-so do reminders. I think it’s time...",
+  12: "🎁 I w-wrapped this gift... it’s a reminder. D-don’t forget, okay?",
+  13: "💌 Y-you’ve got mail! A-and a tiny reminder from me...",
+  14: "💖 P-potion of care! T-take it (and your meds too)...",
+  15: "🌹 A r-rose for you... a-and maybe your meds too?",
 };
 
 // ====================
