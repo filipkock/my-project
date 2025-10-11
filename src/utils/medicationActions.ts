@@ -13,6 +13,7 @@ import { db } from "~/config/firebase";
 import { updateStreak, maybeDecrementStreakOnUntake } from "~/src/utils/streak";
 import { getFromStorage } from "~/src/services/storage";
 import { cancelMedicationReminder } from "~/src/utils/scheduleMedicationReminder";
+import { scheduleMedicationReminder } from "~/src/utils/scheduleMedicationReminder";
 
 /** Convert Firestore Timestamp → JS Date */
 export const tsToDate = (ts: Timestamp | { seconds: number }): Date =>
@@ -98,6 +99,24 @@ export const handleUntakeMedication = async (
       takenTime: null,
       onTime: null,
     });
+
+    // Re-schedule the reminder after undo
+    try {
+      const snap = await getDoc(reminderRef);
+      if (snap.exists()) {
+        const data = snap.data() as any;
+        await scheduleMedicationReminder({
+          id: medication.reminderDocID,
+          uid: data?.uid ?? userinfo?.uid ?? "",
+          date: data?.date,
+          time: data?.time,
+          medId: data?.medId ?? medication.medDocID,
+          notificationId: data?.notificationId ?? null,
+        });
+      }
+    } catch (e) {
+      console.warn("Failed to re-schedule reminder after undo:", e);
+    }
 
     callbacks.onSuccess(new Date(), false);
   } catch (error) {
