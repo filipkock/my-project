@@ -13,21 +13,25 @@ import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 
 export default function UpgradeAccount() {
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const onHandleSignup = () => {
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
-    const trimmedname = name.trim();
 
-    if (!email || !password) {
+    if (!email || !password || !confirmPassword) {
       Alert.alert("Please fill all fields");
       return;
     }
 
-    if (trimmedEmail !== "" && trimmedPassword !== "" && trimmedname !== "") {
+    if (trimmedPassword !== confirmPassword.trim()) {
+      Alert.alert("Passwords do not match");
+      return;
+    }
+
+    if (trimmedEmail !== "" && trimmedPassword !== "") {
       const user = auth.currentUser;
       if (user?.isAnonymous) {
         const credential = EmailAuthProvider.credential(
@@ -37,9 +41,7 @@ export default function UpgradeAccount() {
         linkWithCredential(user, credential)
           .then(async (UserCredential) => {
             const upgradedUser = UserCredential.user;
-            await updateProfile(upgradedUser, {
-              displayName: trimmedname,
-            });
+            await updateProfile(upgradedUser, {});
             setLocalStorage("userDetails", upgradedUser);
             router.replace("/(app)/(tabs)/(home)");
           })
@@ -84,11 +86,6 @@ export default function UpgradeAccount() {
           <Text className="text-3xl font-bold">Upgrade your account</Text>
           <View className="gap-4">
             <Input
-              placeholder="Input your full name"
-              value={name}
-              onChangeText={setName}
-            />
-            <Input
               placeholder="Input your email"
               value={email}
               onChangeText={setEmail}
@@ -97,6 +94,12 @@ export default function UpgradeAccount() {
               placeholder="Input your password"
               value={password}
               onChangeText={setPassword}
+              secureTextEntry
+            />
+            <Input
+              placeholder="Confirm your password"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
               secureTextEntry
             />
           </View>
