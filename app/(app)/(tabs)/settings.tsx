@@ -264,13 +264,13 @@ const Settings = () => {
             </Card>
           )}
 
-          {/* Feedback Section */}
+          {/* Contact us Section */}
           <Card>
             <CardContent className="gap-2 p-4">
-              <CardTitle className="text-lg mb-2">Feedback</CardTitle>
+              <CardTitle className="text-lg mb-2">Contact</CardTitle>
               <Text className="text-muted-foreground text-sm mb-2">
-                All feedback is welcome. Feature requests, ideas for what you'd
-                like to see, bugs, or any questions.
+                Need help or have feedback? Whether it’s ideas, bugs, or
+                questions, we’d love to hear from you!
               </Text>
               <Button
                 variant="outline"
@@ -279,7 +279,7 @@ const Settings = () => {
                   Linking.openURL("mailto:pokareminder@gmail.com");
                 }}
               >
-                <Text>Send Feedback</Text>
+                <Text>Contact us</Text>
               </Button>
             </CardContent>
           </Card>

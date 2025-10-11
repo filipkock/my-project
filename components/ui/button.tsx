@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
-import { Pressable } from "react-native";
+import { Pressable, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
 import { TextClassContext } from "~/components/ui/text";
 import { cn } from "~/lib/utils";
@@ -67,7 +67,18 @@ type ButtonProps = React.ComponentPropsWithoutRef<typeof Pressable> &
 const Button = React.forwardRef<
   React.ElementRef<typeof Pressable>,
   ButtonProps
->(({ className, variant, size, ...props }, ref) => {
+>(({ className, variant, size, onPress, ...props }, ref) => {
+  const handlePress = React.useCallback(
+    async (e: any) => {
+      try {
+        if (Platform.OS !== "web") {
+          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        }
+      } catch {}
+      onPress?.(e);
+    },
+    [onPress]
+  );
   return (
     <TextClassContext.Provider
       value={cn(
@@ -82,11 +93,8 @@ const Button = React.forwardRef<
         )}
         ref={ref}
         role="button"
-        onPress={async (e) => {
-          await Haptics.selectionAsync();
-          props.onPress?.(e);
-        }}
         {...props}
+        onPress={handlePress}
       />
     </TextClassContext.Provider>
   );
