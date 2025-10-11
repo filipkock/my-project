@@ -20,7 +20,7 @@ interface BottomSheetProps {
 }
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-const SHEET_HEIGHT = SCREEN_HEIGHT * 0.5; // 50% of screen height
+const SHEET_HEIGHT = SCREEN_HEIGHT * 0.55; // 50% of screen height
 const SWIPE_THRESHOLD = 50; // Minimum distance to trigger dismiss
 
 const BottomSheet: React.FC<BottomSheetProps> = ({

@@ -77,10 +77,7 @@ const TakeMedicationSheet: React.FC<TakeMedicationSheetProps> = ({
             <View className="mb-8">
               {isSameDayFuture && (
                 <Alert icon={AlertTriangle} variant="destructive">
-                  <Text>
-                    You’re a bit early. This medication is scheduled for later
-                    today. Want to take it now anyway?
-                  </Text>
+                  <Text>This medication is scheduled for later today.</Text>
                 </Alert>
               )}
               {scheduledTime < now && !isSameDay && (

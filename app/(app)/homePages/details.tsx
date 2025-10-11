@@ -32,6 +32,7 @@ import BottomSheet from "~/components/custom/BottomSheet";
 import { ChevronLeftIcon } from "react-native-heroicons/solid";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { cancelMedicationReminder } from "~/src/utils/scheduleMedicationReminder";
+import PokaMelted from "~/assets/static/poka_melted.svg";
 
 interface ReminderData {
   takenTime: Timestamp;
@@ -424,12 +425,13 @@ export default function MedicationDetails() {
           onClose={() => setShowSkippedInfo(false)}
           title="Skipped!"
         >
-          <View className="px-6 space-y-4">
-            <Text className="text-2xl text-center font-bold text-gray-800 mb-3">
-              This one won't count against your streak or rewards.
-            </Text>
-            <Text className="text-md text-center text-gray-500">
-              Log your other meds today to keep your streak going strong! 💪
+          <View className="px-6 py-6">
+            <View className="items-center justify-center w-full">
+              <PokaMelted width={160} height={160} />
+            </View>
+            <Text className="text-center text-lg text-gray-700">
+              O-okay... I marked it as skipped. D-don’t worry, you’re still
+              doing great!
             </Text>
           </View>
         </BottomSheet>
