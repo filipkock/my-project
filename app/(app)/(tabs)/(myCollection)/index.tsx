@@ -117,6 +117,9 @@ const collection = () => {
             </View>
           </View>
         ))}
+        <View className="items-center mb-6">
+          <Text className="text-gray-500 italic">More coming soon...</Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
