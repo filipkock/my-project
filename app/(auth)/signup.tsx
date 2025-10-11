@@ -25,7 +25,6 @@ import Constants from "expo-constants";
 WebBrowser.maybeCompleteAuthSession();
 
 export default function signup() {
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -58,9 +57,8 @@ export default function signup() {
   const onHandleSignup = () => {
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
-    const trimmedname = name.trim();
 
-    if (!email || !password || !confirmPassword || !name) {
+    if (!email || !password || !confirmPassword) {
       Alert.alert("Please fill all fields");
       return;
     }
@@ -68,14 +66,13 @@ export default function signup() {
       Alert.alert("Passwords do not match");
       return;
     }
-    if (trimmedEmail !== "" && trimmedPassword !== "" && trimmedname !== "") {
+    if (trimmedEmail !== "" && trimmedPassword !== "") {
       createUserWithEmailAndPassword(auth, trimmedEmail, trimmedPassword)
         .then(async (UserCredential) => {
           const user = UserCredential.user;
 
-          await updateProfile(user, {
-            displayName: trimmedname,
-          });
+          await updateProfile(user, {});
+
           setLocalStorage("userDetails", user);
 
           router.replace("/(auth)/allowNotification");
@@ -150,11 +147,6 @@ export default function signup() {
           <Text className="text-3xl font-bold">Sign up to get started!</Text>
           {showEmailForm && (
             <View className="gap-4">
-              <Input
-                placeholder="Input your full name"
-                value={name}
-                onChangeText={setName}
-              />
               <Input
                 placeholder="Input your email"
                 value={email}
