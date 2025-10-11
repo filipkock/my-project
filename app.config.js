@@ -2,7 +2,7 @@ import "dotenv/config";
 
 export default {
   expo: {
-    name: "Poka reminder",
+    name: "Poka",
     slug: "starter-base",
     version: "1.0.0",
     orientation: "portrait",

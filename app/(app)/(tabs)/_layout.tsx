@@ -56,10 +56,10 @@ const TabsLayout = () => {
       const snapshot = await getDocs(medicationQuery);
       const count = snapshot.size;
 
-      if (count >= 1) {
+      if (count >= 2) {
         Alert.alert(
           "Limit reached",
-          "The free version allows one medication. Upgrade to Premium for unlimited medications.",
+          "The free version allows two medication. Upgrade to Premium for unlimited.",
           [
             { text: "OK", style: "cancel" },
             {
