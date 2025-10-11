@@ -12,7 +12,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
-import { View } from "react-native";
+import { View, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text } from "~/components/ui/text";
 import { Button } from "~/components/ui/button";
@@ -32,6 +32,7 @@ import { useVideoPlayer, VideoView } from "expo-video";
 import { Badge } from "~/components/ui/badge";
 import { Stepper } from "~/components/custom/Stepper";
 import { usePremiumGate } from "~/src/hooks/usePremiumGate";
+import * as Haptics from "expo-haptics";
 
 type UserCards = {
   uid: string;
@@ -45,6 +46,39 @@ export default function Reward() {
 
   // Video player logic for pack opening animation
   const [videoFinished, setVideoFinished] = useState(false);
+
+  useEffect(() => {
+    // Subtle build-up taps and a final thump (aligned with ~2.45s video)
+    const timeouts: number[] = [];
+    if (Platform.OS !== "web") {
+      const plan: Array<[number, Haptics.ImpactFeedbackStyle]> = [
+        [600, Haptics.ImpactFeedbackStyle.Light],
+        [900, Haptics.ImpactFeedbackStyle.Light],
+        [1200, Haptics.ImpactFeedbackStyle.Medium],
+        [1500, Haptics.ImpactFeedbackStyle.Light],
+        [1800, Haptics.ImpactFeedbackStyle.Medium],
+        [2200, Haptics.ImpactFeedbackStyle.Heavy], // reveal thump
+      ];
+
+      plan.forEach(([ms, style]) => {
+        const id = setTimeout(() => {
+          Haptics.impactAsync(style).catch(() => {});
+        }, ms) as unknown as number;
+        timeouts.push(id);
+      });
+    }
+    return () => {
+      timeouts.forEach((t) => clearTimeout(t));
+    };
+  }, []);
+
+  useEffect(() => {
+    if (videoFinished && Platform.OS !== "web") {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
+        () => {}
+      );
+    }
+  }, [videoFinished]);
 
   const player = useVideoPlayer(
     require("~/assets/animations/card_reveal.mp4"),
@@ -79,6 +113,12 @@ export default function Reward() {
         -1,
         false
       );
+    }
+  }, [isEvolved, videoFinished]);
+
+  useEffect(() => {
+    if (isEvolved && videoFinished && Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
   }, [isEvolved, videoFinished]);
 
