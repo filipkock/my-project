@@ -19,6 +19,7 @@ import { markMedicationAsTaken } from "~/src/utils/medicationActions";
 import { useTheme } from "@react-navigation/native";
 import { useSelectedDate } from "~/src/context/SelectedDateContext";
 import { triggerFeedback } from "~/lib/feedback";
+import { useSettings } from "~/src/context/settingsContext";
 
 interface MedicationCardProps {
   medication: Medication;
@@ -36,9 +37,10 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
   const [isTakeSheetVisible, setIsTakeSheetVisible] = useState(false);
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState(false);
   const { colors } = useTheme();
+  const { soundEnabled } = useSettings();
 
   const handleMedicationAction = async () => {
-    await triggerFeedback();
+    await triggerFeedback({ enableSound: soundEnabled });
     if (medication.status === "taken") {
       await handleUntakeMedication(
         medication,

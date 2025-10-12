@@ -269,17 +269,21 @@ const Settings = () => {
           )}
 
           <Card>
-            <CardContent className="gap-2 p-4 flex-row items-center justify-between">
-              <View>
-                <CardTitle className="text-lg mb-1">Sound & Haptics</CardTitle>
-                <Text className="text-muted-foreground text-sm">
+            <CardContent className="p-4 flex-row items-center justify-between">
+              <View className="flex-1 pr-3">
+                <CardTitle className="text-lg mb-2">Sound & Haptics</CardTitle>
+                <Text className="text-muted-foreground text-xs">
                   {soundEnabled ? "Enabled" : "Disabled"}
                 </Text>
               </View>
+              {/* Consider refactoring to RNR component later */}
               <Switch
                 value={soundEnabled}
                 onValueChange={toggleSound}
-                thumbColor={soundEnabled ? "#4CAF50" : "#f4f3f4"}
+                trackColor={{ false: "#E5E7EB", true: "#111827" }}
+                thumbColor={soundEnabled ? "#FFFFFF" : "#FFFFFF"}
+                ios_backgroundColor="#E5E7EB"
+                style={{ transform: [{ scale: 1.05 }] }}
               />
             </CardContent>
           </Card>

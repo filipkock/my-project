@@ -1,10 +1,12 @@
 import { Audio } from "expo-av";
 import type { AVPlaybackStatus } from "expo-av";
-import { useSettings } from "~/src/context/settingsContext";
 
-export async function playSound(soundAsset: number, rate: number = 1.0) {
-  const { soundEnabled } = useSettings(); // Access global setting
-  if (!soundEnabled) return; // Skip entirely if off
+export async function playSound(
+  soundAsset: number,
+  rate: number = 1.0,
+  enabled: boolean = true
+) {
+  if (!enabled) return; // respect caller's setting
   try {
     const { sound } = await Audio.Sound.createAsync(soundAsset, {
       shouldPlay: true,
