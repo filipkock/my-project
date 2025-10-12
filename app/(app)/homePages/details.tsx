@@ -285,7 +285,8 @@ export default function MedicationDetails() {
           <View>
             <Label className="text-gray-500 mb-1">Dosage</Label>
             <Text className="text-lg">
-              Take {localMed.dosageAmount || 1} {localMed.dosageUnit || "pill"}
+              Take {localMed.dosageAmount || 1}{" "}
+              {localMed.medicationType || "pill"}
               {localMed.dosageStrength ? `, ${localMed.dosageStrength}` : ""}
             </Text>
           </View>
