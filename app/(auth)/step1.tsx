@@ -1,5 +1,6 @@
 import React from "react";
 import { Audio } from "expo-av";
+import { playSound } from "~/lib/sound";
 import { SafeAreaView, View, Image } from "react-native";
 import { router } from "expo-router";
 import { Text } from "~/components/ui/text";
@@ -46,22 +47,7 @@ export default function Step1() {
   );
 
   React.useEffect(() => {
-    (async () => {
-      try {
-        const snd = new Audio.Sound();
-        await snd.loadAsync(require("~/assets/audio/onboarding_sound.wav"));
-        soundRef.current = snd;
-        await snd.playAsync();
-      } catch (error) {
-        console.warn("Failed to play onboarding sound:", error);
-      }
-    })();
-    return () => {
-      if (soundRef.current) {
-        soundRef.current.unloadAsync().catch(() => {});
-        soundRef.current = null;
-      }
-    };
+    playSound(require("~/assets/audio/onboarding_sound.wav"));
   }, []);
 
   return (
@@ -79,12 +65,12 @@ export default function Step1() {
             style={{ height: 80, width: "100%", justifyContent: "center" }}
           >
             {phase === 1 && (
-              <Text className="text-3xl font-semibold text-center">
+              <Text className="text-3xl font-bold text-center">
                 H-hey… I-I’m Poka.
               </Text>
             )}
             {phase === 2 && (
-              <Text className="text-3xl font-semibold text-center">
+              <Text className="text-3xl font-bold text-center">
                 I-I’m here to help you remember your meds.
               </Text>
             )}

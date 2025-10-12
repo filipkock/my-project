@@ -8,6 +8,8 @@ import { useNotification } from "~/src/context/notificationsContext";
 import { ThemeToggle } from "~/components/ThemeToggle";
 import { Card, CardContent, CardTitle } from "~/components/ui/card";
 import { router } from "expo-router";
+import { useSettings } from "~/src/context/settingsContext";
+import { Switch } from "react-native";
 
 import * as Notifications from "expo-notifications";
 import * as Linking from "expo-linking";
@@ -18,6 +20,8 @@ const Settings = () => {
 
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [planName, setPlanName] = useState("");
+
+  const { soundEnabled, toggleSound } = useSettings();
 
   useEffect(() => {
     const fetchSubscriptionStatus = async () => {
@@ -263,6 +267,22 @@ const Settings = () => {
               </CardContent>
             </Card>
           )}
+
+          <Card>
+            <CardContent className="gap-2 p-4 flex-row items-center justify-between">
+              <View>
+                <CardTitle className="text-lg mb-1">Sound & Haptics</CardTitle>
+                <Text className="text-muted-foreground text-sm">
+                  {soundEnabled ? "Enabled" : "Disabled"}
+                </Text>
+              </View>
+              <Switch
+                value={soundEnabled}
+                onValueChange={toggleSound}
+                thumbColor={soundEnabled ? "#4CAF50" : "#f4f3f4"}
+              />
+            </CardContent>
+          </Card>
 
           {/* Contact us Section */}
           <Card>

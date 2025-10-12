@@ -10,6 +10,9 @@ import { getStreakFromFirestore } from "~/src/utils/streak";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { FireIcon } from "react-native-heroicons/solid";
 import { GiftIcon } from "react-native-heroicons/solid";
+import { playSound } from "~/lib/sound";
+
+const animationSound = require("~/assets/audio/onboarding_sound.wav");
 
 export default function DailyProgress() {
   const { taken, total } = useLocalSearchParams();
@@ -43,6 +46,13 @@ export default function DailyProgress() {
       player.muted = true;
     }
   );
+
+  useEffect(() => {
+    const playButtonSound = async () => {
+      await playSound(animationSound, 2); // 1.4x faster
+    };
+    playButtonSound();
+  }, []);
 
   return (
     <SafeAreaView className="flex-1">
