@@ -4,6 +4,8 @@ import { Text } from "~/components/ui/text";
 import MedicationCard from "./medicationCard";
 import type { Medication } from "~/src/types/medication";
 import LottieView from "lottie-react-native";
+import PokaMelted from "~/assets/static/poka_melted.svg";
+
 interface MedicationListForDayProps {
   items: Medication[];
   loading: boolean;
@@ -35,9 +37,12 @@ export default function MedicationListForDay({
 
   if (items.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center p-4">
-        <Text className="text-muted-foreground">
-          No medication reminders today.
+      <View className="flex-1 items-center justify-center p-4 mt-10">
+        <View className="items-center justify-center w-full">
+          <PokaMelted width={140} height={140} />
+        </View>
+        <Text className="text-center text-lg text-gray-700">
+          N-no reminders today… s-see you another day.
         </Text>
       </View>
     );

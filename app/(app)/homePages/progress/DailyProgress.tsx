@@ -71,6 +71,7 @@ export default function DailyProgress() {
             allowsFullscreen={false}
             allowsPictureInPicture={false}
             nativeControls={false}
+            allowsVideoFrameAnalysis={false}
           />
           {takenCount === totalCount && (
             <View className="flex flex-row items-center gap-1">

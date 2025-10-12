@@ -132,7 +132,7 @@ const Settings = () => {
                   Subscription
                 </CardTitle>
                 <Text className="text-white text-base mb-4">
-                  Unlock premium features and support the app!
+                  Unlock premium features and support Poka!
                 </Text>
                 <Button
                   variant="default"

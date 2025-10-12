@@ -61,7 +61,7 @@ const TabsLayout = () => {
       if (count >= 2) {
         Alert.alert(
           "Limit reached",
-          "The free version allows two medication. Upgrade to Premium for unlimited.",
+          "The free version allows two medications. Upgrade to Premium for unlimited.",
           [
             { text: "OK", style: "cancel" },
             {
