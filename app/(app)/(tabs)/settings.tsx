@@ -271,7 +271,7 @@ const Settings = () => {
           <Card>
             <CardContent className="p-4 flex-row items-center justify-between">
               <View className="flex-1 pr-3">
-                <CardTitle className="text-lg mb-2">Sound & Haptics</CardTitle>
+                <CardTitle className="text-lg mb-2">Sound settings</CardTitle>
                 <Text className="text-muted-foreground text-xs">
                   {soundEnabled ? "Enabled" : "Disabled"}
                 </Text>

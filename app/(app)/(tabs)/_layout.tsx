@@ -18,10 +18,12 @@ import { usePremiumGate } from "~/src/hooks/usePremiumGate";
 import { getFromStorage } from "~/src/services/storage";
 import { db } from "~/config/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TabsLayout = () => {
   const { colors } = useTheme();
   const { isPremium } = usePremiumGate();
+  const insets = useSafeAreaInsets();
 
   React.useEffect(() => {
     // Check if we should reset the streak on app launch
@@ -143,9 +145,11 @@ const TabsLayout = () => {
       </Tabs>
       <Button
         className="absolute left-1/2 -translate-x-1/2 w-16 h-16 rounded-full"
-        style={{ bottom: 50 }}
+        style={{
+          bottom: insets.bottom + 25,
+        }}
         onPress={handleAddMedicationPress}
-        size={"icon"}
+        size="icon"
       >
         <PlusIcon size={24} color="white" />
       </Button>
