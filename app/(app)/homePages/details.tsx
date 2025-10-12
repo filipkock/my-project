@@ -247,11 +247,33 @@ export default function MedicationDetails() {
   }, [localMed]);
 
   const formatTakenTime = useCallback(() => {
-    if (!localMed.takenTime || !(localMed.takenTime instanceof Timestamp))
-      return null;
-    const takenTime = localMed.takenTime.toDate();
-    return `Taken at ${moment(takenTime).format("HH:mm")}`;
-  }, [localMed]);
+    const raw = (localMed as any)?.takenTime;
+    if (!raw) return null;
+
+    let date: Date | null = null;
+
+    // Firestore Timestamp instance
+    if (raw instanceof Timestamp) {
+      date = raw.toDate();
+      // Plain object { seconds, nanoseconds }
+    } else if (
+      typeof raw === "object" &&
+      raw.seconds != null &&
+      raw.nanoseconds != null
+    ) {
+      date = new Timestamp(raw.seconds, raw.nanoseconds).toDate();
+      // JS Date instance
+    } else if (raw instanceof Date) {
+      date = raw;
+      // String/number fallback
+    } else {
+      const parsed = new Date(raw);
+      if (!isNaN(parsed.getTime())) date = parsed;
+    }
+
+    if (!date) return null;
+    return `Taken at ${moment(date).format("HH:mm")}`;
+  }, [localMed?.takenTime]);
 
   const handlePress = useCallback(() => {
     router.push({
@@ -282,30 +304,10 @@ export default function MedicationDetails() {
             <Text className="text-lg">{formatScheduledTime()}</Text>
           </View>
 
-          <View>
-            <Label className="text-gray-500 mb-1">Dosage</Label>
-            <Text className="text-lg">
-              Take {localMed.dosageAmount || 1}{" "}
-              {localMed.medicationType || "pill"}
-              {localMed.dosageStrength ? `, ${localMed.dosageStrength}` : ""}
-            </Text>
-          </View>
-
           {formatTakenTime() && (
             <View>
               <Label className="text-gray-500 mb-1">Taken</Label>
-              <Text className="text-lg text-muted-foreground">
-                {formatTakenTime()}
-              </Text>
-            </View>
-          )}
-
-          {localMed.status === "skipped" && (
-            <View>
-              <Label className="text-gray-500 mb-1">Status</Label>
-              <Text className="text-lg text-muted-foreground">
-                This medication was marked as skipped.
-              </Text>
+              <Text className="text-lg">{formatTakenTime()}</Text>
             </View>
           )}
 
@@ -313,6 +315,20 @@ export default function MedicationDetails() {
             <View>
               <Label className="text-gray-500 mb-1">Last Taken</Label>
               <Text className="text-lg">{lastTakenInfo}</Text>
+            </View>
+          )}
+
+          <View>
+            <Label className="text-gray-500 mb-1">Type</Label>
+            <Text className="text-lg">{localMed.medicationType || "pill"}</Text>
+          </View>
+
+          {localMed.status === "skipped" && (
+            <View>
+              <Label className="text-gray-500 mb-1">Status</Label>
+              <Text className="text-lg ">
+                This medication was marked as skipped.
+              </Text>
             </View>
           )}
         </View>
