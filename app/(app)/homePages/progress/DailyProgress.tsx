@@ -11,6 +11,7 @@ import { useVideoPlayer, VideoView } from "expo-video";
 import { FireIcon } from "react-native-heroicons/solid";
 import { GiftIcon } from "react-native-heroicons/solid";
 import { playSound } from "~/lib/sound";
+import { useSettings } from "~/src/context/settingsContext";
 
 const animationSound = require("~/assets/audio/onboarding_sound.wav");
 
@@ -22,6 +23,7 @@ export default function DailyProgress() {
   const percent = (takenCount / totalCount) * 100;
 
   const { colors } = useTheme();
+  const { soundEnabled } = useSettings();
 
   const scale = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(0)).current;
@@ -49,7 +51,7 @@ export default function DailyProgress() {
 
   useEffect(() => {
     const playButtonSound = async () => {
-      await playSound(animationSound, 2); // 1.4x faster
+      await playSound(animationSound, 2, soundEnabled); // 1.4x faster
     };
     playButtonSound();
   }, []);

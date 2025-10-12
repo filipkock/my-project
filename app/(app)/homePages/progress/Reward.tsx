@@ -33,6 +33,9 @@ import { Badge } from "~/components/ui/badge";
 import { Stepper } from "~/components/custom/Stepper";
 import { usePremiumGate } from "~/src/hooks/usePremiumGate";
 import * as Haptics from "expo-haptics";
+import { useSettings } from "~/src/context/settingsContext";
+import { playSound } from "~/lib/sound";
+const animationSound = require("~/assets/audio/card_reveal.wav");
 
 type UserCards = {
   uid: string;
@@ -43,6 +46,7 @@ type UserCards = {
 export default function Reward() {
   const router = useRouter();
   const { isPremium } = usePremiumGate();
+  const { soundEnabled } = useSettings();
 
   // Video player logic for pack opening animation
   const [videoFinished, setVideoFinished] = useState(false);
@@ -91,7 +95,20 @@ export default function Reward() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setVideoFinished(true);
-    }, 2450);
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  //
+  useEffect(() => {
+    const playButtonSound = async () => {
+      await playSound(animationSound, 1, soundEnabled);
+    };
+
+    const timer = setTimeout(() => {
+      playButtonSound();
+    }, 300);
 
     return () => clearTimeout(timer);
   }, []);
@@ -334,7 +351,7 @@ export default function Reward() {
                           <Text className="text-sm font-semibold"> Lv. 2</Text>
                         </View>
                       )}
-                      <Text className="text-center text-gray-600 italic mt-6">
+                      <Text className="text-center text-gray-600 italic mt-6 mr-10 ml-10">
                         {cardQuote}
                       </Text>
                     </>

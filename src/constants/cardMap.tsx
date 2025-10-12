@@ -38,7 +38,7 @@ export const cardNames: Record<number, string> = {
   12: "Gift of Guilt",
   13: "Letter of Regret",
   14: "Potion of Maybe",
-  15: "Rose Rage",
+  15: "Romantic Rose",
 };
 
 // ====================
