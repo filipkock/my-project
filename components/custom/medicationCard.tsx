@@ -18,6 +18,7 @@ import { Timestamp } from "firebase/firestore";
 import { markMedicationAsTaken } from "~/src/utils/medicationActions";
 import { useTheme } from "@react-navigation/native";
 import { useSelectedDate } from "~/src/context/SelectedDateContext";
+import { triggerFeedback } from "~/lib/feedback";
 
 interface MedicationCardProps {
   medication: Medication;
@@ -37,6 +38,7 @@ const MedicationCard: React.FC<MedicationCardProps> = ({
   const { colors } = useTheme();
 
   const handleMedicationAction = async () => {
+    await triggerFeedback();
     if (medication.status === "taken") {
       await handleUntakeMedication(
         medication,

@@ -1,11 +1,9 @@
-import type { AVPlaybackStatus } from "expo-av";
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
-import { Pressable, Platform } from "react-native";
-import * as Haptics from "expo-haptics";
-import { Audio } from "expo-av";
+import { Pressable } from "react-native";
 import { TextClassContext } from "~/components/ui/text";
 import { cn } from "~/lib/utils";
+import { triggerFeedback } from "~/lib/feedback";
 
 const buttonVariants = cva(
   "group flex items-center justify-center rounded-md web:ring-offset-background web:transition-colors web:focus-visible:outline-none web:focus-visible:ring-2 web:focus-visible:ring-ring web:focus-visible:ring-offset-2",
@@ -63,8 +61,6 @@ const buttonTextVariants = cva(
   }
 );
 
-const ButtonClick = require("~/assets/audio/button_click.wav");
-
 type ButtonProps = React.ComponentPropsWithoutRef<typeof Pressable> &
   VariantProps<typeof buttonVariants>;
 
@@ -72,32 +68,10 @@ const Button = React.forwardRef<
   React.ElementRef<typeof Pressable>,
   ButtonProps
 >(({ className, variant, size, onPress, ...props }, ref) => {
-  const playClickSound = async () => {
-    try {
-      const { sound } = await Audio.Sound.createAsync(ButtonClick, {
-        shouldPlay: true,
-      });
-      sound.setOnPlaybackStatusUpdate((status: AVPlaybackStatus) => {
-        // Only proceed if the sound is loaded; then TS knows it's a success status
-        if (!status.isLoaded) return;
-        if (status.didJustFinish) {
-          sound.unloadAsync();
-        }
-      });
-    } catch (error) {
-      console.warn("Could not play button click sound:", error);
-    }
-  };
-
   const handlePress = React.useCallback(
     async (e: any) => {
       try {
-        if (Platform.OS !== "web") {
-          await Promise.all([
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
-            playClickSound(),
-          ]);
-        }
+        await triggerFeedback();
       } catch {}
       onPress?.(e);
     },
