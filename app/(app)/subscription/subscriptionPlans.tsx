@@ -183,6 +183,28 @@ const SubscriptionPlans = () => {
                 : isMonthly
                 ? "Try 3 days free"
                 : product.description;
+              // Format per month price if yearly
+              const perMonthFormatted =
+                isYearly && product?.price
+                  ? (() => {
+                      try {
+                        const perMonth = product.price / 12;
+                        if (
+                          product?.currencyCode &&
+                          typeof Intl !== "undefined"
+                        ) {
+                          return new Intl.NumberFormat(undefined, {
+                            style: "currency",
+                            currency: product.currencyCode,
+                            maximumFractionDigits: 2,
+                          }).format(perMonth);
+                        }
+                        return String(Math.round(perMonth * 100) / 100);
+                      } catch {
+                        return null;
+                      }
+                    })()
+                  : null;
               return (
                 <TouchableOpacity
                   key={pkg.identifier}
@@ -213,20 +235,25 @@ const SubscriptionPlans = () => {
                             <Text>{titleText}</Text>
                             {isYearly && (
                               <Text className="ml-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                                Save 20%
+                                Save up to 45%
                               </Text>
                             )}
                           </View>
                         </CardTitle>
                       </View>
-                      <Text className="text-xl font-bold mb-1">
-                        {product.priceString}
-                        {(isYearly || isMonthly) && (
-                          <Text className="text-sm text-muted-foreground ml-1">
-                            {isYearly ? "/ year" : isMonthly ? "/ month" : ""}
-                          </Text>
-                        )}
-                      </Text>
+                      <View className="mb-1">
+                        <Text className="text-xl font-bold">
+                          {product.priceString}
+                          {(isYearly || isMonthly) && (
+                            <Text className="text-sm text-muted-foreground ml-1">
+                              {isYearly ? "/ year" : "/ month"}
+                              {isYearly && perMonthFormatted
+                                ? `   (${perMonthFormatted} / month)`
+                                : ""}
+                            </Text>
+                          )}
+                        </Text>
+                      </View>
                       <Text className="text-muted-foreground mb-1">
                         {descriptionText}
                       </Text>
