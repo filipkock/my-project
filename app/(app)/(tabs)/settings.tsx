@@ -342,10 +342,9 @@ const Settings = () => {
             <CardContent className="gap-2 p-4">
               <CardTitle className="text-lg mb-2">About</CardTitle>
               <Text className="text-muted-foreground text-sm mb-2">
-                Hi! I’m the developer and designer behind Poka. I built it as a
-                passion project to make everyday tasks like taking medications a
-                little more fun. I hope you enjoy it, and thank you for
-                supporting it ❤️
+                Hi! Poka started as a passion project to make daily routines
+                like taking medications a bit more fun. I hope you enjoy it, and
+                thank you for supporting it ❤️
               </Text>
             </CardContent>
           </Card>
