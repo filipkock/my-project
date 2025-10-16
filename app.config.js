@@ -20,6 +20,8 @@ export default {
       icon: "./assets/images/icon_logo.png",
       supportsTablet: true,
       bundleIdentifier: "com.filiplee.starterbase",
+      usesAppleSignIn: true,
+      googleServicesFile: "./GoogleService-Info.plist",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },

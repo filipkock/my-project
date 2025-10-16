@@ -21,6 +21,7 @@ import { Text } from "~/components/ui/text";
 import { setLocalStorage } from "~/src/services/storage";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 import Constants from "expo-constants";
+import AppleSignInButton from "~/components/custom/AppleSignInButton";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -191,6 +192,17 @@ export default function signup() {
               >
                 <Text>Continue with Google</Text>
               </Button>
+
+              {/* Apple button */}
+              <AppleSignInButton
+                onSignedIn={(user) => {
+                  setLocalStorage("userDetails", user);
+                  router.replace("/(auth)/allowNotification");
+                }}
+                onError={(e) => {
+                  Alert.alert("Apple Sign-In failed", e?.message || String(e));
+                }}
+              />
 
               {/* 2) Divider with OR */}
               <View className="flex-row items-center my-2">
