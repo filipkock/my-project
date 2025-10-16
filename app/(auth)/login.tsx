@@ -15,6 +15,7 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 import Constants from "expo-constants";
+import AppleSignInButton from "~/components/custom/AppleSignInButton";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -163,6 +164,16 @@ export default function Login() {
               >
                 <Text>Continue with Google</Text>
               </Button>
+
+              <AppleSignInButton
+                onSignedIn={(user) => {
+                  setLocalStorage("userDetails", user);
+                  router.replace("/(auth)/allowNotification");
+                }}
+                onError={(e) => {
+                  Alert.alert("Apple Sign-In failed", e?.message || String(e));
+                }}
+              />
 
               {/* 2) Divider with OR */}
               <View className="flex-row items-center my-2">
