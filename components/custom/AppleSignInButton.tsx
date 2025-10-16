@@ -8,6 +8,8 @@ import {
   OAuthProvider,
   User,
 } from "firebase/auth";
+import { triggerFeedback } from "~/lib/feedback";
+import { useSettings } from "~/src/context/settingsContext";
 
 function randomString(length = 32) {
   const chars =
@@ -25,10 +27,23 @@ async function sha256(input: string): Promise<string> {
 export default function AppleSignInButton({
   onSignedIn,
   onError,
+  buttonType = AppleAuthentication.AppleAuthenticationButtonType.CONTINUE,
+  buttonStyle,
+  width = 260,
+  height,
+  cornerRadius,
+  fullWidth = false,
 }: {
   onSignedIn?: (user: User) => void;
   onError?: (e: any) => void;
+  buttonType?: AppleAuthentication.AppleAuthenticationButtonType;
+  buttonStyle?: AppleAuthentication.AppleAuthenticationButtonStyle;
+  width?: number | string;
+  height?: number;
+  cornerRadius?: number;
+  fullWidth?: boolean;
 }) {
+  const { soundEnabled } = useSettings();
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
   useEffect(() => {
     if (Platform.OS !== "ios") {
@@ -43,6 +58,10 @@ export default function AppleSignInButton({
   if (isAvailable !== true) return null;
 
   const onPress = async () => {
+    try {
+      await triggerFeedback({ enableSound: soundEnabled });
+    } catch {}
+
     try {
       const rawNonce = randomString();
       const hashedNonce = await sha256(rawNonce);
@@ -82,12 +101,12 @@ export default function AppleSignInButton({
   };
 
   return (
-    <View style={{ alignItems: "center", marginVertical: 8 }}>
+    <View style={{ width: "100%", alignItems: "center", marginVertical: 8 }}>
       <AppleAuthentication.AppleAuthenticationButton
-        buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+        buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
         buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-        cornerRadius={8}
-        style={{ width: 260, height: 48 }}
+        cornerRadius={100}
+        style={{ width: "100%", height: 42 }}
         onPress={onPress}
       />
     </View>
