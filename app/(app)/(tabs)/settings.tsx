@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Alert, SafeAreaView, ScrollView } from "react-native";
-import { Alert as RNAlert } from "react-native";
+import {
+  View,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  ActivityIndicator,
+  Modal,
+  BackHandler,
+} from "react-native";
 import { getAuth } from "firebase/auth";
 import {
   getFirestore,
@@ -80,6 +87,12 @@ const Settings = () => {
 
     fetchSubscriptionStatus();
   }, []);
+
+  useEffect(() => {
+    if (!deleting) return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => true);
+    return () => sub.remove();
+  }, [deleting]);
 
   const handleLogout = async () => {
     try {
@@ -164,25 +177,20 @@ const Settings = () => {
 
   const handleConfirmDelete = async () => {
     try {
-      let step = "start";
       setDeleting(true);
 
-      step = "auth:get-current-user";
       const auth = getAuth();
       const current = auth.currentUser;
       if (!current) throw new Error("Not signed in.");
       const uid = current.uid;
 
       // 1) Delete Firestore data tied to this uid (client-side)
-      step = "firestore:delete-user-data";
       await deleteAllUserDataClientSide(uid);
 
       // 2) Delete the authenticated user from Firebase Auth (may require recent login)
-      step = "auth:delete-user";
       await current.delete();
 
       // 3) Local cleanup and redirect
-      step = "local:clear-storage";
       clearStorage();
       Alert.alert(
         "Account deleted",
@@ -479,6 +487,39 @@ const Settings = () => {
           </Card>
         </View>
       </ScrollView>
+      <Modal
+        visible={deleting}
+        animationType="fade"
+        transparent
+        presentationStyle="overFullScreen"
+        onRequestClose={() => {}}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "white",
+              borderRadius: 12,
+              paddingVertical: 20,
+              paddingHorizontal: 24,
+              minWidth: 260,
+              alignItems: "center",
+            }}
+          >
+            <ActivityIndicator size="large" />
+            <Text className="mt-3 text-center">
+              Deleting your account…{"\n"}
+              Please keep the app open and stay on this screen.
+            </Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
