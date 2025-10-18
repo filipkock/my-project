@@ -1,5 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { View, Alert, SafeAreaView, ScrollView } from "react-native";
+import { Alert as RNAlert } from "react-native";
+import { getAuth } from "firebase/auth";
+import {
+  getFirestore,
+  collection,
+  doc,
+  query,
+  where,
+  limit,
+  getDocs,
+  startAfter,
+  writeBatch,
+  deleteDoc,
+} from "firebase/firestore";
 import { Text } from "~/components/ui/text";
 import { useAuth } from "~/src/context/auth";
 import { Button } from "~/components/ui/button";
@@ -20,6 +34,7 @@ const Settings = () => {
 
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [planName, setPlanName] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   const { soundEnabled, toggleSound } = useSettings();
 
@@ -90,11 +105,111 @@ const Settings = () => {
     checkNotificationPermissions();
   }, []);
 
+  // --- Client-side account & data deletion helpers ---
+  async function deleteCollectionByUidChunks(
+    collectionPath: string,
+    uid: string,
+    chunkSize = 300
+  ) {
+    const db = getFirestore();
+    let lastDoc: any = null;
+    while (true) {
+      const base = collection(db, collectionPath);
+      const q = lastDoc
+        ? query(
+            base,
+            where("uid", "==", uid),
+            limit(chunkSize),
+            startAfter(lastDoc)
+          )
+        : query(base, where("uid", "==", uid), limit(chunkSize));
+      const snap = await getDocs(q);
+      if (snap.empty) break;
+      const batch = writeBatch(db);
+      snap.docs.forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+      lastDoc = snap.docs[snap.docs.length - 1];
+      if (snap.size < chunkSize) break;
+    }
+  }
+
+  async function deleteDocById(collectionPath: string, id: string) {
+    const db = getFirestore();
+    const ref = doc(db, collectionPath, id);
+    try {
+      await deleteDoc(ref);
+    } catch (e) {
+      // ok if it doesn't exist
+    }
+  }
+
+  async function deleteAllUserDataClientSide(uid: string) {
+    // Collections with a `uid` field per document
+    await deleteCollectionByUidChunks("medication", uid);
+    await deleteCollectionByUidChunks("reminders", uid);
+    await deleteCollectionByUidChunks("userCards", uid);
+    await deleteCollectionByUidChunks("userStreaks", uid);
+
+    // Collections where document ID == uid (no `uid` field)
+    await deleteDocById("userStreakMeta", uid);
+    await deleteDocById("users", uid);
+  }
+  // --- End helpers ---
+
   // Remove all notifications - for testing
   async function clearAllNotifications() {
     await Notifications.cancelAllScheduledNotificationsAsync();
     console.log("All scheduled notifications cleared!");
   }
+
+  const handleConfirmDelete = async () => {
+    try {
+      let step = "start";
+      setDeleting(true);
+
+      step = "auth:get-current-user";
+      const auth = getAuth();
+      const current = auth.currentUser;
+      if (!current) throw new Error("Not signed in.");
+      const uid = current.uid;
+
+      // 1) Delete Firestore data tied to this uid (client-side)
+      step = "firestore:delete-user-data";
+      await deleteAllUserDataClientSide(uid);
+
+      // 2) Delete the authenticated user from Firebase Auth (may require recent login)
+      step = "auth:delete-user";
+      await current.delete();
+
+      // 3) Local cleanup and redirect
+      step = "local:clear-storage";
+      clearStorage();
+      Alert.alert(
+        "Account deleted",
+        "Your account and all associated data have been deleted.",
+        [{ text: "OK", onPress: () => router.replace("/") }]
+      );
+    } catch (err: any) {
+      console.log("Delete account error:", err);
+      Alert.alert(
+        "Deletion failed",
+        "Something went wrong while deleting your account. Please try again later."
+      );
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete account?",
+      "This will permanently delete your account and data. This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: handleConfirmDelete },
+      ]
+    );
+  };
 
   return (
     <SafeAreaView className="flex-1">
@@ -187,6 +302,20 @@ const Settings = () => {
                   >
                     <Text>Logout</Text>
                   </Button>
+                  <Button
+                    variant={"outline"}
+                    className="w-full border-red-600"
+                    onPress={handleDeleteAccount}
+                    disabled={deleting}
+                  >
+                    <Text className="text-red-600">
+                      {deleting ? "Deleting…" : "Delete account"}
+                    </Text>
+                  </Button>
+                  <Text className="text-muted-foreground text-xs mt-1">
+                    Deleting your account will remove your personal data
+                    associated with this app. This cannot be undone.
+                  </Text>
                 </>
               )}
             </CardContent>
