@@ -190,6 +190,11 @@ const Settings = () => {
       // 2) Delete the authenticated user from Firebase Auth (may require recent login)
       await current.delete();
 
+      // Log out of RevenueCat identity on this device
+      try {
+        await Purchases.logOut();
+      } catch {}
+
       // 3) Local cleanup and redirect
       clearStorage();
       Alert.alert(
@@ -209,14 +214,42 @@ const Settings = () => {
   };
 
   const handleDeleteAccount = () => {
-    Alert.alert(
-      "Delete account?",
-      "This will permanently delete your account and data. This action cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Delete", style: "destructive", onPress: handleConfirmDelete },
-      ]
-    );
+    if (isSubscribed) {
+      Alert.alert(
+        "Delete account?",
+        "You're currently subscribed. Deleting your account will NOT cancel your subscription. To stop future charges, manage your subscription in the App Store/Google Play.\n\nYou can still delete your account if you prefer.",
+        [
+          {
+            text: "Manage Subscription",
+            onPress: () => {
+              // iOS deep link; Play Store link can be added if you support Android billing
+              Linking.openURL(
+                "itms-apps://apps.apple.com/account/subscriptions"
+              );
+            },
+          },
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete Anyway",
+            style: "destructive",
+            onPress: handleConfirmDelete,
+          },
+        ]
+      );
+    } else {
+      Alert.alert(
+        "Delete account?",
+        "This will permanently delete your account and data. This action cannot be undone.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: handleConfirmDelete,
+          },
+        ]
+      );
+    }
   };
 
   return (
