@@ -33,6 +33,7 @@ import { ChevronLeftIcon } from "react-native-heroicons/solid";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { cancelMedicationReminder } from "~/src/utils/scheduleMedicationReminder";
 import PokaMelted from "~/assets/static/poka_melted.svg";
+import { getFromStorage } from "~/src/services/storage";
 
 interface ReminderData {
   takenTime: Timestamp;
@@ -65,10 +66,14 @@ export default function MedicationDetails() {
 
   const fetchLastTakenReminder = useCallback(async () => {
     try {
+      const userinfo = await getFromStorage("userDetails");
+      if (!userinfo?.uid) return;
+
       const q = query(
         collection(db, "reminders"),
         where("medId", "==", localMed.medDocID),
         where("status", "==", "taken"),
+        where("uid", "==", userinfo.uid),
         orderBy("takenTime", "desc"),
         limit(1)
       );

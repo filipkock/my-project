@@ -192,6 +192,7 @@ export default function EditMedicationForm({
       const snap = await getDocs(
         query(
           collection(db, "reminders"),
+          where("uid", "==", user.uid),
           where("medId", "==", medId),
           where("date", ">=", Timestamp.fromDate(windowStart)),
           where("date", "<=", Timestamp.fromDate(windowEnd))
@@ -229,6 +230,8 @@ export default function EditMedicationForm({
             // Always update Firestore fields
             await updateDoc(reminderRef, {
               time: timeStr,
+              uid: user.uid,
+              userEmail: user.email ?? "",
               updatedAt: serverTimestamp(),
             });
 
@@ -296,11 +299,17 @@ export default function EditMedicationForm({
     if (!defaultValues?.id) return;
     setLoading(true);
     try {
+      const user = await getFromStorage("userDetails");
+      if (!user?.uid) throw new Error("User missing");
       const medId = defaultValues.id;
 
       // 1. delete reminders & cancel notifications
       const snap = await getDocs(
-        query(collection(db, "reminders"), where("medId", "==", medId))
+        query(
+          collection(db, "reminders"),
+          where("uid", "==", user.uid),
+          where("medId", "==", medId)
+        )
       );
       await Promise.all(
         snap.docs.map(async (d) => {
