@@ -206,7 +206,7 @@ const Settings = () => {
       console.log("Delete account error:", err);
       Alert.alert(
         "Deletion failed",
-        "Something went wrong while deleting your account. Please try again later."
+        "Something went wrong while deleting your account. You may need to log out and sign back in, then try again."
       );
     } finally {
       setDeleting(false);
