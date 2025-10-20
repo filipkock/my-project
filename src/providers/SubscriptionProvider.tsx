@@ -4,6 +4,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppState } from "react-native";
 import Purchases from "react-native-purchases";
 
+//Silence everything from RevenueCat
+Purchases.setLogHandler(() => {});
+
 const LS_KEY = "subStatus";
 const ENTITLEMENT_ID = "Poka premium";
 

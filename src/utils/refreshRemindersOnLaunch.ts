@@ -94,6 +94,7 @@ export async function refreshRemindersOnLaunch() {
       query(
         collection(db, "reminders"),
         where("medId", "==", medId),
+        where("uid", "==", userinfo.uid),
         where("date", ">=", Timestamp.fromDate(scheduleStart)),
         where("date", "<=", Timestamp.fromDate(effectiveEnd))
       )

@@ -18,13 +18,6 @@ const AddNewMedicationLayout = () => {
         }}
       ></Stack.Screen>
       <Stack.Screen
-        name="step3"
-        options={{
-          headerShown: false,
-          animation: "none",
-        }}
-      ></Stack.Screen>
-      <Stack.Screen
         name="step4"
         options={{
           headerShown: false,
