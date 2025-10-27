@@ -1,7 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
-  SafeAreaView,
   FlatList,
   TouchableOpacity,
   Keyboard,
@@ -11,6 +10,7 @@ import {
   Platform,
   UIManager,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 import { router } from "expo-router";
@@ -26,12 +26,16 @@ export default function Step1() {
 
   const questionOpacity = useRef(new Animated.Value(1)).current;
 
-  if (
-    Platform.OS === "android" &&
-    UIManager.setLayoutAnimationEnabledExperimental
-  ) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-  }
+  const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    if (
+      Platform.OS === "android" &&
+      UIManager.setLayoutAnimationEnabledExperimental
+    ) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+  }, []);
 
   const handleInputChange = (text: string) => {
     setMedicationName(text);
@@ -65,33 +69,38 @@ export default function Step1() {
   };
 
   return (
-    <View className="flex-1">
-      <SafeAreaView>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <View className="p-8">
-            <View className="flex-row justify-between items-center">
-              <XMarkIcon
-                size={32}
-                color="black"
-                onPress={() => {
-                  if (router.canGoBack()) {
-                    router.back();
-                  } else {
-                    router.replace("/");
-                  }
-                }}
-                className="mb-6"
-              />
-              <View className="flex-1 items-center -ml-8">
-                <Stepper totalSteps={8} currentStep={1} />
-              </View>
+    <View
+      className="flex-1"
+      style={{
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+      }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View className="p-8">
+          <View className="flex-row justify-between items-center">
+            <XMarkIcon
+              size={32}
+              color="black"
+              onPress={() => {
+                if (router.canGoBack()) {
+                  router.back();
+                } else {
+                  router.replace("/");
+                }
+              }}
+              className="mb-6"
+            />
+            <View className="flex-1 items-center -ml-8">
+              <Stepper totalSteps={8} currentStep={1} />
             </View>
-            <Text className="text-2xl font-semibold mt-10">
-              What medication do you want to add?
-            </Text>
           </View>
-        </TouchableWithoutFeedback>
-      </SafeAreaView>
+          <Text className="text-2xl font-semibold mt-10">
+            What medication do you want to add?
+          </Text>
+        </View>
+      </TouchableWithoutFeedback>
 
       <View
         className="flex-1 bg-white p-8 shadow-sm justify-center items-center"

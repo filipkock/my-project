@@ -1,8 +1,7 @@
 // app/(app)/addNewMedication/step4.tsx
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
-  SafeAreaView,
   TouchableOpacity,
   Keyboard,
   TouchableWithoutFeedback,
@@ -11,6 +10,7 @@ import {
   UIManager,
   ScrollView,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "~/components/ui/text";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeftIcon } from "react-native-heroicons/solid";
@@ -37,12 +37,16 @@ export default function Step4() {
 
   const questionOpacity = useRef(new Animated.Value(1)).current;
 
-  if (
-    Platform.OS === "android" &&
-    UIManager.setLayoutAnimationEnabledExperimental
-  ) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-  }
+  const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    if (
+      Platform.OS === "android" &&
+      UIManager.setLayoutAnimationEnabledExperimental
+    ) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+  }, []);
 
   const toggleDay = (dayIndex: number) => {
     setSpecificDays((prev) =>
@@ -80,43 +84,44 @@ export default function Step4() {
   };
 
   return (
-    <View className="flex-1">
-      <SafeAreaView>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <View className="p-8">
-            <View className="flex-row justify-between items-center">
-              <ChevronLeftIcon
-                size={32}
-                color="black"
-                onPress={() => {
-                  if (isAdvanced) {
-                    // Reset advanced UI and return to the options list
-                    setShowDaySelector(false);
-                    setShowIntervalSelector(false);
-                    setInterval("");
-                    setCustomIntervalValue("");
-                    return;
-                  }
-                  router.back();
-                }}
-                className="mb-6"
-              />
-              <View className="flex-1 items-center -ml-8">
-                <Stepper totalSteps={8} currentStep={3} />
-              </View>
-            </View>
-            <Animated.View
-              style={{
-                opacity: questionOpacity,
+    <View
+      className="flex-1"
+      style={{
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+      }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View className="p-8">
+          <View className="flex-row justify-between items-center">
+            <ChevronLeftIcon
+              size={32}
+              color="black"
+              onPress={() => {
+                if (isAdvanced) {
+                  // Reset advanced UI and return to the options list
+                  setShowDaySelector(false);
+                  setShowIntervalSelector(false);
+                  setInterval("");
+                  setCustomIntervalValue("");
+                  return;
+                }
+                router.back();
               }}
-            >
-              <Text className="text-2xl font-semibold mt-10">
-                How often do you take this medication?
-              </Text>
-            </Animated.View>
+              className="mb-6"
+            />
+            <View className="flex-1 items-center -ml-8">
+              <Stepper totalSteps={8} currentStep={3} />
+            </View>
           </View>
-        </TouchableWithoutFeedback>
-      </SafeAreaView>
+          <Animated.View style={{ opacity: questionOpacity }}>
+            <Text className="text-2xl font-semibold mt-10">
+              How often do you take this medication?
+            </Text>
+          </Animated.View>
+        </View>
+      </TouchableWithoutFeedback>
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View

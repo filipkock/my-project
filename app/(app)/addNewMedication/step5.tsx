@@ -1,13 +1,13 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
-  SafeAreaView,
   TouchableWithoutFeedback,
   Keyboard,
   Animated,
   Platform,
   UIManager,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { router, useLocalSearchParams } from "expo-router";
@@ -29,41 +29,50 @@ export default function Step5StartDate() {
 
   const questionOpacity = useRef(new Animated.Value(1)).current;
 
-  if (
-    Platform.OS === "android" &&
-    UIManager.setLayoutAnimationEnabledExperimental
-  ) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-  }
+  const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    if (
+      Platform.OS === "android" &&
+      UIManager.setLayoutAnimationEnabledExperimental
+    ) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+  }, []);
 
   return (
-    <View className="flex-1">
-      <SafeAreaView>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <View className="p-8">
-            <View className="flex-row justify-between items-center">
-              <ChevronLeftIcon
-                size={32}
-                color="black"
-                onPress={() => router.back()}
-                className="mb-6"
-              />
-              <View className="flex-1 items-center -ml-8">
-                <Stepper totalSteps={8} currentStep={5} />
-              </View>
+    <View
+      className="flex-1"
+      style={{
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+      }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View className="p-8">
+          <View className="flex-row justify-between items-center">
+            <ChevronLeftIcon
+              size={32}
+              color="black"
+              onPress={() => router.back()}
+              className="mb-6"
+            />
+            <View className="flex-1 items-center -ml-8">
+              <Stepper totalSteps={8} currentStep={5} />
             </View>
-            <Animated.View
-              style={{
-                opacity: questionOpacity,
-              }}
-            >
-              <Text className="text-2xl font-semibold mt-10">
-                When do you start this medication?
-              </Text>
-            </Animated.View>
           </View>
-        </TouchableWithoutFeedback>
-      </SafeAreaView>
+          <Animated.View
+            style={{
+              opacity: questionOpacity,
+            }}
+          >
+            <Text className="text-2xl font-semibold mt-10">
+              When do you start this medication?
+            </Text>
+          </Animated.View>
+        </View>
+      </TouchableWithoutFeedback>
 
       <View
         className="flex-1 bg-white p-8 shadow-sm justify-start items-center"

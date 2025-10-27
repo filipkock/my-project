@@ -1,11 +1,14 @@
 import {
   View,
-  SafeAreaView,
   TouchableWithoutFeedback,
   Keyboard,
   ActivityIndicator,
   ScrollView,
+  Platform,
+  UIManager,
 } from "react-native";
+import { useEffect } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "~/components/ui/text";
 import { Label } from "~/components/ui/label";
 import { Button } from "~/components/ui/button";
@@ -86,6 +89,17 @@ export default function ConfirmStep() {
         : undefined,
     reminderDates: [],
   };
+
+  const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    if (
+      Platform.OS === "android" &&
+      UIManager.setLayoutAnimationEnabledExperimental
+    ) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+  }, []);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -192,25 +206,30 @@ export default function ConfirmStep() {
   };
 
   return (
-    <View className="flex-1">
-      <SafeAreaView>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <View className="p-8">
-            <View className="flex-row justify-between items-center">
-              <ChevronLeftIcon
-                size={32}
-                color="black"
-                onPress={() => router.back()}
-                className="mb-6"
-              />
-              <View className="flex-1 items-center -ml-8">
-                <Stepper totalSteps={8} currentStep={8} />
-              </View>
+    <View
+      className="flex-1"
+      style={{
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+      }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View className="p-8">
+          <View className="flex-row justify-between items-center">
+            <ChevronLeftIcon
+              size={32}
+              color="black"
+              onPress={() => router.back()}
+              className="mb-6"
+            />
+            <View className="flex-1 items-center -ml-8">
+              <Stepper totalSteps={8} currentStep={8} />
             </View>
-            <Text className="text-2xl font-semibold mt-10">Summary</Text>
           </View>
-        </TouchableWithoutFeedback>
-      </SafeAreaView>
+          <Text className="text-2xl font-semibold mt-10">Summary</Text>
+        </View>
+      </TouchableWithoutFeedback>
 
       <View
         className="flex-1 bg-white p-8 shadow-sm"

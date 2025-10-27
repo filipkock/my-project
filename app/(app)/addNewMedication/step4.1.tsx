@@ -1,7 +1,6 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import {
   View,
-  SafeAreaView,
   TouchableOpacity,
   Keyboard,
   TouchableWithoutFeedback,
@@ -9,6 +8,7 @@ import {
   Platform,
   UIManager,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "~/components/ui/text";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeftIcon, LockClosedIcon } from "react-native-heroicons/solid";
@@ -36,12 +36,16 @@ export default function Step4_1() {
   const questionOpacity = useRef(new Animated.Value(1)).current;
   const { isPremium, guard } = usePremiumGate();
 
-  if (
-    Platform.OS === "android" &&
-    UIManager.setLayoutAnimationEnabledExperimental
-  ) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-  }
+  const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    if (
+      Platform.OS === "android" &&
+      UIManager.setLayoutAnimationEnabledExperimental
+    ) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+  }, []);
 
   const handleSelect = (index: number) => {
     const timesPerDay = (index + 1).toString();
@@ -60,33 +64,38 @@ export default function Step4_1() {
   };
 
   return (
-    <View className="flex-1">
-      <SafeAreaView>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <View className="p-8">
-            <View className="flex-row justify-between items-center">
-              <ChevronLeftIcon
-                size={32}
-                color="black"
-                onPress={() => router.back()}
-                className="mb-6"
-              />
-              <View className="flex-1 items-center -ml-8">
-                <Stepper totalSteps={8} currentStep={4} />
-              </View>
+    <View
+      className="flex-1"
+      style={{
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+      }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View className="p-8">
+          <View className="flex-row justify-between items-center">
+            <ChevronLeftIcon
+              size={32}
+              color="black"
+              onPress={() => router.back()}
+              className="mb-6"
+            />
+            <View className="flex-1 items-center -ml-8">
+              <Stepper totalSteps={8} currentStep={4} />
             </View>
-            <Animated.View
-              style={{
-                opacity: questionOpacity,
-              }}
-            >
-              <Text className="text-2xl font-semibold mt-10">
-                How many times a day do you take it?
-              </Text>
-            </Animated.View>
           </View>
-        </TouchableWithoutFeedback>
-      </SafeAreaView>
+          <Animated.View
+            style={{
+              opacity: questionOpacity,
+            }}
+          >
+            <Text className="text-2xl font-semibold mt-10">
+              How many times a day do you take it?
+            </Text>
+          </Animated.View>
+        </View>
+      </TouchableWithoutFeedback>
 
       <View
         className="flex-1 bg-white p-8 shadow-sm justify-center items-center"
