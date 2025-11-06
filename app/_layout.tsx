@@ -101,7 +101,7 @@ export default function RootLayout() {
 
   // Subscription plans setup - needs further setup and testing
   React.useEffect(() => {
-    Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+    Purchases.setLogLevel(LOG_LEVEL.ERROR); // Only critical errors
 
     if (Platform.OS === "ios") {
       Purchases.configure({

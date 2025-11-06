@@ -24,7 +24,6 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
           height: 200,
         }}
         player={player}
-        allowsFullscreen={false}
         allowsPictureInPicture={false}
         nativeControls={false}
       />

@@ -273,7 +273,6 @@ export default function Reward() {
             <VideoView
               style={{ width: 400, height: 400 }}
               player={player}
-              allowsFullscreen={false}
               allowsPictureInPicture={false}
               nativeControls={false}
             />

@@ -66,7 +66,6 @@ export default function DailyProgress() {
           <VideoView
             style={{ width: 400, height: 400 }}
             player={player}
-            allowsFullscreen={false}
             allowsPictureInPicture={false}
             nativeControls={false}
             allowsVideoFrameAnalysis={false}

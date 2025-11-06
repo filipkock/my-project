@@ -32,7 +32,6 @@ export default function StreakResetNotice() {
                 height: 300,
               }}
               player={player}
-              allowsFullscreen={false}
               allowsPictureInPicture={false}
               nativeControls={false}
             />

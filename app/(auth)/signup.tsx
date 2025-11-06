@@ -175,7 +175,6 @@ export default function signup() {
                     height: 250,
                   }}
                   player={player}
-                  allowsFullscreen={false}
                   allowsPictureInPicture={false}
                   nativeControls={false}
                 />

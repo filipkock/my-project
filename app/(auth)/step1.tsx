@@ -67,7 +67,6 @@ export default function Step1() {
             <VideoView
               style={{ width: 420, height: 420 }}
               player={player}
-              allowsFullscreen={false}
               allowsPictureInPicture={false}
               nativeControls={false}
             />

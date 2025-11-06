@@ -148,7 +148,6 @@ export default function Login() {
                     height: 250,
                   }}
                   player={player}
-                  allowsFullscreen={false}
                   allowsPictureInPicture={false}
                   nativeControls={false}
                 />
