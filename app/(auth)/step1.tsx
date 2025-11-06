@@ -1,15 +1,22 @@
 import React from "react";
 import { Audio } from "expo-av";
 import { playSound } from "~/lib/sound";
-import { SafeAreaView, View, Image } from "react-native";
+import { SafeAreaView, View, Image, Platform } from "react-native";
 import { router } from "expo-router";
 import { Text } from "~/components/ui/text";
 import { Button } from "~/components/ui/button";
-import { useVideoPlayer, VideoView } from "expo-video";
+import { VideoView } from "expo-video";
+import { useSilentVideo } from "~/lib/useSilentVideo";
 
 export default function Step1() {
   const soundRef = React.useRef<Audio.Sound | null>(null);
   const [phase, setPhase] = React.useState<0 | 1 | 2>(0); // 0: video, 1: intro msg, 2: help msg
+
+  // Expo Video player (keep videos truly silent)
+  const player = useSilentVideo(
+    require("~/assets/animations/onboarding.mp4"),
+    false
+  );
 
   const handleContinue = async () => {
     try {
@@ -24,28 +31,6 @@ export default function Step1() {
     }
   };
 
-  const player = useVideoPlayer(
-    require("~/assets/animations/onboarding.mp4"),
-    (player) => {
-      player.play();
-      player.muted = true;
-
-      // Listen for status updates (SDK variations may differ), use a safe cast
-      (player as any).addListener?.("statusUpdate", (evt: any) => {
-        const s = evt?.status ?? evt;
-        if (s?.isLoaded && s?.didJustFinish) {
-          setPhase(1);
-        }
-      });
-
-      // Fallback: in case the event name differs on this SDK, advance after a short delay
-      setTimeout(() => {
-        // Only advance if we haven't moved past video yet
-        setPhase((p) => (p === 0 ? 1 : p));
-      }, 3500);
-    }
-  );
-
   React.useEffect(() => {
     playSound(require("~/assets/audio/onboarding_sound.wav"));
   }, []);
@@ -56,7 +41,7 @@ export default function Step1() {
         <View className="flex-1 gap-4">
           <Image
             source={require("~/assets/images/logo.png")}
-            className="w-20 h-20"
+            style={{ width: 80, height: 80 }}
             resizeMode="contain"
           />
 
@@ -93,6 +78,10 @@ export default function Step1() {
             <Button
               className="w-full"
               onPress={async () => {
+                if (phase === 0) {
+                  setPhase(1);
+                  return;
+                }
                 if (phase === 1) {
                   setPhase(2);
                   return;

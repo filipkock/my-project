@@ -4,16 +4,15 @@ import { Button } from "~/components/ui/button";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { XMarkIcon } from "react-native-heroicons/solid";
-import { useVideoPlayer, VideoView } from "expo-video";
+import { VideoView } from "expo-video";
+import { useSilentVideo } from "~/lib/useSilentVideo";
 
 export default function StreakResetNotice() {
-  const player = useVideoPlayer(
+  const player = useSilentVideo(
     require("~/assets/animations/poka_melting.mp4"),
-    (player) => {
-      player.play();
-      player.muted = true;
-    }
+    false
   );
+
   return (
     <SafeAreaView className="flex-1 bg-secondary/40">
       <View className="flex-1 p-12">

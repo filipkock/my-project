@@ -7,11 +7,12 @@ import { useTheme } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getFromStorage } from "~/src/services/storage";
 import { getStreakFromFirestore } from "~/src/utils/streak";
-import { useVideoPlayer, VideoView } from "expo-video";
+import { VideoView } from "expo-video";
 import { FireIcon } from "react-native-heroicons/solid";
 import { GiftIcon } from "react-native-heroicons/solid";
 import { playSound } from "~/lib/sound";
 import { useSettings } from "~/src/context/settingsContext";
+import { useSilentVideo } from "~/lib/useSilentVideo";
 
 const animationSound = require("~/assets/audio/onboarding_sound.wav");
 
@@ -41,12 +42,9 @@ export default function DailyProgress() {
     fetchStreak();
   }, [takenCount, totalCount]);
 
-  const player = useVideoPlayer(
+  const player = useSilentVideo(
     require("~/assets/animations/poka_celebrate.mp4"),
-    (player) => {
-      player.play();
-      player.muted = true;
-    }
+    false
   );
 
   useEffect(() => {

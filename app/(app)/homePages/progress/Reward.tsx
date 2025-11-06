@@ -28,13 +28,15 @@ import {
   cardCollections,
   cardIsPremium,
 } from "~/src/constants/cardMap";
-import { useVideoPlayer, VideoView } from "expo-video";
+import { VideoView } from "expo-video";
 import { Badge } from "~/components/ui/badge";
 import { Stepper } from "~/components/custom/Stepper";
 import { usePremiumGate } from "~/src/hooks/usePremiumGate";
 import * as Haptics from "expo-haptics";
 import { useSettings } from "~/src/context/settingsContext";
 import { playSound } from "~/lib/sound";
+import { useSilentVideo } from "~/lib/useSilentVideo";
+
 const animationSound = require("~/assets/audio/card_reveal.wav");
 
 type UserCards = {
@@ -84,12 +86,9 @@ export default function Reward() {
     }
   }, [videoFinished]);
 
-  const player = useVideoPlayer(
+  const player = useSilentVideo(
     require("~/assets/animations/card_reveal.mp4"),
-    (player) => {
-      player.play();
-      player.muted = true;
-    }
+    false
   );
 
   useEffect(() => {

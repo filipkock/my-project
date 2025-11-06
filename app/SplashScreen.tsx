@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { View } from "react-native";
-import { useVideoPlayer, VideoView } from "expo-video";
+import { VideoView } from "expo-video";
+import { useSilentVideo } from "~/lib/useSilentVideo";
 
 export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
   useEffect(() => {
@@ -10,13 +11,11 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
     return () => clearTimeout(timer);
   }, []);
 
-  const player = useVideoPlayer(
+  const player = useSilentVideo(
     require("~/assets/animations/splash.mp4"),
-    (player) => {
-      player.play();
-      player.muted = true;
-    }
+    false
   );
+
   return (
     <View className="absolute inset-0 z-50 items-center bg-[#F7F7F8] justify-center">
       <VideoView

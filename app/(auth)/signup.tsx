@@ -9,7 +9,7 @@ import {
 import { auth } from "../../config/firebase";
 import { signInAnonymously } from "firebase/auth";
 import { Link, router } from "expo-router";
-import { useVideoPlayer, VideoView } from "expo-video";
+import { VideoView } from "expo-video";
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import { makeRedirectUri } from "expo-auth-session";
@@ -22,6 +22,7 @@ import { setLocalStorage } from "~/src/services/storage";
 import { ChevronLeft } from "~/lib/icons/ChevronLeft";
 import Constants from "expo-constants";
 import AppleSignInButton from "~/components/custom/AppleSignInButton";
+import { useSilentVideo } from "~/lib/useSilentVideo";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -119,13 +120,9 @@ export default function signup() {
     }
   };
 
-  const player = useVideoPlayer(
+  const player = useSilentVideo(
     require("~/assets/animations/poka_waving.mp4"),
-    (player) => {
-      player.play();
-      player.muted = true;
-      player.loop = true;
-    }
+    false
   );
 
   return (
