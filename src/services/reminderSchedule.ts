@@ -1,9 +1,66 @@
 import moment from "moment";
 import { Timestamp } from "firebase/firestore";
 
-// A helper function to generate dates
-// using moment.js for date arithmetic
-// --------------------------------------
+// Aligns the scheduling start date so that "every X days/weeks/months" continues
+// from the medication's original start date, preserving the correct cadence.
+export function alignStartToPhase(
+  anchorStart: Date | null | undefined,
+  windowStart: Date,
+  intakeInterval: string,
+  customIntervalValue?: number
+): Date {
+  const startOf = (d: Date) =>
+    new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const MS = 24 * 60 * 60 * 1000;
+
+  const anchor = anchorStart ? startOf(anchorStart) : null;
+  let aligned = startOf(windowStart);
+  // Ensure custom interval is a positive number; fallback to daily if invalid
+  let k = Number(customIntervalValue);
+  if (!Number.isFinite(k) || k <= 0) k = 1;
+
+  // Convert textual interval forms into the consistent 'every X days' form
+  // Normalize "Every other day" into "every X days"
+  if (intakeInterval === "Every other day") {
+    intakeInterval = "every X days";
+    k = 2;
+  }
+
+  // Convert "every X weeks" → days
+  if (intakeInterval === "every X weeks") {
+    intakeInterval = "every X days";
+    k = k * 7;
+  }
+
+  // Handle "every X months": advance by whole months from the anchor until we reach the windowStart
+  // This keeps the original day-of-month cadence (e.g., 15th stays 15th), and only moves forward.
+  if (intakeInterval === "every X months" && anchor) {
+    const step = Math.max(1, k); // ensure at least 1 month
+    let cur = moment(anchor).startOf("day");
+    const target = moment(startOf(windowStart));
+    while (cur.isBefore(target, "day")) {
+      cur.add(step, "months");
+    }
+    aligned = cur.toDate();
+  }
+
+  // Only X-based intervals have phase alignment
+  if (intakeInterval === "every X days" && anchor) {
+    // Shift the windowStart forward so that (date - anchorStart) % X === 0
+    // This preserves the original 'every X days' rhythm without back-generating old dates
+    const daysBetween = Math.floor((aligned.getTime() - anchor.getTime()) / MS);
+    const remainder = ((daysBetween % k) + k) % k;
+    if (remainder !== 0) {
+      aligned = new Date(
+        aligned.getFullYear(),
+        aligned.getMonth(),
+        aligned.getDate() + (k - remainder)
+      );
+    }
+  }
+
+  return aligned;
+}
 
 /**
  * Generates an array of Dates when the user

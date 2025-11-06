@@ -13,8 +13,16 @@ import { scheduleMedicationReminder } from "~/src/utils/scheduleMedicationRemind
 import {
   generateReminderDates,
   clampEndToWindow,
+  alignStartToPhase,
 } from "~/src/services/reminderSchedule";
 import { getFromStorage, setLocalStorage } from "~/src/services/storage";
+
+function normalizeSpecificDays(input: unknown): number[] | undefined {
+  // Already stored as numbers in DB: return as-is when non-empty; otherwise undefined disables weekly filtering
+  return Array.isArray(input) && input.length > 0
+    ? (input as number[])
+    : undefined;
+}
 
 export async function refreshRemindersOnLaunch() {
   const userinfo = await getFromStorage("userDetails");
@@ -115,13 +123,28 @@ export async function refreshRemindersOnLaunch() {
       })
     );
 
-    const newReminderDates = generateReminderDates(
+    // Compute the correct first date inside the window based on the original start date
+    // so the medication keeps its intended "every X days" rhythm.
+    const alignedStart = alignStartToPhase(
+      med.startDate?.toDate(),
       scheduleStart,
+      med.intakeInterval,
+      med.customInterval
+    );
+
+    // Normalize weekday selection (if any) to numeric format expected by generator.
+    const normalizedSpecificDays = normalizeSpecificDays(
+      med.specificDaysOfWeek
+    );
+
+    // Generate reminder dates only within the window, starting from the phase-aligned date.
+    const newReminderDates = generateReminderDates(
+      alignedStart,
       effectiveEnd,
       med.intakeInterval,
       {
-        customIntervalValue: med.customInterval || 1,
-        specificDaysOfWeek: med.specificDaysOfWeek,
+        customIntervalValue: Number(med.customInterval),
+        specificDaysOfWeek: normalizedSpecificDays,
       }
     );
 
