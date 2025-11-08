@@ -13,6 +13,7 @@ import { VideoView } from "expo-video";
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import { makeRedirectUri } from "expo-auth-session";
+import Purchases from "react-native-purchases";
 
 // Components
 import { Button } from "~/components/ui/button";
@@ -46,6 +47,10 @@ export default function signup() {
         if (!id_token) return;
         const credential = GoogleAuthProvider.credential(id_token);
         const res = await signInWithCredential(auth, credential);
+        // Link RevenueCat to this user: lets you grant promo entitlements by Firebase UID
+        try {
+          await Purchases.logIn(res.user.uid);
+        } catch {}
         setLocalStorage("userDetails", res.user);
         router.replace("/(auth)/allowNotification");
       }
@@ -72,6 +77,11 @@ export default function signup() {
       createUserWithEmailAndPassword(auth, trimmedEmail, trimmedPassword)
         .then(async (UserCredential) => {
           const user = UserCredential.user;
+
+          // Link RevenueCat to this user (stable App User ID = Firebase UID)
+          try {
+            await Purchases.logIn(user.uid);
+          } catch {}
 
           await updateProfile(user, {});
 
@@ -113,6 +123,10 @@ export default function signup() {
     try {
       const result = await signInAnonymously(auth);
       setLocalStorage("userDetails", result.user);
+      // Even anonymous Firebase users have a stable UID; link it to RevenueCat
+      try {
+        await Purchases.logIn(result.user.uid);
+      } catch {}
 
       router.replace("/(auth)/allowNotification");
     } catch (error: any) {
@@ -122,7 +136,7 @@ export default function signup() {
 
   const player = useSilentVideo(
     require("~/assets/animations/poka_waving.mp4"),
-    false
+    true
   );
 
   return (
@@ -191,7 +205,11 @@ export default function signup() {
 
               {/* Apple button */}
               <AppleSignInButton
-                onSignedIn={(user) => {
+                onSignedIn={async (user) => {
+                  // Link RevenueCat to this Apple-authenticated Firebase user
+                  try {
+                    await Purchases.logIn(user.uid);
+                  } catch {}
                   setLocalStorage("userDetails", user);
                   router.replace("/(auth)/allowNotification");
                 }}

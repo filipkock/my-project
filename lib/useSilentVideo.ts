@@ -1,7 +1,7 @@
 import { useVideoPlayer } from "expo-video";
 import { Platform } from "react-native";
 
-export function useSilentVideo(source: number, loop: boolean = false) {
+export function useSilentVideo(source: number, repeat: boolean = false) {
   return useVideoPlayer(source, (p) => {
     // Prevent background music pause
     p.audioMixingMode = Platform.select({
@@ -15,7 +15,7 @@ export function useSilentVideo(source: number, loop: boolean = false) {
     p.volume = 0;
 
     // Loop or not
-    p.loop = loop;
+    p.loop = repeat;
 
     p.play();
   });

@@ -17,6 +17,7 @@ import { Text } from "~/components/ui/text";
 import Constants from "expo-constants";
 import AppleSignInButton from "~/components/custom/AppleSignInButton";
 import { useSilentVideo } from "~/lib/useSilentVideo";
+import Purchases from "react-native-purchases";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -39,6 +40,10 @@ export default function Login() {
         if (!id_token) return;
         const credential = GoogleAuthProvider.credential(id_token);
         const res = await signInWithCredential(auth, credential);
+        // Link RevenueCat customer to Firebase UID so promos/entitlements work immediately
+        try {
+          await Purchases.logIn(res.user.uid); // link to Firebase UID
+        } catch {}
         setLocalStorage("userDetails", res.user);
         router.replace("/(auth)/allowNotification");
       }
@@ -53,6 +58,10 @@ export default function Login() {
     try {
       const result = await signInAnonymously(auth);
       setLocalStorage("userDetails", result.user);
+      // Link RevenueCat to this (anonymous) Firebase UID for stable App User ID
+      try {
+        await Purchases.logIn(result.user.uid);
+      } catch {}
 
       router.replace("/(auth)/allowNotification");
     } catch (error: any) {
@@ -68,6 +77,10 @@ export default function Login() {
       signInWithEmailAndPassword(auth, trimmedEmail, trimmedPassword)
         .then(async (UserCredential) => {
           const user = UserCredential.user;
+          // Ensure RC customer matches Firebase UID (enables dashboard visibility + promo grants)
+          try {
+            await Purchases.logIn(user.uid);
+          } catch {}
           setLocalStorage("userDetails", user);
 
           router.replace("/(auth)/allowNotification");
@@ -101,7 +114,7 @@ export default function Login() {
 
   const player = useSilentVideo(
     require("~/assets/animations/poka_waving.mp4"),
-    false
+    true
   );
 
   return (
@@ -162,7 +175,11 @@ export default function Login() {
               </Button>
 
               <AppleSignInButton
-                onSignedIn={(user) => {
+                onSignedIn={async (user) => {
+                  // Link RevenueCat to this Firebase UID (Apple sign-in path)
+                  try {
+                    await Purchases.logIn(user.uid);
+                  } catch {}
                   setLocalStorage("userDetails", user);
                   router.replace("/(auth)/allowNotification");
                 }}
