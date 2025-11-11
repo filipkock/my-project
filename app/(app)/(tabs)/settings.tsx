@@ -20,6 +20,7 @@ import {
   startAfter,
   writeBatch,
   deleteDoc,
+  onSnapshot,
 } from "firebase/firestore";
 import { Text } from "~/components/ui/text";
 import { useAuth } from "~/src/context/auth";
@@ -35,6 +36,7 @@ import { Switch } from "react-native";
 import * as Notifications from "expo-notifications";
 import * as Linking from "expo-linking";
 import Purchases from "react-native-purchases";
+import NotificationsDevPanel from "~/components/custom/testing/NotificationsDevPanel";
 
 const Settings = () => {
   const { user, signOut } = useAuth(); // Access the signOut function and user from AuthProvider
@@ -169,11 +171,27 @@ const Settings = () => {
   }
   // --- End helpers ---
 
-  // Remove all notifications - for testing
-  async function clearAllNotifications() {
-    await Notifications.cancelAllScheduledNotificationsAsync();
-    console.log("All scheduled notifications cleared!");
-  }
+  // --- Dev tools feature flag ---
+  const [showDevTools, setShowDevTools] = useState(false);
+
+  useEffect(() => {
+    if (!user?.uid) {
+      setShowDevTools(false);
+      return;
+    }
+
+    const db = getFirestore();
+    const ref = doc(db, "users", user.uid);
+
+    const unsub = onSnapshot(ref, (snap) => {
+      const data = snap.data();
+      console.log("User doc snapshot for dev tools flag:", data);
+      const flag = data?.flags?.devTools === true; // expects a boolean
+      setShowDevTools(flag);
+    });
+
+    return unsub;
+  }, [user?.uid]);
 
   const handleConfirmDelete = async () => {
     try {
@@ -385,6 +403,8 @@ const Settings = () => {
               </Button>
             </CardContent>
           </Card> */}
+
+          {showDevTools && <NotificationsDevPanel />}
 
           {permissionGranted === false && (
             <Card>
