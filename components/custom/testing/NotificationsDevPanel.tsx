@@ -264,6 +264,9 @@ export default function NotificationsDevPanel() {
                         <Text className="text-xs font-bold">
                           {n?.content?.title ?? "Notification"}
                         </Text>
+                        <Text className="text-[10px] opacity-60">
+                          ID: {n?.identifier ?? "(no id)"}
+                        </Text>
                         {fireAt ? (
                           <>
                             <Text className="text-xs">

@@ -57,6 +57,10 @@ import { DaySelector } from "~/components/custom/DaySelector";
 import { usePremiumGate } from "~/src/hooks/usePremiumGate";
 
 import type { FormData } from "~/src/types/medication";
+// Metadata we keep for an existing reminder doc during reconciliation
+// id: Firestore document id for the reminder
+// notificationId: local OS notification id so we can cancel previously scheduled notifications
+type ExistingReminderMeta = { id: string; notificationId?: string };
 
 const toDate = (d: Timestamp | Date): Date =>
   d instanceof Timestamp ? d.toDate() : d;
@@ -160,6 +164,7 @@ export default function EditMedicationForm({
         chunkEndDate: Timestamp.fromDate(effectiveEnd),
       });
 
+      /* --- Update reminders --- */
       // 1. Generate desired dates in window
       // For each reminderTime, generate dates and pair with time
       const reminderTimes = formData.reminderTimes || [];
@@ -199,60 +204,49 @@ export default function EditMedicationForm({
         )
       );
 
-      // Map of "YYYY-MM-DD|hh:mm" -> docId
-      const exists = new Map<string, string>();
+      // Map of "YYYY-MM-DD|hh:mm" -> ExistingReminderMeta
+      const exists = new Map<string, ExistingReminderMeta>();
       snap.forEach((d) => {
         const data = d.data();
         const dateStr = toDate(data.date).toISOString().slice(0, 10);
         const timeStr = data.time;
-        exists.set(dateStr + "|" + timeStr, d.id);
+        exists.set(dateStr + "|" + timeStr, {
+          id: d.id,
+          notificationId: data?.notificationId,
+        });
       });
 
       // 3. Delete outdated
-      await Promise.all(
-        Array.from(exists.entries())
-          .filter(([key]) => !desiredSet.has(key))
-          .map(([_, id]) => deleteDoc(doc(db, "reminders", id)))
+      const toDelete = Array.from(exists.entries()).filter(
+        ([key]) => !desiredSet.has(key)
       );
-
-      // 3b.  UPDATE + RESCHEDULE EXISTING REMINDERS (same date, but when data changed)
+      console.log("DELETED", toDelete.length);
       await Promise.all(
-        Array.from(exists.entries())
-          .filter(([key]) => desiredSet.has(key)) // still a valid date|time
-          .map(async ([key, id]) => {
-            const reminderRef = doc(db, "reminders", id);
-            const snapDoc = await getDoc(reminderRef);
-            const data = snapDoc.data();
-            // Extract correct time from key
-            const [dateStr, timeStr] = key.split("|");
-            const needsReschedule = data && data.time !== timeStr;
-
-            // Always update Firestore fields
-            await updateDoc(reminderRef, {
-              time: timeStr,
-              uid: user.uid,
-              userEmail: user.email ?? "",
-              updatedAt: serverTimestamp(),
-            });
-
-            // If fields changed, cancel old notif and schedule a new one
-            if (needsReschedule) {
-              if (data.notificationId) {
-                await Notifications.cancelScheduledNotificationAsync(
-                  data.notificationId
-                );
-              }
-              await scheduleMedicationReminder({
-                id,
-                uid: user.uid,
-                date: new Date(dateStr),
-                time: timeStr,
-                medId,
-                notificationId: null,
-              });
+        toDelete.map(async ([_, existingReminder]) => {
+          if (existingReminder.notificationId) {
+            try {
+              await Notifications.cancelScheduledNotificationAsync(
+                existingReminder.notificationId
+              );
+            } catch (e) {
+              console.warn(
+                "Failed to cancel notification",
+                existingReminder.notificationId,
+                e
+              );
             }
-          })
+          }
+          await deleteDoc(doc(db, "reminders", existingReminder.id));
+        })
       );
+
+      // Helper to format date as local YYYY-MM-DD - can be deleted
+      const ymdLocal = (d: Date) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const da = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${da}`;
+      };
 
       // 4. Create missing & schedule future
       await Promise.all(
@@ -262,6 +256,7 @@ export default function EditMedicationForm({
               !exists.has(date.toISOString().slice(0, 10) + "|" + time)
           )
           .map(async ({ date, time }) => {
+            console.log("CREATE", ymdLocal(date), time);
             const ref = await addDoc(collection(db, "reminders"), {
               date: Timestamp.fromDate(date),
               time,
@@ -271,16 +266,14 @@ export default function EditMedicationForm({
               userEmail: user.email ?? "",
               notificationId: null,
             });
-            if (date > now) {
-              await scheduleMedicationReminder({
-                id: ref.id,
-                uid: user.uid,
-                date,
-                time,
-                medId,
-                notificationId: null,
-              });
-            }
+            await scheduleMedicationReminder({
+              id: ref.id,
+              uid: user.uid,
+              date,
+              time,
+              medId,
+              notificationId: null,
+            });
           })
       );
 
