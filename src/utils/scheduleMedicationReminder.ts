@@ -48,7 +48,12 @@ export async function scheduleMedicationReminder(reminder: Reminder) {
       content: {
         title: "Medication Reminder",
         body: getNotificationBody(reminder),
-        data: { reminderId: reminder.id },
+        data: {
+          reminderId: reminder.id,
+          fireAtMs: scheduledDate.getTime(),
+          fireAtIso: scheduledDate.toISOString(),
+          tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
         sound: "default",
       },
       trigger: {
