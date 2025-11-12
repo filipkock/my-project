@@ -56,7 +56,6 @@ export default function MedicationDetails() {
           id?: string;
         };
         setParsedMedication(parsed);
-        console.log("Parsed medication:", parsed);
       } catch (error) {
         console.error("Failed to parse medication param:", error);
       }
