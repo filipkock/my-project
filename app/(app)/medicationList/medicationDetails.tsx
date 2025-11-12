@@ -87,6 +87,27 @@ export default function MedicationDetails() {
   const HEADER_HEIGHT = 56; // px
   const FOOTER_HEIGHT = 80; // px
 
+  const dayNames = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+
+  const getDayNames = (days?: Array<number | string>) => {
+    if (!days?.length) return [];
+    return days.map((d) => {
+      console.log("Mapping day:", d);
+      const n = typeof d === "string" ? parseInt(d, 10) : d;
+      if (!Number.isFinite(n)) return "?";
+      const idx = ((n % 7) + 7) % 7; // 1->Mon, 7->Sun -> 0 index wrap
+      return dayNames[idx];
+    });
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1">
@@ -157,7 +178,9 @@ export default function MedicationDetails() {
                     Specific Days of Week
                   </Label>
                   <Text className="text-lg">
-                    {parsedMedication.specificDaysOfWeek.join(", ")}
+                    {getDayNames(parsedMedication.specificDaysOfWeek).join(
+                      ", "
+                    )}
                   </Text>
                 </View>
               )}

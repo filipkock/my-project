@@ -4,7 +4,7 @@ export default {
   expo: {
     name: "Poka",
     slug: "starter-base",
-    version: "1.2.0",
+    version: "1.3.0",
     orientation: "portrait",
     icon: "./assets/images/icon_logo.png",
     scheme: "myapp",
