@@ -31,3 +31,18 @@ export interface FormData {
   specificDaysOfWeek: number[]; // used for "Specific days weekly"
   reminderDates?: Date[];
 }
+
+// Type for Medication stored in Firestore
+export interface FirestoreMedication {
+  createdAt?: Timestamp | string;
+  customInterval?: number;
+  endDate?: Timestamp | string;
+  intakeInterval?: string;
+  medicationName?: string;
+  medicationType?: string;
+  reminderTimes?: string[];
+  specificDaysOfWeek?: number[];
+  startDate?: Timestamp | string;
+  uid?: string;
+  userEmail?: string;
+}

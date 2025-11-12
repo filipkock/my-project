@@ -3,17 +3,10 @@ import { View, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { Text } from "~/components/ui/text";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-
-interface Medication {
-  id: string;
-  medicationName: string;
-  medicationType: string;
-  intakeInterval: string;
-  reminderTimes: string[];
-}
+import type { FirestoreMedication } from "~/src/types/medication";
 
 interface MedicationCardProps {
-  medication: Medication;
+  medication: FirestoreMedication & { id: string };
 }
 
 const MedicationDetailsCard: React.FC<MedicationCardProps> = ({

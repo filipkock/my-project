@@ -9,18 +9,12 @@ import { Text } from "~/components/ui/text";
 import { db } from "~/config/firebase";
 import { getFromStorage } from "~/src/services/storage";
 import MedicationDetailsCard from "~/components/custom/medicationDetails/MedicationDetailsCard";
-
-interface Medication {
-  id: string;
-  medicationName: string;
-  medicationType: string;
-  intakeInterval: string;
-  time: string;
-}
+import { Timestamp } from "firebase/firestore";
+import { FirestoreMedication } from "~/src/types/medication";
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [medications, setMedications] = useState<Medication[]>([]);
+  const [medications, setMedications] = useState<FirestoreMedication[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,10 +35,12 @@ const Index = () => {
       );
       const snapshot = await getDocs(medicationQuery);
 
-      const medicationsArray: Medication[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Medication[];
+      const medicationsArray: FirestoreMedication[] = snapshot.docs.map(
+        (doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })
+      ) as FirestoreMedication[];
 
       setMedications(medicationsArray);
     } catch (error) {
